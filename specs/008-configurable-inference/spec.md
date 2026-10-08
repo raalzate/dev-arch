@@ -81,11 +81,11 @@ Como arquitecto, muevo componentes entre propuestas (o armo una propuesta nueva)
 
 **Why this priority**: Es la segunda operación nueva del plan y el complemento natural de la re-inferencia; no bloquea a US1.
 
-**Independent Test**: Puntuar, sobre el grafo de un proyecto de demostración, los componentes de una propuesta existente (debe reproducir su viabilidad y su puntuación) y luego una variante con componentes añadidos o quitados.
+**Independent Test**: Puntuar, sobre el grafo de un proyecto de demostración, los componentes de una propuesta existente (debe reproducir su viabilidad y su justificación) y luego una variante con componentes añadidos o quitados.
 
 **Acceptance Scenarios**:
 
-1. **Given** una propuesta existente sin componentes de infraestructura filtrados, **When** se puntúa la lista exacta de sus componentes sobre el mismo grafo con la configuración por defecto, **Then** la viabilidad y la puntuación coinciden con las de esa propuesta.
+1. **Given** una propuesta existente sin componentes de infraestructura filtrados, **When** se puntúa la lista exacta de sus componentes sobre el mismo grafo con la configuración por defecto, **Then** la viabilidad y la justificación coinciden con las de esa propuesta.
 2. **Given** una lista de componentes editada, **When** se puntúa, **Then** la respuesta incluye viabilidad, puntuación, cohesión ajustada, acoplamiento externo, cohesión de datos, tamaño, justificación, acciones recomendadas y un nombre sugerido, calculados con las mismas fórmulas y la misma configuración que las propuestas del motor.
 3. **Given** una lista con componentes que no existen en el grafo, **When** se puntúa, **Then** se rechaza listando los componentes desconocidos.
 4. **Given** una lista vacía, **When** se puntúa, **Then** se rechaza indicando que la propuesta debe tener al menos un componente; los duplicados se ignoran.
@@ -196,7 +196,7 @@ Como usuario avanzado, puedo activar por configuración las correcciones de las 
 **Evaluación de propuestas**
 
 - **FR-018**: El modo servidor MUST ofrecer una operación que puntúe una propuesta definida por una lista de componentes sobre un grafo (por ruta o por identificador de análisis), con configuración opcional, y devuelva viabilidad, puntuación, cohesión ajustada, acoplamiento externo, cohesión de datos, tamaño, justificación, acciones recomendadas y un nombre sugerido.
-- **FR-019**: La puntuación MUST usar las mismas fórmulas, la misma agrupación de referencia y la misma configuración que la inferencia, de modo que puntuar exactamente los componentes de una propuesta existente sin infraestructura filtrada reproduzca su viabilidad y su puntuación.
+- **FR-019**: La puntuación MUST usar las mismas fórmulas, la misma agrupación de referencia y la misma configuración que la inferencia, de modo que puntuar exactamente los componentes de una propuesta existente sin infraestructura filtrada reproduzca su viabilidad y su justificación (la justificación expresa sus submétricas).
 - **FR-020**: La operación de puntuación MUST rechazar listas vacías y componentes inexistentes (listándolos), ignorar duplicados y no modificar ningún documento guardado.
 
 **Recursos y documentación**
@@ -239,7 +239,7 @@ Como usuario avanzado, puedo activar por configuración las correcciones de las 
 - **SC-004**: El 100 % de los parámetros listados en la guía de configuración vigente (sección de parámetros fijos) existen como parámetros con nombre y ninguno de esos valores queda como literal en la lógica de inferencia.
 - **SC-005**: Para cada etapa configurable (agrupación, evidencia, consolidación, viabilidad, propuestas, nombres) existe al menos una prueba que cambia un parámetro y observa el efecto esperado en el resultado.
 - **SC-006**: El 100 % de las configuraciones inválidas de prueba (desconocido, tipo, rango, incoherencia, archivo) se rechazan con el nombre del parámetro o archivo en el mensaje y sin escribir documentos.
-- **SC-007**: Puntuar los componentes de cada propuesta existente sin infraestructura filtrada de los proyectos de demostración reproduce su viabilidad y su puntuación en el 100 % de los casos.
+- **SC-007**: Puntuar los componentes de cada propuesta existente sin infraestructura filtrada de los proyectos de demostración reproduce su viabilidad y su justificación en el 100 % de los casos.
 - **SC-008**: Los recursos de algoritmos, configuración, valores por defecto y contrato se listan y su contenido es idéntico al publicado (4/4); los valores por defecto del recurso son iguales a los que aplica la inferencia.
 - **SC-009**: Todas las verificaciones de calidad del producto siguen en verde: construcción, pruebas, análisis estático con 0 hallazgos y 3 exclusiones heredadas menos, número de avisos de estilo no superior al vigente (4655), formato .NET, determinismo y paridad entre modos.
 - **SC-010**: Con la profundidad de detección por defecto, los 6 proyectos de demostración se detectan igual que antes; con profundidad > 0, los 4 casos de proyectos anidados de prueba (Java, .NET, ambos, demasiado profundo) se detectan como se especifica.
@@ -257,7 +257,7 @@ Como usuario avanzado, puedo activar por configuración las correcciones de las 
 - Q: ¿De dónde se carga la configuración? -> A: Línea de comandos: archivo indicado explícitamente con una opción; modo servidor: objeto en línea o ruta de archivo en la petición. No se descubre automáticamente un archivo de configuración dentro del proyecto analizado (evita cambios silenciosos de salida). (default elegido por agente — pendiente confirmar) [FR-006, FR-007]
 - Q: ¿Cómo resuelve el motor un identificador de análisis de la web? -> A: La web comunica al motor, al arrancarlo, su área de resultados; el motor busca el grafo del análisis dentro de esa área. Sin área configurada solo se admite la ruta. (default elegido por agente — pendiente confirmar) [FR-015, FR-027]
 - Q: ¿De dónde salen las dependencias de proyecto y las ubicaciones de secretos al re-inferir sin fuentes? -> A: Del documento de arquitectura guardado junto al grafo por el mismo análisis; si falta, se omiten con advertencia. (default elegido por agente — pendiente confirmar) [FR-013, FR-014]
-- Q: ¿Qué agrupación de referencia usa la evaluación de propuestas? -> A: La agrupación que produce la inferencia sobre el mismo grafo con la misma configuración; la propuesta se descompone en los fragmentos de cada grupo que contiene y se puntúa con la fórmula vigente, lo que reproduce la puntuación de las propuestas existentes. (default elegido por agente — pendiente confirmar) [FR-019]
+- Q: ¿Qué agrupación de referencia usa la evaluación de propuestas? -> A: La agrupación que produce la inferencia sobre el mismo grafo con la misma configuración; la propuesta se descompone en los fragmentos de cada grupo que contiene y se puntúa con la fórmula vigente, lo que reproduce la viabilidad y la justificación de las propuestas existentes (la puntuación numérica no se emite en el documento de arquitectura). (default elegido por agente — pendiente confirmar) [FR-019]
 - Q: ¿Los cortes de los mensajes de justificación son configurables? -> A: Sí, como parámetros de la etapa de viabilidad (solo afectan al texto). (default elegido por agente — pendiente confirmar) [FR-004]
 - Q: ¿Cómo se mide el criterio de 2 s? -> A: En el proceso del modo servidor ya en marcha (larga vida), sobre un grafo sintético determinista de 500 componentes, cada una de 5 llamadas consecutivas tras la primera. (default elegido por agente — pendiente confirmar) [FR-017, SC-003]
 - Q: ¿Se modifica la interfaz web para usar la re-inferencia? -> A: No; la experiencia de usuario es la feature 010. En esta feature la web solo habilita las operaciones y comunica su área de resultados al motor. (default elegido por agente — pendiente confirmar) [FR-027]
