@@ -3,6 +3,7 @@
 // Usage: node gen/generate.mjs [--out <dir>]
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { compile } from "json-schema-to-typescript";
 import { jsonSchemaToZod } from "json-schema-to-zod";
 import { format } from "prettier";
@@ -144,7 +145,8 @@ export async function generate(outDir) {
   return Object.keys(files);
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.url).pathname);
+// fileURLToPath, not URL.pathname: the latter percent-encodes spaces and the CLI silently did nothing (006).
+const isMain = process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
 if (isMain) {
   const outIndex = process.argv.indexOf("--out");
   const outDir = outIndex > 0 ? resolve(process.argv[outIndex + 1]) : join(PACKAGE_DIR, "generated");
