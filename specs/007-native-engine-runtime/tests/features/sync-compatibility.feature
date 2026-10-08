@@ -38,7 +38,8 @@ Feature: Existing synchronous analysis clients keep working
   @TS-076 @FR-027 @SC-012 @P1 @validation
   Scenario: Locked artifacts of features 001 to 006 are unchanged
     When the product is compared with the 006 baseline tag "dev-arch-006-baseline"
-    Then no ".feature" file, "context.json" assertion hash or test assertion of features 001 to 006 has changed
+    Then no ".feature" file, "context.json" assertion hash or test assertion of features 001 to 006 has changed, except the scenario "TS-042" of 006 re-testified and recorded in its specification
+    And every assertion integrity hash of features 001 to 006 verifies
 
   @TS-077 @FR-028 @SC-012 @P1 @contract
   Scenario: Engine static quality gates are not relaxed
