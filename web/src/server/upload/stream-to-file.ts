@@ -45,3 +45,23 @@ export async function streamToFile(
     throw storageError(e, 'storing the upload');
   }
 }
+
+/** Reads a (JSON) body in memory with the same limit (imports, FR-020). */
+export async function readBodyLimited(body: ReadableStream<Uint8Array> | null, limit: number, contentLength?: number): Promise<Buffer> {
+  if (contentLength !== undefined && contentLength > limit) throw uploadTooLarge(limit);
+  if (!body) return Buffer.alloc(0);
+  const chunks: Buffer[] = [];
+  let count = 0;
+  const reader = body.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    count += value.length;
+    if (count > limit) {
+      await reader.cancel().catch(() => undefined);
+      throw uploadTooLarge(limit);
+    }
+    chunks.push(Buffer.from(value));
+  }
+  return Buffer.concat(chunks);
+}

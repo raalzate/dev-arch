@@ -136,9 +136,9 @@ description: "Task list for 007-native-engine-runtime"
 **Goal**: `POST /api/analyses/import` validado contra el contrato 1.0.0.
 **Independent Test**: TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046, TS-047.
 
-- [ ] T048 [US5] Escribir step definitions `tests/acceptance/steps/native-runtime-import.steps.ts` para [TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046, TS-047]; ejecutar y verlas fallar
-- [ ] T049 [P] [US5] Escribir primero `web/src/server/import/import-validator.test.ts` (fixtures `schema/fixtures/valid/*` aceptadas; `schema/fixtures/invalid/*` → violaciones con `document`/`pointer`/`message`; versión presente ≠ 1.0.0 → `UNSUPPORTED_SCHEMA_VERSION`; versión ausente → `SCHEMA_VIOLATION`; documento obligatorio ausente); verla fallar
-- [ ] T050 [US5] Implementar `web/src/server/import/import-validator.ts` y `web/src/app/api/analyses/import/route.ts` (cuerpo por streaming con límite, job `origin: import` completado sin `source/`, `NO_SOURCES` en el visor) hasta pasar T049 y [TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046]
+- [x] T048 [US5] Escribir step definitions `tests/acceptance/steps/native-runtime-import.steps.ts` para [TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046, TS-047]; ejecutar y verlas fallar
+- [x] T049 [P] [US5] Escribir primero `web/src/server/import/import-validator.test.ts` (fixtures `schema/fixtures/valid/*` aceptadas; `schema/fixtures/invalid/*` → violaciones con `document`/`pointer`/`message`; versión presente ≠ 1.0.0 → `UNSUPPORTED_SCHEMA_VERSION`; versión ausente → `SCHEMA_VIOLATION`; documento obligatorio ausente); verla fallar
+- [x] T050 [US5] Implementar `web/src/server/import/import-validator.ts` y `web/src/app/api/analyses/import/route.ts` (cuerpo por streaming con límite, job `origin: import` completado sin `source/`, `NO_SOURCES` en el visor) hasta pasar T049 y [TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046]
 - [ ] T051 [US5] Crear `web/src/components/import-dialog.tsx` (dos/tres archivos JSON, errores con puntero de campo) e integrarlo en el analizador hasta pasar [TS-047]
 
 **Checkpoint**: SC-010 verificable; defecto 6 cerrado.
