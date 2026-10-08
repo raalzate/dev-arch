@@ -23,6 +23,14 @@ public class ProjectAnalyzer
     private readonly SecretsDetector _secretsDetector = new();
     private readonly RoslynCodeAnalyzer _codeAnalyzer = new();
 
+    private readonly List<string> _userWarnings = new();
+
+    /// <summary>
+    /// User-facing warnings of the last analysis (009, contracts/dotnet-warnings-channel.md): ordinal order,
+    /// no duplicates, no absolute paths. Printed by Program.cs as <c>[warning] &lt;text&gt;</c> lines on stderr.
+    /// </summary>
+    public IReadOnlyList<string> UserWarnings => _userWarnings;
+
     public async Task<DependencyGraph> AnalyzeProjectAsync(string projectPath)
     {
         var compilations = new List<Compilation>();

@@ -25,6 +25,8 @@ yarn-error.log*
 # .NET
 obj/
 bin/
+# Reqnroll code-behind of specs/*/tests/features (moved to obj/ by the test project, 009)
+specs/**/*.feature.cs
 # Engine analysis outputs written to the working directory
 output.json
 output_architecture.json
