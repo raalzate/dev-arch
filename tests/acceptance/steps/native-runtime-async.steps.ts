@@ -97,7 +97,7 @@ Then('each document declares the contract version {string} and validates against
   for (const [name, doc] of Object.entries(docs)) {
     assert.equal(doc.meta?.schema_version, version, `${name} meta.schema_version`);
     const r = validators[name].safeParse(doc);
-    assert.ok(r.success, `${name}: ${JSON.stringify(r.error).slice(0, 1000)}`);
+    assert.ok(r.success, `${name}: ${String(JSON.stringify(r.error)).slice(0, 1000)}`);
   }
 });
 

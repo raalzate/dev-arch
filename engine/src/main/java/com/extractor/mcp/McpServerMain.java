@@ -101,8 +101,11 @@ public class McpServerMain {
         AnalysisService service = createService();
         List<McpServerFeatures.SyncToolSpecification> tools = createToolSpecs(service);
 
-        StdioServerTransportProvider transport = new StdioServerTransportProvider(
-                McpJsonDefaults.getMapper());
+        // Serialized: concurrent analyses must not lose responses (stdio).
+        SerializedTransportProvider transport =
+                new SerializedTransportProvider(
+                        new StdioServerTransportProvider(
+                                McpJsonDefaults.getMapper()));
 
         McpSyncServer server = McpServer.sync(transport)
                 .serverInfo(SERVER_NAME, SERVER_VERSION)

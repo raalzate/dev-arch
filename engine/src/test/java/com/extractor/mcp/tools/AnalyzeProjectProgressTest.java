@@ -67,4 +67,50 @@ class AnalyzeProjectProgressTest {
         assertEquals(withToken.meta(), without.meta());
         assertEquals(docsWithToken, documents(out));
     }
+
+    @Test
+    void aFailingProgressChannelNeverFailsTheAnalysis() throws Exception {
+        // Real stdio transport: concurrent notifications can be rejected ("Failed to enqueue message").
+        Path project = DemoProjects.copy("java-standar", tmp);
+        Path out = tmp.resolve("out");
+        AnalysisService service = new AnalysisService();
+        McpSchema.CallToolResult failing = AnalyzeProjectTool.handle(service, request(project, out, "tok"), n -> {
+            throw new IllegalStateException("Failed to enqueue message");
+        });
+        assertFalse(failing.isError(), String.valueOf(failing.content()));
+        List<String> docs = documents(out);
+        McpSchema.CallToolResult quiet = AnalyzeProjectTool.handle(service, request(project, out, null), n -> { });
+        assertEquals(quiet.content(), failing.content());
+        assertEquals(docs, documents(out));
+    }
+
+    @Test
+    void notificationsOfConcurrentAnalysesAreNeverSentAtTheSameTime() throws Exception {
+        Path a = DemoProjects.copy("java-standar", tmp.resolve("a"));
+        Path b = DemoProjects.copy("java-standar", tmp.resolve("b"));
+        AnalysisService service = new AnalysisService();
+        java.util.concurrent.atomic.AtomicInteger inside = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.concurrent.atomic.AtomicInteger overlaps = new java.util.concurrent.atomic.AtomicInteger();
+        ProgressSink slow = n -> {
+            if (inside.incrementAndGet() > 1) {
+                overlaps.incrementAndGet();
+            }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            inside.decrementAndGet();
+        };
+        java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(2);
+        try {
+            var fa = pool.submit(() -> AnalyzeProjectTool.handle(service, request(a, tmp.resolve("oa"), "a"), slow));
+            var fb = pool.submit(() -> AnalyzeProjectTool.handle(service, request(b, tmp.resolve("ob"), "b"), slow));
+            assertFalse(fa.get().isError());
+            assertFalse(fb.get().isError());
+        } finally {
+            pool.shutdownNow();
+        }
+        assertEquals(0, overlaps.get());
+    }
 }

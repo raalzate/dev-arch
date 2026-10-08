@@ -66,7 +66,7 @@ Then('the {string}, {string} and {string} documents still validate against the d
     const r = await api(this).call('GET', `/api/analyses/${jobId(this)}/${doc}`);
     assert.equal(r.status, 200);
     const v = validators[doc].safeParse(r.json);
-    assert.ok(v.success, `${doc}: ${JSON.stringify(v.error).slice(0, 500)}`);
+    assert.ok(v.success, `${doc}: ${String(JSON.stringify(v.error)).slice(0, 500)}`);
   }
 });
 

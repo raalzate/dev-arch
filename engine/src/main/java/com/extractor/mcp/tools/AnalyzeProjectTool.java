@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,6 +29,16 @@ import java.util.Map;
  * reports phases when the request carries a progress token (007, FR-023).
  */
 public final class AnalyzeProjectTool {
+
+    /** Logger (stderr in MCP mode). */
+    private static final Logger LOG =
+            LoggerFactory.getLogger(AnalyzeProjectTool.class);
+
+    /**
+     * Serializes the notifications of concurrent analyses: the stdio
+     * transport rejects messages emitted at the same time.
+     */
+    private static final Object PROGRESS_LOCK = new Object();
 
     /** Number of phases reported as progress. */
     private static final double TOTAL_PHASES =
@@ -184,9 +196,21 @@ public final class AnalyzeProjectTool {
      */
     private static void notify(final ProgressSink sink, final Object token,
             final AnalysisPhase phase) {
-        if (token != null) {
-            sink.send(new McpSchema.ProgressNotification(token,
-                    phase.ordinal() + 1.0, TOTAL_PHASES, phase.wireName()));
+        if (token == null) {
+            return;
+        }
+        McpSchema.ProgressNotification notification =
+                new McpSchema.ProgressNotification(token,
+                        phase.ordinal() + 1.0, TOTAL_PHASES,
+                        phase.wireName());
+        // Progress is best effort: it never changes nor fails the analysis.
+        synchronized (PROGRESS_LOCK) {
+            try {
+                sink.send(notification);
+            } catch (RuntimeException e) {
+                LOG.warn("Progress notification '{}' not sent: {}",
+                        phase.wireName(), e.getMessage());
+            }
         }
     }
 
