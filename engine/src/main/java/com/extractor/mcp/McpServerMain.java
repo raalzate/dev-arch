@@ -81,13 +81,48 @@ public class McpServerMain {
      * Exposed as package-private for testing.
      */
     static List<McpServerFeatures.SyncToolSpecification> createToolSpecs(AnalysisService service) {
-        return List.of(
+        return createToolSpecs(service, false, null);
+    }
+
+    /** Environment variable / system property enabling the inference tools (008). */
+    public static final String INFERENCE_TOOLS = "STATIC_INFERENCE_INFERENCE_TOOLS";
+
+    /**
+     * Tool specifications, optionally with the 008 inference tools
+     * (reinfer_architecture, score_proposal; research D5).
+     *
+     * @param service        shared analysis service
+     * @param inferenceTools whether to add the inference tools
+     * @param jobsDir        jobs directory for jobId, or null
+     * @return the specifications
+     */
+    public static List<McpServerFeatures.SyncToolSpecification> createToolSpecs(
+            final AnalysisService service, final boolean inferenceTools,
+            final java.nio.file.Path jobsDir) {
+        List<McpServerFeatures.SyncToolSpecification> specs = new java.util.ArrayList<>(List.of(
                 AnalyzeProjectTool.spec(service),
                 GetDependencyGraphTool.spec(service),
                 GetArchitectureTool.spec(service),
                 GetApiContractsTool.spec(service),
-                GetComponentMetricsTool.spec(service)
-        );
+                GetComponentMetricsTool.spec(service)));
+        if (inferenceTools) {
+            specs.add(ReinferArchitectureTool.spec(service, jobsDir));
+            specs.add(ScoreProposalTool.spec(service, jobsDir));
+        }
+        return List.copyOf(specs);
+    }
+
+    /**
+     * Whether the inference tools are enabled (env or system property).
+     *
+     * @return true when set to "true"
+     */
+    static boolean inferenceToolsEnabled() {
+        String value = System.getProperty(INFERENCE_TOOLS);
+        if (value == null) {
+            value = System.getenv(INFERENCE_TOOLS);
+        }
+        return Boolean.parseBoolean(value);
     }
 
     /**
@@ -99,7 +134,8 @@ public class McpServerMain {
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.err");
 
         AnalysisService service = createService();
-        List<McpServerFeatures.SyncToolSpecification> tools = createToolSpecs(service);
+        List<McpServerFeatures.SyncToolSpecification> tools = createToolSpecs(service,
+                inferenceToolsEnabled(), com.extractor.service.GraphSource.configuredJobsDir());
 
         // Serialized: concurrent analyses must not lose responses (stdio).
         SerializedTransportProvider transport =
@@ -111,8 +147,11 @@ public class McpServerMain {
                 .serverInfo(SERVER_NAME, SERVER_VERSION)
                 .capabilities(new McpSchema.ServerCapabilities.Builder()
                         .tools(true)
+                        .resources(false, false)
                         .build())
                 .tools(tools)
+                .resources(McpResources.specs())
+                .resourceTemplates(McpResources.templates())
                 .build();
 
         // Block until the process is terminated; stdio transport reads stdin in background

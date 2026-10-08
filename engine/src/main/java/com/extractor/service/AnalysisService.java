@@ -1,40 +1,29 @@
 package com.extractor.service;
 
-import com.extractor.analyzer.DotNetBridgeAnalyzer;
-import com.extractor.analyzer.DotNetToolLocator;
-import com.extractor.analyzer.JavaSpoonAnalyzer;
-import com.extractor.analyzer.LanguageAnalyzer;
-import com.extractor.analyzer.ProjectType;
-import com.extractor.analyzer.ProjectTypeDetector;
 import com.extractor.inference.ConsolidatedArchitecture;
-import com.extractor.inference.InferenceEngine;
-import com.extractor.inference.MicroserviceCandidates;
 import com.extractor.inference.MicroserviceProposal;
-import com.extractor.inference.MicroserviceRecommendationEngine;
+import com.extractor.inference.config.InferenceConfig;
 import com.extractor.model.Component;
 import com.extractor.model.DependencyGraph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Shared core service that orchestrates the analysis pipeline.
  * Both CLI and MCP adapters delegate to this service (Constitution II).
- * Creates fresh analyzers per invocation.
+ * Facade over {@link ExtractionService} and {@link InferenceService}
+ * (008-configurable-inference, FR-002). Creates fresh analyzers per
+ * invocation.
  */
 public final class AnalysisService {
 
-    /** Logger of the service. */
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(AnalysisService.class);
+    /** Extraction stage. */
+    private final ExtractionService extraction = new ExtractionService();
+
+    /** Inference stage. */
+    private final InferenceService inference = new InferenceService();
 
     /** Viability level of "Alta". */
     private static final int HIGH = 3;
@@ -99,13 +88,33 @@ public final class AnalysisService {
     public AnalysisResult analyzeProject(final Path projectRoot,
             final AnalysisOptions options,
             final AnalysisProgressListener listener) throws Exception {
+        return analyzeProject(projectRoot, options, listener,
+                InferenceConfig.defaults());
+    }
+
+    /**
+     * Runs the full analysis pipeline with an inference configuration
+     * (008, FR-006, FR-007). Only default-configuration analyses are reused
+     * (FR-011).
+     *
+     * @param projectRoot project directory
+     * @param options     analysis options (language)
+     * @param listener    receives DETECTION, EXTRACTION and INFERENCE
+     * @param config      inference configuration
+     * @return the analysis result
+     * @throws Exception when the analysis fails
+     */
+    public AnalysisResult analyzeProject(final Path projectRoot,
+            final AnalysisOptions options,
+            final AnalysisProgressListener listener,
+            final InferenceConfig config) throws Exception {
         validateProjectPath(projectRoot);
-        if (cache == null) {
-            return compute(projectRoot, options, listener);
+        if (cache == null || !config.isDefault()) {
+            return compute(projectRoot, options, listener, config);
         }
         AnalysisCache.Lookup lookup = cache.lookup(projectRoot,
                 options.language(),
-                () -> compute(projectRoot, options, listener));
+                () -> compute(projectRoot, options, listener, config));
         if (!lookup.computed()) {
             listener.onPhase(AnalysisPhase.DETECTION);
             listener.onPhase(AnalysisPhase.EXTRACTION);
@@ -134,28 +143,22 @@ public final class AnalysisService {
      * @param projectRoot project directory
      * @param options     analysis options
      * @param listener    phase listener
+     * @param config      inference configuration
      * @return the analysis result
      * @throws Exception when the analysis fails
      */
     private AnalysisResult compute(final Path projectRoot,
             final AnalysisOptions options,
-            final AnalysisProgressListener listener) throws Exception {
-        listener.onPhase(AnalysisPhase.DETECTION);
-        LanguageAnalyzer analyzer =
-                createAnalyzer(projectRoot, options.language());
-        listener.onPhase(AnalysisPhase.EXTRACTION);
-        DependencyGraph dependencyGraph = analyzer.analyzeProject(projectRoot);
-        List<String> warnings = new ArrayList<>(analyzer.getWarnings());
-        if (dependencyGraph.getComponents().isEmpty()) {
-            Path name = projectRoot.toAbsolutePath().normalize().getFileName();
-            warnings.add("No analyzable source files found in '"
-                    + (name == null ? "." : name) + "'");
-        }
+            final AnalysisProgressListener listener,
+            final InferenceConfig config) throws Exception {
+        ExtractionResult extracted = extraction.extract(projectRoot, options,
+                config.detection(), listener);
         listener.onPhase(AnalysisPhase.INFERENCE);
         ConsolidatedArchitecture architecture =
-                infer(projectRoot, analyzer, dependencyGraph);
+                inference.infer(InferenceInput.of(extracted), config);
+        DependencyGraph dependencyGraph = extracted.graph();
         return new AnalysisResult(dependencyGraph, architecture,
-                dependencyGraph.getApiContracts(), warnings);
+                dependencyGraph.getApiContracts(), extracted.warnings());
     }
 
     /**
@@ -184,8 +187,8 @@ public final class AnalysisService {
             return reused(projectRoot, options).getDependencyGraph();
         }
         validateProjectPath(projectRoot);
-        return createAnalyzer(projectRoot, options.language())
-                .analyzeProject(projectRoot);
+        return extraction.graph(projectRoot, options,
+                InferenceConfig.defaults().detection());
     }
 
     /**
@@ -223,10 +226,11 @@ public final class AnalysisService {
                     minViability);
         }
         validateProjectPath(projectRoot);
-        LanguageAnalyzer analyzer =
-                createAnalyzer(projectRoot, options.language());
-        DependencyGraph dependencyGraph = analyzer.analyzeProject(projectRoot);
-        return filterByViability(infer(projectRoot, analyzer, dependencyGraph),
+        InferenceConfig config = InferenceConfig.defaults();
+        ExtractionResult extracted = extraction.extract(projectRoot, options,
+                config.detection(), AnalysisProgressListener.NOOP);
+        return filterByViability(
+                inference.infer(InferenceInput.of(extracted), config),
                 minViability);
     }
 
@@ -313,8 +317,8 @@ public final class AnalysisService {
             final AnalysisOptions options) throws Exception {
         DependencyGraph graph = cache != null
                 ? reused(projectRoot, options).getDependencyGraph()
-                : createAnalyzer(projectRoot, options.language())
-                        .analyzeProject(projectRoot);
+                : extraction.graph(projectRoot, options,
+                        InferenceConfig.defaults().detection());
         return graph.getComponents().stream()
                 .map(Component::getId)
                 .sorted()
@@ -322,88 +326,34 @@ public final class AnalysisService {
     }
 
     /**
-     * Runs the inference and the consolidated recommendation.
+     * Re-infers the architecture of a stored graph (008, FR-012).
      *
-     * @param projectRoot     project directory
-     * @param analyzer        analyzer that produced the graph
-     * @param dependencyGraph the graph
-     * @return the consolidated architecture
+     * @param graph        the stored graph
+     * @param config       inference configuration
+     * @param minViability "Alta", "Media", "Baja" or null for all
+     * @return the architecture
      */
-    private static ConsolidatedArchitecture infer(final Path projectRoot,
-            final LanguageAnalyzer analyzer,
-            final DependencyGraph dependencyGraph) {
-        MicroserviceCandidates candidates =
-                new InferenceEngine().analyze(dependencyGraph);
-        DependencyGraph.ApiContracts apiContracts =
-                dependencyGraph.getApiContracts();
-        Map<String, String> projectDeps =
-                analyzer.getDependencyResolver().getAllDependencies();
-        return new MicroserviceRecommendationEngine().analyzeConsolidated(
-                candidates, dependencyGraph.getComponents(), projectDeps,
-                projectRoot, apiContracts.getEndpoints());
+    public ConsolidatedArchitecture reinfer(final LoadedGraph graph,
+            final InferenceConfig config, final String minViability) {
+        if (minViability != null && viabilityLevel(minViability) == 0) {
+            throw new IllegalArgumentException("Invalid minViability '"
+                    + minViability + "'. Allowed: Alta, Media, Baja");
+        }
+        return filterByViability(inference.infer(graph.input(), config),
+                minViability);
     }
 
     /**
-     * Creates the analyzer for the language choice; AUTO detects it from
-     * marker files.
+     * Scores a user-edited proposal over a stored graph (008, FR-018).
      *
-     * @param projectRoot project directory
-     * @param language    analyzer choice
-     * @return the analyzer
+     * @param graph      the stored graph
+     * @param components component ids of the proposal
+     * @param config     inference configuration
+     * @return the score
      */
-    private LanguageAnalyzer createAnalyzer(final Path projectRoot,
-            final AnalysisLanguage language) {
-        if (language == AnalysisLanguage.JAVA) {
-            return new JavaSpoonAnalyzer();
-        }
-        if (language == AnalysisLanguage.DOTNET) {
-            return createDotNetAnalyzer();
-        }
-        ProjectType projectType = new ProjectTypeDetector().detect(projectRoot);
-        return switch (projectType) {
-            case JAVA -> new JavaSpoonAnalyzer();
-            case DOTNET -> createDotNetAnalyzer();
-            case AMBIGUOUS -> throw new IllegalArgumentException(
-                    "Ambiguous project type: found both Java and .NET markers"
-                            + " in '" + projectRoot + "'. Please specify the"
-                            + " target language explicitly"
-                            + " (use language=java|dotnet).");
-            case UNKNOWN -> {
-                // Projects without marker files were always analyzed as Java
-                // (Constitution I).
-                LOGGER.info("No project type markers found in '{}', "
-                        + "defaulting to Java analyzer", projectRoot);
-                yield new JavaSpoonAnalyzer();
-            }
-        };
-    }
-
-    /**
-     * Creates the .NET bridge analyzer next to the engine archive.
-     *
-     * @return the analyzer
-     */
-    private LanguageAnalyzer createDotNetAnalyzer() {
-        return new DotNetBridgeAnalyzer(
-                new DotNetToolLocator(getJarDirectory()));
-    }
-
-    /**
-     * Directory of the engine archive (or classes directory).
-     *
-     * @return the directory, or the current directory when unknown
-     */
-    private Path getJarDirectory() {
-        try {
-            Path jarPath = Paths.get(AnalysisService.class
-                    .getProtectionDomain().getCodeSource().getLocation()
-                    .toURI());
-            return jarPath.getParent();
-        } catch (URISyntaxException | NullPointerException e) {
-            LOGGER.debug("Could not resolve JAR directory, using current "
-                    + "directory: {}", e.getMessage());
-            return Path.of(".");
-        }
+    public ProposalScore scoreProposal(final LoadedGraph graph,
+            final List<String> components, final InferenceConfig config) {
+        return new ProposalScorer().score(graph.graph(), components, config);
     }
 
     /**
