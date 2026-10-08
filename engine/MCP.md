@@ -212,6 +212,34 @@ Aditivas: sin ellas las salidas y respuestas son byte-idénticas a 1.2.0 y el co
   `language`, mismo árbol de archivos por ruta/tamaño/fecha). Capacidad: `-Dstatic-inference.cache.size`, si no
   `STATIC_INFERENCE_CACHE_SIZE`, si no 8; `0` desactiva. Las respuestas reutilizadas son byte-idénticas.
 
+## Opciones añadidas por la feature 008 (inferencia configurable)
+
+- `analyze_project` acepta `config` (objeto parcial) **o** `configPath` (archivo JSON) con la configuración de inferencia
+  (ver [CONFIGURATION.md](CONFIGURATION.md)); sin ellos la respuesta y los documentos son los de siempre. Un análisis con
+  configuración distinta de la por defecto no se reutiliza ni se guarda en la caché del modo servidor.
+- Herramientas nuevas, registradas **solo** si el servidor arranca con `STATIC_INFERENCE_INFERENCE_TOOLS=true` (por defecto
+  se siguen ofreciendo exactamente las cinco herramientas anteriores):
+  - `reinfer_architecture` — `graphPath` **o** `jobId`, `config`/`configPath`, `minViability`: vuelve a inferir la
+    arquitectura de un grafo ya extraído, sin leer las fuentes. Respuesta: documento de arquitectura
+    (`schema/1.0.0/mcp/reinfer_architecture.response.schema.json`); advertencias en `_meta["static-inference/warnings"]`.
+  - `score_proposal` — `components[]`, `graphPath` **o** `jobId`, `config`/`configPath`: puntúa una propuesta editada
+    (`schema/1.0.0/mcp/score_proposal.response.schema.json`).
+  - `jobId` se resuelve en `<STATIC_INFERENCE_JOBS_DIR>/<jobId>/out/output.json`.
+- Recursos de solo lectura (capacidad `resources`, siempre activa): `static-inference://algorithms`,
+  `static-inference://configuration`, `static-inference://configuration/defaults`, `static-inference://schema`.
+
+```json
+{
+  "mcpServers": {
+    "static-inference": {
+      "command": "java",
+      "args": ["-jar", "/ruta/java-dependency-extractor.jar", "--mcp"],
+      "env": { "STATIC_INFERENCE_INFERENCE_TOOLS": "true" }
+    }
+  }
+}
+```
+
 ## Decisiones de Diseno
 
 ### Artefacto Unico

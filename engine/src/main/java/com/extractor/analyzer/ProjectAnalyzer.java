@@ -602,7 +602,6 @@ public class ProjectAnalyzer {
      */
     private void analyzeSpringEvents(CtModel model) {
         Map<String, List<String>> eventToListeners = new HashMap<>();
-        Map<String, List<String>> publisherToEvents = new HashMap<>();
 
         // First pass: collect all event listeners
         for (CtType<?> type : model.getAllTypes()) {

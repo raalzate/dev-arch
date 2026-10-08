@@ -24,6 +24,9 @@ of features 001–003) point to `schema/1.0.0/` and must never contradict it.
 | `output_entrypoints.json`, MCP `get_api_contracts` | `entrypoints.schema.json` | `EntrypointsDocument` |
 | MCP `get_component_metrics` | `mcp/get_component_metrics.response.schema.json` → `common#/$defs/Component` | `Component` |
 | MCP `analyze_project` | `mcp/analyze_project.response.schema.json` | `AnalyzeProjectResponse` |
+| MCP `reinfer_architecture` (008) | `mcp/reinfer_architecture.response.schema.json` → `architecture.schema.json` | `ReinferArchitectureResponse` |
+| MCP `score_proposal` (008) | `mcp/score_proposal.response.schema.json` | `ScoreProposalResponse` |
+| Inference configuration (008: `--config`, `config`, `configPath`) | `inference-config.schema.json` | `InferenceConfig` |
 
 Rules applied by the schemas: objects of known structure are **closed** (`additionalProperties: false`); the maps
 `meta.microservice_candidates`, `api_contracts.schemas`, `project_metadata.external_dependencies`,
@@ -97,6 +100,13 @@ Minor and patch changes are listed in `CHANGELOG.md` only.
   when the tool is missing; the end-to-end `schema-check` divergence scenarios (TS-034..TS-038, ~5 min) run only
   with `SCHEMA_CHECK_E2E=true` (the CI job `schema-check` enables them).
 - Contract tests analyze hermetic copies of `test-for-demo/` (git-tracked files only) under `target/schema-demo/`.
+
+## Additive definitions without a version bump (008)
+
+Feature 008-configurable-inference added three **new** definitions (two MCP responses and the inference configuration)
+inside contract `1.0.0`. No existing schema changed and no produced document changed, so `meta.schema_version` stays
+`1.0.0` (a bump would change every existing output and the locked assertions of 005–007). Decision pending user
+confirmation; the alternative is a `1.1.0` minor release.
 
 ## Migration notes
 

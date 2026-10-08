@@ -3,7 +3,7 @@
 Este documento describe los algoritmos técnicos utilizados para consolidar clusters, generar nombres de microservicios y clasificar viabilidad. Cada fórmula y umbral está referenciado al código fuente (`archivo:línea`) en el que se implementa.
 
 > [!NOTE]
-> **Todos los umbrales y pesos descritos aquí están hardcodeados** como literales en el código Java (`src/main/java/com/extractor/inference/`). No existen constantes con nombre ni parámetros configurables en tiempo de ejecución. La configurabilidad está planificada en la **feature 008 (InferenceConfig)**. Ver [CONFIGURATION.md](CONFIGURATION.md).
+> **Todos los umbrales, pesos y listas descritos aquí son parámetros con nombre de la configuración de inferencia** (feature 008-configurable-inference): se pueden cambiar por análisis con `--config=<archivo>` en la CLI o `config`/`configPath` en MCP, y re-inferir un grafo ya extraído con `reinfer_architecture`. Los valores mostrados son los **valores por defecto** (idénticos a los literales de la versión 1.2.0); el nombre del parámetro aparece junto a cada fórmula como `«parámetro»`. Las referencias `archivo:línea` corresponden a la versión 1.2.0. Ver [CONFIGURATION.md](CONFIGURATION.md) para la tabla completa.
 >
 > El analizador .NET (`src/main/dotnet/DotNetAnalyzer`) **no** ejecuta consolidación ni scoring: solo extrae el grafo de dependencias (componentes, llamadas, tablas, CBO/LCOM, endpoints). Toda la inferencia descrita en este documento la realiza el motor Java sobre ese grafo.
 
@@ -93,13 +93,13 @@ eventSignal      = 1 si eventLinks no vacío, 0 en otro caso
 `InterClusterGraph.java:41-42` (literales, sin constantes con nombre):
 
 ```
-evidenceScore(A, B) = 0.25 × tableJaccard +
-                      0.35 × callDensity +
-                      0.30 × tokenSimilarity +
-                      0.10 × eventSignal
+evidenceScore(A, B) = 0.25 × tableJaccard +      «evidence.weights.table»
+                      0.35 × callDensity +       «evidence.weights.call»
+                      0.30 × tokenSimilarity +   «evidence.weights.token»
+                      0.10 × eventSignal         «evidence.weights.event»
 ```
 
-**Umbral de arista**: se crea arista solo si `evidenceScore > 0.1` (`InterClusterGraph.java:28`).
+**Umbral de arista**: se crea arista solo si `evidenceScore > 0.1` «evidence.edgeThreshold» (`InterClusterGraph.java:28`). Saturación de la densidad de llamadas: `0.5` «evidence.callDensitySaturation».
 
 ### Evidencia fuerte (`hasStrongEvidence`)
 
@@ -113,6 +113,8 @@ strongSignals = #{ tableJaccard >= 0.4,
 
 hasStrongEvidence = evidenceScore >= 0.65 AND strongSignals >= 2
 ```
+
+Parámetros: `evidence.strongSignals.table` (0.4), `evidence.strongSignals.call` (0.35), `evidence.strongSignals.token` (0.6), `evidence.evidenceThreshold` (0.65), `evidence.minStrongSignals` (2).
 
 ### Ejemplo Práctico
 
@@ -177,19 +179,20 @@ El umbral de evidencia (`>= 0.65` y `>= 2` señales fuertes) ya se aplicó al se
 ```
 NOT (isSupport(A) XOR isSupport(B))
 ```
-**isSupport(X)** (`:164-183`): `>= 80%` de los miembros **del cluster raíz** tienen una keyword de infraestructura en su nombre simple.
-Observación: `isSupport` evalúa solo el cluster cuyo id es la raíz del grupo, no el grupo consolidado completo.
+**isSupport(X)** (`:164-183`): `>= 80%` «consolidation.supportRatio» de los miembros **del cluster raíz** tienen una keyword de infraestructura «consolidation.infrastructureKeywords» en su nombre simple.
+Observación: `isSupport` evalúa solo el cluster cuyo id es la raíz del grupo. **Es equivalente a evaluar el grupo completo**: solo se fusionan raíces con el mismo estado de soporte, así que todos los clusters de un grupo comparten el estado de su raíz, y la proporción del grupo (media ponderada por tamaño de las proporciones de sus clusters) cae del mismo lado del umbral. Lo verifica la prueba de invariante TS-042 de 008.
 
 #### Guard 2: Size (`:152-153`)
 ```
 NOT (totalSize > 40 AND tokenSimilarity < 0.75)
 ```
+Parámetros: `consolidation.maxMergedSizeWithoutSimilarity` (40), `consolidation.highTokenSimilarity` (0.75).
 
 #### Guard 3: Separación de candidatos fuertes (`:155-159`)
 ```
 NOT (bothStrongCandidates(A, B) AND callDensity < 0.15 AND tableJaccard < 0.2)
 ```
-**isStrongCandidate(cluster)** (`:201-213`): `cohesion >= 0.7 AND coupling < 0.3 AND size >= 3`.
+**isStrongCandidate(cluster)** (`:201-213`): `cohesion >= 0.7 AND coupling < 0.3 AND size >= 3` («consolidation.strongCandidate.*»; separación: `consolidation.separationCallDensity` 0.15, `consolidation.separationTableJaccard` 0.2).
 **bothStrongCandidates** (`:195-199`): algún cluster de cada grupo es candidato fuerte.
 
 ### Ejemplo de Consolidación
@@ -316,9 +319,9 @@ Clasificar propuestas consolidadas en Alta/Media/Baja viabilidad. `ViabilityScor
 `ViabilityScorer.java:41-50`:
 
 ```
-score = 0.5 × cohesionAdj +
-        0.35 × (1 - externalCoupling) +
-        0.15 × dataCohesion
+score = 0.5 × cohesionAdj +                «viability.weights.cohesion»
+        0.35 × (1 - externalCoupling) +    «viability.weights.coupling»
+        0.15 × dataCohesion                «viability.weights.data»
 
 IF totalSize < 3:
     score = score × 0.6
@@ -363,15 +366,19 @@ Consecuencias:
 - No existe floor de 0.5 cuando hay tablas.
 
 > [!WARNING]
-> El campo `data_jaccard` que se emite en las métricas de cada propuesta (`*_architecture.json`) **no** es este valor: `MicroserviceRecommendationEngine.java:468` lo fija en `0.8` si la propuesta tiene tablas y `0.0` si no. Es un valor de marcador, independiente del `dataCohesion` usado en el score.
+> El campo `data_jaccard` que se emite en las métricas de cada propuesta (`*_architecture.json`) **no** es este valor por defecto: `MicroserviceRecommendationEngine.java:468` lo fija en `0.8` «recommendation.legacyDataJaccard» si la propuesta tiene tablas y `0.0` si no. Con `recommendation.dataJaccardMode = data_cohesion` (opt-in) se emite el `dataCohesion` usado en el score.
+
+Penalizaciones: `viability.smallSize.below` (3) / `viability.smallSize.penalty` (0.6), `viability.largeSize.above` (50) / `viability.largeSize.minDensity` (0.5) / `viability.largeSize.penalty` (0.7). Cohesión ajustada: `viability.cohesionBlend.average` (0.7) y `viability.cohesionBlend.density` (0.3); sin tablas: `viability.noTablesDataCohesion` (0.5).
 
 ### Clasificación (`ViabilityScorer.java:52`)
 
 ```
-score >= 0.7 → "Alta"
-score >= 0.5 → "Media"
+score >= 0.7 → "Alta"     «viability.thresholds.high»
+score >= 0.5 → "Media"    «viability.thresholds.medium»
 otro         → "Baja"
 ```
+
+Los cortes de la justificación son `viability.rationale.*` (ver CONFIGURATION.md).
 
 ### Rationale Generation (`ViabilityScorer.java:195-330`)
 
@@ -473,7 +480,7 @@ El campo `meta.collected_at` del grafo de dependencias es **opt-in** y se **omit
 - Java: `src/main/java/com/extractor/model/DependencyGraph.java:100,119-130` (acepta también la system property `-DSTATIC_INFERENCE_COLLECTED_AT=true`).
 - .NET: `src/main/dotnet/DotNetAnalyzer/Model/DependencyGraph.cs:49-57`.
 
-Observación: algunos pasos dependen del orden de iteración de `Set.of`/`HashMap` (p. ej. la elección de la palabra de rol en §1.3/§3.3 y los desempates de top tokens en §3), lo que puede afectar el determinismo de nombres en casos límite.
+Observación: desde 008 la elección de la palabra de rol (§1.3 y §3.3) sigue el orden declarado de `evidence.roleKeywords` / `naming.roleKeywords` (antes, en §1.3, dependía del orden aleatorio por proceso de `Set.of`). Los desempates de top tokens en §3 siguen el orden de `HashMap`, determinista entre ejecuciones.
 
 ---
 
@@ -489,10 +496,9 @@ Observación: algunos pasos dependen del orden de iteración de `Set.of`/`HashMa
 - Basado en análisis estático (no observa tráfico real)
 - Nombres generados dependen de la calidad de los nombres en código
 - No detecta bounded contexts de DDD automáticamente
-- Umbrales y pesos hardcodeados (ver nota inicial; feature 008)
+- Los parámetros por defecto son heurísticos (ajustables por configuración, feature 008)
 
 ### Mejoras Futuras
-- Parametrización de pesos y umbrales (feature 008: InferenceConfig)
 - Análisis de logs de producción para ajustar pesos
 - Machine learning para mejorar detección de dominios
 - Integración con event storming para validar fronteras

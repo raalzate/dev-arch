@@ -194,9 +194,9 @@ public class ClusteringAlgorithm {
                 continue;
 
             String componentName = component.getId();
-            for (String entityName : entityToClusters.keySet()) {
-                if (isRelatedToEntity(componentName, entityName)) {
-                    entityToClusters.get(entityName).addMember(componentName);
+            for (Map.Entry<String, Cluster> entity : entityToClusters.entrySet()) {
+                if (isRelatedToEntity(componentName, entity.getKey())) {
+                    entity.getValue().addMember(componentName);
                     assignedComponents.add(componentName);
                     break;
                 }
@@ -225,7 +225,6 @@ public class ClusteringAlgorithm {
      */
     private List<Cluster> createBusinessResponsibilityClusters(DependencyGraph dependencyGraph,
             Map<String, List<Component>> componentsByDomain) {
-        List<Cluster> clusters = new ArrayList<>();
         Map<String, Cluster> domainFunctionClusters = new HashMap<>();
         Set<String> assignedComponents = new HashSet<>();
         int clusterId = 0;
@@ -371,7 +370,7 @@ public class ClusteringAlgorithm {
         }
 
         // Convert to list and filter out empty clusters
-        clusters = domainFunctionClusters.values().stream()
+        List<Cluster> clusters = domainFunctionClusters.values().stream()
                 .filter(cluster -> !cluster.getMembers().isEmpty())
                 .collect(Collectors.toList());
 
@@ -694,7 +693,7 @@ public class ClusteringAlgorithm {
         int startIndex = 0;
 
         // Skip common organizational prefixes (com, org, net, io, etc.)
-        if (parts.length > 0 && parts[0].matches("(com|org|net|io|edu|gov)")) {
+        if (parts[0].matches("(com|org|net|io|edu|gov)")) {
             startIndex = 1;
         }
 

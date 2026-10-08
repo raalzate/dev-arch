@@ -36,3 +36,13 @@ test('a missing engine keeps the 006 message', () => {
   assert.equal(r.kind, 'not-built');
   assert.match(r.kind === 'not-built' ? r.message : '', /Engine not built: \/p\/web\/engine-dist\/engine\.jar .*make build/);
 });
+
+test('008: the engine process gets the inference tools and the jobs directory', () => {
+  const r = locateEngine({ JAVA_HOME: '/jdk' }, '/p/web', always, '/data/jobs');
+  assert.equal(r.kind, 'resolved');
+  if (r.kind !== 'resolved') return;
+  assert.equal(r.env.STATIC_INFERENCE_INFERENCE_TOOLS, 'true');
+  assert.equal(r.env.STATIC_INFERENCE_JOBS_DIR, '/data/jobs');
+  const without = locateEngine({ JAVA_HOME: '/jdk' }, '/p/web', always);
+  assert.equal(without.kind === 'resolved' ? without.env.STATIC_INFERENCE_JOBS_DIR : 'x', undefined);
+});

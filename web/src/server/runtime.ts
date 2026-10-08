@@ -1,6 +1,7 @@
 // Per-process runtime of the analyses API (007-native-engine-runtime): configuration, job store, engine client and
 // runner, kept on globalThis so that route modules, instrumentation and `next dev` HMR share one instance.
 import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { loadConfig, type AppConfig } from './config';
 import { EngineClient, EngineNotBuiltError } from './engine/engine-client';
 import { locateEngine } from './engine/engine-locator';
@@ -37,8 +38,8 @@ export function setRuntimeOverrides(overrides: RuntimeOverrides | undefined): vo
 }
 
 /** Locates the engine now (FR-032: ENGINE_NOT_BUILT is reported at submission). */
-export function engineLaunchOrError(cwd: string) {
-  return locateEngine(process.env, cwd, existsSync);
+export function engineLaunchOrError(cwd: string, dataDir?: string) {
+  return locateEngine(process.env, cwd, existsSync, dataDir ? path.join(dataDir, 'jobs') : undefined);
 }
 
 export function getRuntime(): Runtime {
@@ -48,7 +49,7 @@ export function getRuntime(): Runtime {
   const o = holder.overrides ?? {};
   const store = new JobStore(config.dataDir, o.now);
   const engine = new EngineClient(() => {
-    const l = engineLaunchOrError(cwd);
+    const l = engineLaunchOrError(cwd, config.dataDir);
     if (l.kind === 'not-built') throw new EngineNotBuiltError(l.message);
     return { command: l.command, args: l.args, env: l.env };
   }, o.log);
