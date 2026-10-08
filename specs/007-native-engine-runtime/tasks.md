@@ -122,9 +122,9 @@ description: "Task list for 007-native-engine-runtime"
 **Goal**: `/api/source?jobId&path` contenido en la raíz del job.
 **Independent Test**: TS-034, TS-035, TS-036, TS-037, TS-038, TS-039.
 
-- [ ] T044 [US4] Escribir step definitions `tests/acceptance/steps/native-runtime-source.steps.ts` para [TS-034, TS-035, TS-036, TS-037, TS-038, TS-039]; ejecutar y verlas fallar
-- [ ] T045 [P] [US4] Escribir primero `web/src/server/source/source-sandbox.test.ts` (catálogo de escapes: absoluta, `..`, `%2e%2e`, `\`, NUL, unidad, symlink saliente, otro job, directorio, inexistente, extensión, tamaño; respuesta 404 uniforme fuera de la raíz); verla fallar
-- [ ] T046 [US4] Implementar `web/src/server/source/source-sandbox.ts` y reescribir `web/src/app/api/source/route.ts` (forma heredada `?path=` → 400) hasta pasar T045 y [TS-034, TS-035, TS-036, TS-037, TS-038] (research D10)
+- [x] T044 [US4] Escribir step definitions `tests/acceptance/steps/native-runtime-source.steps.ts` para [TS-034, TS-035, TS-036, TS-037, TS-038, TS-039]; ejecutar y verlas fallar
+- [x] T045 [P] [US4] Escribir primero `web/src/server/source/source-sandbox.test.ts` (catálogo de escapes: absoluta, `..`, `%2e%2e`, `\`, NUL, unidad, symlink saliente, otro job, directorio, inexistente, extensión, tamaño; respuesta 404 uniforme fuera de la raíz); verla fallar
+- [x] T046 [US4] Implementar `web/src/server/source/source-sandbox.ts` y reescribir `web/src/app/api/source/route.ts` (forma heredada `?path=` → 400) hasta pasar T045 y [TS-034, TS-035, TS-036, TS-037, TS-038] (research D10)
 - [ ] T047 [US4] Adaptar `web/src/components/code-viewer.tsx` y `web/src/components/component-details.tsx` (prop `jobId`, rutas ya relativas servidas por la API) hasta pasar [TS-039]
 
 **Checkpoint**: SC-006 verificable.

@@ -160,6 +160,12 @@ export class WebHarness implements ApiClient {
     return (await runtimeModule()).getRuntime();
   }
 
+  /** Changes an environment variable of the server (takes effect at the next restart). */
+  setEnv(name: string, value: string | undefined): void {
+    if (value === undefined) delete process.env[name];
+    else process.env[name] = value;
+  }
+
   /** Simulates a web server restart over the same data directory. */
   async restart(): Promise<void> {
     const rt = await runtimeModule();
