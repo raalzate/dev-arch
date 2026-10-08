@@ -182,8 +182,8 @@ description: "Task list for 007-native-engine-runtime"
 **Goal**: `/api/analyze` igual hacia fuera, aislado por petición, obsoleto; UI no la usa; artefactos bloqueados intactos.
 **Independent Test**: TS-073, TS-074, TS-075, TS-076, TS-077 + escenarios 006 TS-014, TS-015, TS-016, TS-017, TS-018, TS-019 + `analyze-route.test.ts`.
 
-- [ ] T064 [US8] Escribir step definitions `tests/acceptance/steps/native-runtime-compat.steps.ts` para [TS-073, TS-074, TS-075, TS-076] (TS-076 compara contra la etiqueta `dev-arch-006-baseline` de T007, nunca contra un hash de commit; TS-077 se cubre íntegramente con steps de 006); ejecutar y verlas fallar
-- [ ] T065 [US8] Reescribir `web/src/app/api/analyze/route.ts` (job `origin: sync`, `safe-extract`, `execFile` con `cwd=<job>/out`, lectura desde `<job>/out`, cabeceras `Deprecation`/`Link`) manteniendo verdes, sin modificarlos, `web/src/server/engine/analyze-route.test.ts` y los escenarios 006 [TS-073, TS-074] (research D9)
+- [x] T064 [US8] Escribir step definitions `tests/acceptance/steps/native-runtime-compat.steps.ts` para [TS-073, TS-074, TS-075, TS-076] (TS-076 compara contra la etiqueta `dev-arch-006-baseline` de T007, nunca contra un hash de commit; TS-077 se cubre íntegramente con steps de 006); ejecutar y verlas fallar
+- [x] T065 [US8] Reescribir `web/src/app/api/analyze/route.ts` (job `origin: sync`, `safe-extract`, `execFile` con `cwd=<job>/out`, lectura desde `<job>/out`, cabeceras `Deprecation`/`Link`) manteniendo verdes, sin modificarlos, `web/src/server/engine/analyze-route.test.ts` y los escenarios 006 [TS-073, TS-074] (research D9)
 - [ ] T066 [US8] Verificar [TS-075] (la UI solo llama a `/api/analyses`), [TS-076] (diff contra `dev-arch-006-baseline` de `.feature`, `context.json` y aserciones de 001–006) y [TS-077] (Checkstyle 4763, SpotBugs con exclusiones, `dotnet format` sin tolerancia)
 
 **Checkpoint**: compatibilidad hacia atrás verificada.
