@@ -152,7 +152,9 @@ Then('each session shows only components of its own project', async function (th
   assert.notEqual(j1, j2);
   const own = [await graphIds(s1, j1), await graphIds(s2, j2)];
   for (const [i, s] of [s1, s2].entries()) {
-    const shown = await s.page.locator(byTestId('component-node')).evaluateAll((els) => els.map((e) => e.getAttribute('data-component-id') ?? ''));
+    const nodes = s.page.locator(byTestId('component-node'));
+    const shown: string[] = [];
+    for (let k = 0; k < (await nodes.count()); k++) shown.push((await nodes.nth(k).getAttribute('data-component-id')) ?? '');
     assert.ok(shown.length >= 1);
     for (const id of shown) {
       assert.ok(own[i].has(id), `session ${i + 1} (${s.project}) shows ${id}, not a component of its project`);
@@ -165,7 +167,7 @@ Then('each session shows only components of its own project', async function (th
 
 When('the user reloads the page before the analysis completes', async function (this: DevArchWorld) {
   const s = first(this);
-  await s.page.waitForFunction((k) => !!window.localStorage.getItem(k), ACTIVE_JOB, { timeout: 60_000 });
+  await s.page.waitForFunction(`!!window.localStorage.getItem(${JSON.stringify(ACTIVE_JOB)})`, undefined, { timeout: 60_000 });
   this.data.jobBeforeReload = await activeJob(s);
   this.data.completedBeforeReload = (await s.page.locator(byTestId('analysis-status')).getAttribute('data-status')) === 'completed';
   this.data.reloadAt = Date.now();

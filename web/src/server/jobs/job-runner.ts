@@ -195,7 +195,10 @@ export class JobRunner {
         await fs.rm(p.upload, { force: true });
         if (error.code === 'STORAGE_FULL') await fs.rm(p.out, { recursive: true, force: true });
       }
-      await this.store.update(id, { status: 'failed', error }).catch(() => undefined);
+      const warnings = e instanceof EngineToolError
+        ? e.warnings.map((w) => redactText(w, this.roots(job), [this.config.dataDir]))
+        : undefined;
+      await this.store.update(id, { status: 'failed', error, ...(warnings?.length ? { warnings } : {}) }).catch(() => undefined);
     }
   }
 

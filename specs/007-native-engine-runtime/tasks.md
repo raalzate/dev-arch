@@ -195,10 +195,10 @@ description: "Task list for 007-native-engine-runtime"
 **Goal**: FR-034..FR-036 en todas las rutas y en la UI (decisión A3).
 **Independent Test**: TS-078, TS-079, TS-080, TS-081, TS-082, TS-083, TS-084, TS-085.
 
-- [ ] T067 [US9] Escribir step definitions `tests/acceptance/steps/native-runtime-exposure.steps.ts` para [TS-078, TS-079, TS-080, TS-081, TS-082, TS-083, TS-084, TS-085]; ejecutar y verlas fallar
-- [ ] T068 [US9] Aplicar `requireApiToken` como primera instrucción en `web/src/app/api/analyses/route.ts`, `analyses/[id]/route.ts`, `analyses/[id]/[doc]/route.ts`, `analyses/import/route.ts`, `source/route.ts` y `analyze/route.ts`, y completar la relativización (`projectRoot`, documentos, advertencias, motivos de fallo) hasta pasar [TS-078, TS-079, TS-080, TS-081, TS-082, TS-083]
-- [ ] T069 [P] [US9] Escribir primero `web/src/server/security/bind-warning.test.ts` (`HOSTNAME`/`-H`/`--hostname`; sin dirección = todas las interfaces; loopback `localhost`, `127.0.0.0/8`, `::1` sin aviso; con token sin aviso); verla fallar
-- [ ] T070 [US9] Implementar `web/src/server/security/bind-warning.ts` y llamarlo desde `register()` de `web/src/instrumentation.ts` hasta pasar T069 y [TS-084]
+- [x] T067 [US9] Escribir step definitions `tests/acceptance/steps/native-runtime-exposure.steps.ts` para [TS-078, TS-079, TS-080, TS-081, TS-082, TS-083, TS-084, TS-085]; ejecutar y verlas fallar
+- [x] T068 [US9] Aplicar `requireApiToken` como primera instrucción en `web/src/app/api/analyses/route.ts`, `analyses/[id]/route.ts`, `analyses/[id]/[doc]/route.ts`, `analyses/import/route.ts`, `source/route.ts` y `analyze/route.ts`, y completar la relativización (`projectRoot`, documentos, advertencias, motivos de fallo) hasta pasar [TS-078, TS-079, TS-080, TS-081, TS-082, TS-083]
+- [x] T069 [P] [US9] Escribir primero `web/src/server/security/bind-warning.test.ts` (`HOSTNAME`/`-H`/`--hostname`; sin dirección = todas las interfaces; loopback `localhost`, `127.0.0.0/8`, `::1` sin aviso; con token sin aviso); verla fallar
+- [x] T070 [US9] Implementar `web/src/server/security/bind-warning.ts` y llamarlo desde `register()` de `web/src/instrumentation.ts` hasta pasar T069 y [TS-084]
 - [ ] T071 [US9] Añadir en `web/src/lib/analyses-client.ts` la cabecera `Authorization` desde `sessionStorage['devarch.apiToken']` y en la UI el campo `data-testid="api-token-input"` mostrado ante 401, con reintento, hasta pasar [TS-085]
 
 **Checkpoint**: SC-013 y SC-014 verificables.

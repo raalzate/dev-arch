@@ -43,6 +43,17 @@ function documents(projectPath) {
   return { graph, architecture: read('output_architecture.json'), entrypoints: read('output_entrypoints.json') };
 }
 
+// CLI mode (`java -jar <jar> <projectPath> <outputFile>`, the deprecated synchronous route): write and exit.
+const cliArgs = process.argv.slice(2).filter((a) => a !== '-jar' && !a.endsWith('.jar'));
+if (!process.argv.includes('--mcp') && cliArgs.length >= 2) {
+  const [projectPath, outputFile] = cliArgs;
+  const docs = documents(projectPath);
+  writeFileSync(outputFile, JSON.stringify(docs.graph, null, 2));
+  writeFileSync(outputFile.replace('.json', '_architecture.json'), JSON.stringify(docs.architecture, null, 2));
+  writeFileSync(outputFile.replace('.json', '_entrypoints.json'), JSON.stringify(docs.entrypoints, null, 2));
+  process.exit(0);
+}
+
 const server = new McpServer({ name: 'static-inference', version: 'stub' });
 
 server.registerTool(
@@ -73,7 +84,14 @@ server.registerTool(
     if (ctl.noSpace) {
       return { content: [{ type: 'text', text: 'Analysis failed: No space left on device' }], isError: true };
     }
-    if (ctl.fail) return { content: [{ type: 'text', text: fill(ctl.fail, projectPath) }], isError: true };
+    const failWarnings = (ctl.warnings ?? []).map((w) => fill(w, projectPath));
+    if (ctl.fail) {
+      return {
+        content: [{ type: 'text', text: fill(ctl.fail, projectPath) }],
+        isError: true,
+        ...(failWarnings.length ? { _meta: { 'static-inference/warnings': failWarnings } } : {}),
+      };
+    }
     const out = outputDir || projectPath;
     mkdirSync(out, { recursive: true });
     const docs = documents(projectPath);

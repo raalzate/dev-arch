@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs';
 import { loadConfig, type AppConfig } from './config';
 import { EngineClient, EngineNotBuiltError } from './engine/engine-client';
 import { locateEngine } from './engine/engine-locator';
+import { exposureWarning, listenHost } from './security/bind-warning';
 import { cleanupExpired } from './jobs/cleaner';
 import { JobRunner, type JobRuntimeDeps } from './jobs/job-runner';
 import { JobStore } from './jobs/job-store';
@@ -78,6 +79,8 @@ export async function resetRuntime(): Promise<void> {
  */
 export async function startRuntime(): Promise<Runtime> {
   const rt = getRuntime();
+  const warning = exposureWarning(listenHost(process.env, process.argv), rt.config.apiToken);
+  if (warning) console.warn(warning);
   await rt.runner.recoverOnStart();
   const timer = setInterval(() => {
     rt.runCleanup().catch((e) => console.error('[analyses] cleanup failed', e));

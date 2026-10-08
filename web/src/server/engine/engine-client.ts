@@ -40,7 +40,7 @@ export interface AnalyzeResult {
 /** The engine answered the tool call with isError (message from the engine). */
 export class EngineToolError extends Error {
   readonly ambiguous: boolean;
-  constructor(message: string) {
+  constructor(message: string, readonly warnings: string[] = []) {
     super(message);
     this.name = 'EngineToolError';
     this.ambiguous = message.includes('Ambiguous project type');
@@ -199,7 +199,9 @@ export class EngineClient {
   private parseResult(result: unknown): AnalyzeResult {
     const r = result as { isError?: boolean; content?: { type: string; text?: string }[]; _meta?: Record<string, unknown> };
     const text = r.content?.find((c) => c.type === 'text')?.text ?? '';
-    if (r.isError) throw new EngineToolError(text || 'The engine reported an error without a message');
+    const raw = r._meta?.[WARNINGS_META];
+    const warnings = Array.isArray(raw) ? raw.map(String) : [];
+    if (r.isError) throw new EngineToolError(text || 'The engine reported an error without a message', warnings);
     let parsed: unknown;
     try {
       parsed = JSON.parse(text);
@@ -209,8 +211,6 @@ export class EngineClient {
     const check = analyzeProjectResponseSchema.safeParse(parsed);
     if (!check.success) throw new EngineToolError('The engine response violates the analyze_project contract 1.0.0');
     const s = check.data as AnalyzeSummary;
-    const raw = r._meta?.[WARNINGS_META];
-    const warnings = Array.isArray(raw) ? raw.map(String) : [];
     return {
       summary: { componentCount: s.componentCount, edgeCount: s.edgeCount, proposalCount: s.proposalCount, endpointCount: s.endpointCount },
       warnings,

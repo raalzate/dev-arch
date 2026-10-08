@@ -108,7 +108,9 @@ export function dotnetRoot(): string | undefined {
 export async function startRealWeb(world: DevArchWorld, extraEnv: Record<string, string> = {}): Promise<RemoteApi> {
   const dataDir = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'devarch-007-data-')));
   world.cleanup.push(dataDir);
-  const env: NodeJS.ProcessEnv = { ENGINE_JAR_PATH: '', ARCHVIEW_DATA_DIR: dataDir, ...extraEnv };
+  // An in-process harness of the same scenario (e.g. a Background) must not leak its settings into next dev.
+  const restore = (world.data.harness as WebHarness | undefined)?.envRestoration() ?? {};
+  const env: NodeJS.ProcessEnv = { ...restore, ENGINE_JAR_PATH: '', ARCHVIEW_DATA_DIR: dataDir, ...extraEnv };
   const jdk = jdk17Home();
   if (jdk) env.JAVA_HOME = jdk;
   const root = dotnetRoot();

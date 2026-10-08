@@ -35,16 +35,20 @@ export const byTestId = (id: string) => `[data-testid="${id}"]`;
 export async function openSession(world: DevArchWorld, url: string): Promise<BrowserSession> {
   const context = await (await browser()).newContext();
   // Records every (status, phase) pair the page displays, so short phases are not missed between polls.
-  await context.addInitScript(() => {
-    const w = window as unknown as { __statusLog: { status: string; phase: string }[] };
-    w.__statusLog = [];
-    const record = () => {
-      const st = document.querySelector('[data-testid="analysis-status"]')?.getAttribute('data-status') ?? '';
-      const ph = document.querySelector('[data-testid="analysis-phase"]')?.getAttribute('data-phase') ?? '';
-      const last = w.__statusLog[w.__statusLog.length - 1];
-      if (st && (!last || last.status !== st || last.phase !== ph)) w.__statusLog.push({ status: st, phase: ph });
-    };
-    new MutationObserver(record).observe(document, { subtree: true, childList: true, attributes: true });
+  // Scripts sent to the page are plain strings: functions compiled by tsx carry an esbuild `__name` helper that
+  // does not exist in the browser.
+  await context.addInitScript({
+    content: `
+      window.__statusLog = [];
+      const record = () => {
+        const st = document.querySelector('[data-testid="analysis-status"]')?.getAttribute('data-status') ?? '';
+        const ph = document.querySelector('[data-testid="analysis-phase"]')?.getAttribute('data-phase') ?? '';
+        const log = window.__statusLog;
+        const last = log[log.length - 1];
+        if (st && (!last || last.status !== st || last.phase !== ph)) log.push({ status: st, phase: ph });
+      };
+      new MutationObserver(record).observe(document, { subtree: true, childList: true, attributes: true });
+    `,
   });
   const page = await context.newPage();
   const requests: RecordedRequest[] = [];
@@ -69,21 +73,18 @@ export function sessions(world: DevArchWorld): BrowserSession[] {
 
 /** Storage of the page origin (localStorage and sessionStorage) as key -> value. */
 export async function statusLog(page: Page): Promise<{ status: string; phase: string }[]> {
-  return page.evaluate(() => (window as unknown as { __statusLog: { status: string; phase: string }[] }).__statusLog ?? []);
+  return page.evaluate('window.__statusLog ?? []') as Promise<{ status: string; phase: string }[]>;
 }
 
 export async function storage(page: Page): Promise<{ local: Record<string, string>; session: Record<string, string> }> {
-  return page.evaluate(() => {
-    const dump = (s: Storage) => {
-      const out: Record<string, string> = {};
-      for (let i = 0; i < s.length; i++) {
-        const k = s.key(i)!;
-        out[k] = s.getItem(k) ?? '';
-      }
+  return page.evaluate(`(() => {
+    const dump = (s) => {
+      const out = {};
+      for (let i = 0; i < s.length; i++) { const k = s.key(i); out[k] = s.getItem(k) ?? ''; }
       return out;
     };
     return { local: dump(window.localStorage), session: dump(window.sessionStorage) };
-  });
+  })()`) as Promise<{ local: Record<string, string>; session: Record<string, string> }>;
 }
 
 After(async function (this: DevArchWorld) {

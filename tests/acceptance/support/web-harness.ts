@@ -101,8 +101,8 @@ export class WebHarness implements ApiClient {
     const jdk = path.join(this.root, 'fake-jdk');
     mkdirSync(path.join(jdk, 'bin'), { recursive: true });
     const java = path.join(jdk, 'bin', 'java');
-    // The fake JDK ignores -jar <jar> --mcp and runs the stub engine (no tsx loader in the child).
-    writeFileSync(java, `#!/bin/sh\nNODE_OPTIONS= exec "${process.execPath}" "${FAKE}"\n`);
+    // The fake JDK runs the stub engine with the java arguments (--mcp: server mode; otherwise CLI mode).
+    writeFileSync(java, `#!/bin/sh\nNODE_OPTIONS= exec "${process.execPath}" "${FAKE}" "$@"\n`);
     chmodSync(java, 0o755);
     const jar = path.join(jdk, 'engine.jar');
     writeFileSync(jar, 'stub');
@@ -158,6 +158,14 @@ export class WebHarness implements ApiClient {
 
   async runtime() {
     return (await runtimeModule()).getRuntime();
+  }
+
+  /** Overrides that undo the harness changes to process.env (for processes started while it is active). */
+  envRestoration(): Record<string, string | undefined> {
+    const out: Record<string, string | undefined> = {};
+    for (const k of Object.keys(process.env)) if (!(k in this.savedEnv)) out[k] = undefined;
+    for (const [k, v] of Object.entries(this.savedEnv)) if (process.env[k] !== v) out[k] = v;
+    return out;
   }
 
   /** Changes an environment variable of the server (takes effect at the next restart). */
