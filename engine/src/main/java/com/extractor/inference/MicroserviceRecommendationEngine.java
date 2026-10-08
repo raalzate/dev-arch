@@ -200,6 +200,55 @@ public class MicroserviceRecommendationEngine {
         return new ConsolidatedArchitecture(metadata, proposals, supportLibraries, summary);
     }
     
+    /**
+     * Evaluates a user-defined group of clusters with the formulas of the
+     * proposals (008, FR-019): name, viability, consolidated metrics and
+     * recommended actions.
+     *
+     * @param fragments     clusters of the group (metrics set)
+     * @param allComponents every component of the graph
+     * @return the evaluation
+     */
+    public FragmentEvaluation evaluate(final List<Cluster> fragments,
+            final List<Component> allComponents) {
+        Set<Integer> ids = new LinkedHashSet<>();
+        fragments.forEach(f -> ids.add(f.getClusterId()));
+        String name = MicroserviceNameGenerator.generateName(ids, fragments,
+                config.naming());
+        ViabilityScorer.ViabilityResult result = new ViabilityScorer(
+                fragments, allComponents, config.viability())
+                .calculateViability(ids);
+        Map<String, Component> byId = componentMapById(allComponents);
+        List<String> names = fragments.stream()
+                .flatMap(c -> c.getMembers().stream()).distinct()
+                .filter(comp -> !isInfrastructureComponent(comp)).sorted()
+                .collect(Collectors.toList());
+        String tablesSource = inferTablesSource(
+                buildJpaTables(name, names, byId), names, byId);
+        Double dataCohesion = recommendation.computedDataJaccard()
+                && result.getBreakdown() != null
+                ? result.getBreakdown().dataCohesion() : null;
+        MicroserviceProposal.ConsolidatedMetrics metrics =
+                calculateConsolidatedMetrics(fragments, allComponents, true,
+                        tablesSource, dataCohesion);
+        return new FragmentEvaluation(name, result, metrics,
+                generateActions(result.getViability(), metrics));
+    }
+
+    /**
+     * Evaluation of a user-defined group.
+     *
+     * @param name      suggested name
+     * @param viability viability, score, rationale and terms
+     * @param metrics   consolidated metrics
+     * @param actions   recommended actions
+     */
+    public record FragmentEvaluation(String name,
+            ViabilityScorer.ViabilityResult viability,
+            MicroserviceProposal.ConsolidatedMetrics metrics,
+            List<String> actions) {
+    }
+
     private boolean isSupportGroup(Set<Integer> group, List<Cluster> allClusters) {
         List<Cluster> clusters = group.stream()
             .map(id -> allClusters.stream().filter(c -> c.getClusterId() == id).findFirst().orElse(null))
@@ -581,12 +630,13 @@ public class MicroserviceRecommendationEngine {
         
         // Convert to PackageDependencyInfo
         Map<String, ConsolidatedArchitecture.PackageDependencyInfo> result = new HashMap<>();
-        for (String packageName : packageComponentCount.keySet()) {
+        for (Map.Entry<String, Integer> entry : packageComponentCount.entrySet()) {
+            String packageName = entry.getKey();
             List<String> dependsOn = new ArrayList<>(packageToDependsOn.getOrDefault(packageName, new HashSet<>()));
             Collections.sort(dependsOn);
-            
+
             result.put(packageName, new ConsolidatedArchitecture.PackageDependencyInfo(
-                packageComponentCount.get(packageName),
+                entry.getValue(),
                 packageTotalDepsOut.getOrDefault(packageName, 0),
                 dependsOn
             ));
@@ -646,10 +696,10 @@ public class MicroserviceRecommendationEngine {
             summary.append("📋 Módulos Identificados por Cohesión/Acoplamiento:\n");
             summary.append("───────────────────────────────────────────────────\n");
             for (MicroserviceProposal proposal : proposals) {
-                summary.append(String.format("• %s → Clusters %s (%d componentes)\n", 
-                    proposal.getName(), 
+                summary.append(String.format("• %s → Clusters %s (%d componentes)",
+                    proposal.getName(),
                     proposal.getClusterIds().stream().map(String::valueOf).collect(Collectors.joining(", ")),
-                    proposal.getComponentNames().size()));
+                    proposal.getComponentNames().size())).append('\n');
             }
             summary.append("\n");
         }
@@ -658,18 +708,18 @@ public class MicroserviceRecommendationEngine {
             summary.append("📚 Librerías de Soporte:\n");
             summary.append("────────────────────────\n");
             for (ConsolidatedArchitecture.SupportLibrary lib : supportLibraries) {
-                summary.append(String.format("• %s → Clusters %s\n", 
-                    lib.getName(), 
-                    lib.getClusterIds().stream().map(String::valueOf).collect(Collectors.joining(", "))));
+                summary.append(String.format("• %s → Clusters %s",
+                    lib.getName(),
+                    lib.getClusterIds().stream().map(String::valueOf).collect(Collectors.joining(", ")))).append('\n');
             }
             summary.append("\n");
         }
         
         summary.append("📌 Análisis de Cohesión:\n");
         summary.append("────────────────────────\n");
-        summary.append(String.format("✅ Alta cohesión: %d módulo(s) - Componentes fuertemente relacionados\n", highViability));
-        summary.append(String.format("⚠️ Media cohesión: %d módulo(s) - Cohesión moderada\n", mediumViability));
-        summary.append(String.format("❌ Baja cohesión: %d módulo(s) - Componentes débilmente relacionados\n", lowViability));
+        summary.append(String.format("✅ Alta cohesión: %d módulo(s) - Componentes fuertemente relacionados", highViability)).append('\n');
+        summary.append(String.format("⚠️ Media cohesión: %d módulo(s) - Cohesión moderada", mediumViability)).append('\n');
+        summary.append(String.format("❌ Baja cohesión: %d módulo(s) - Componentes débilmente relacionados", lowViability)).append('\n');
         
         return summary.toString();
     }

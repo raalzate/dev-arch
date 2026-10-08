@@ -1,5 +1,7 @@
 package com.extractor;
 
+import com.extractor.inference.config.InferenceConfig;
+import com.extractor.inference.config.InferenceConfigLoader;
 import com.extractor.mcp.McpServerMain;
 import com.extractor.service.AnalysisLanguage;
 import com.extractor.service.AnalysisOptions;
@@ -45,8 +47,10 @@ public class MicroserviceInferenceMain {
         String projectPath = args[0];
         String outputFile = args[1];
         AnalysisOptions options;
+        InferenceConfig config;
         try {
             options = parseOptions(args);
+            config = parseConfig(args);
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -59,7 +63,7 @@ public class MicroserviceInferenceMain {
             Path projectPathObj = Paths.get(projectPath);
             AnalysisService service = new AnalysisService();
             AnalysisResult result = service.analyzeProject(projectPathObj,
-                    options, AnalysisProgressListener.NOOP);
+                    options, AnalysisProgressListener.NOOP, config);
 
             System.out.println("📊 Componentes encontrados: " + result.getComponentCount());
             System.out.println("🔗 Relaciones encontradas: " + result.getEdgeCount());
@@ -113,12 +117,37 @@ public class MicroserviceInferenceMain {
      * @return the analysis options
      */
     static AnalysisOptions parseOptions(final String[] args) {
-        String prefix = "--language=";
-        if (args.length > 2 && args[2].startsWith(prefix)) {
-            return AnalysisOptions.of(AnalysisLanguage.parse(
-                    args[2].substring(prefix.length())));
+        String value = option(args, "--language=");
+        return value == null ? AnalysisOptions.DEFAULT
+                : AnalysisOptions.of(AnalysisLanguage.parse(value));
+    }
+
+    /**
+     * Optional {@code --config=<file>} (008-configurable-inference, FR-006).
+     *
+     * @param args command-line arguments
+     * @return the inference configuration (defaults when absent)
+     */
+    static InferenceConfig parseConfig(final String[] args) {
+        String value = option(args, "--config=");
+        return value == null ? InferenceConfig.defaults()
+                : InferenceConfigLoader.fromFile(Paths.get(value));
+    }
+
+    /**
+     * Value of an option after the two positional arguments, any order.
+     *
+     * @param args   command-line arguments
+     * @param prefix option prefix including '='
+     * @return the value or null
+     */
+    private static String option(final String[] args, final String prefix) {
+        for (int i = 2; i < args.length; i++) {
+            if (args[i].startsWith(prefix)) {
+                return args[i].substring(prefix.length());
+            }
         }
-        return AnalysisOptions.DEFAULT;
+        return null;
     }
 
     private static void saveToFile(String content, String filePath) throws IOException {

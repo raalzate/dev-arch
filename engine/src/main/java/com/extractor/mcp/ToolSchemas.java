@@ -25,7 +25,29 @@ public final class ToolSchemas {
             + "project root directory (Java or .NET/C#, auto-detected from "
             + "marker files)";
 
+    /** Description of the inline inference configuration (008). */
+    private static final String CONFIG = "Partial inference configuration "
+            + "(schema/1.0.0/inference-config.schema.json); omitted "
+            + "parameters keep their defaults. Exclusive with configPath.";
+
+    /** Description of the configuration file path (008). */
+    private static final String CONFIG_PATH = "Absolute path to a JSON "
+            + "inference configuration file. Exclusive with config.";
+
+    /** Description of the stored graph path (008). */
+    private static final String GRAPH_PATH = "Absolute path to a stored "
+            + "dependency graph (output.json). Exclusive with jobId.";
+
+    /** Description of the analysis id (008). */
+    private static final String JOB_ID = "Identifier of a web analysis "
+            + "(requires STATIC_INFERENCE_JOBS_DIR). Exclusive with "
+            + "graphPath.";
+
     private ToolSchemas() {
+    }
+
+    private static Map<String, Object> configProp() {
+        return Map.of("type", "object", "description", CONFIG);
     }
 
     private static Map<String, Object> stringProp(final String description) {
@@ -61,7 +83,9 @@ public final class ToolSchemas {
                         + ".csproj file. Type is auto-detected."),
                 "outputDir", stringProp("Directory to write output JSON "
                         + "files. Defaults to project root if omitted."),
-                "language", languageProp()),
+                "language", languageProp(),
+                "config", configProp(),
+                "configPath", stringProp(CONFIG_PATH)),
                 List.of("projectPath"));
     }
 
@@ -120,5 +144,39 @@ public final class ToolSchemas {
                         + "'ECommerceApp.Services.ProductService'"),
                 "language", languageProp()),
                 List.of("projectPath", "componentId"));
+    }
+
+    /**
+     * Input of reinfer_architecture (008).
+     *
+     * @return the schema
+     */
+    public static McpSchema.JsonSchema reinferArchitecture() {
+        return object(Map.of(
+                "graphPath", stringProp(GRAPH_PATH),
+                "jobId", stringProp(JOB_ID),
+                "config", configProp(),
+                "configPath", stringProp(CONFIG_PATH),
+                "minViability", enumProp("Minimum viability of the returned "
+                        + "proposals.", List.of("Alta", "Media", "Baja"))),
+                List.of());
+    }
+
+    /**
+     * Input of score_proposal (008).
+     *
+     * @return the schema
+     */
+    public static McpSchema.JsonSchema scoreProposal() {
+        return object(Map.of(
+                "components", Map.of("type", "array", "description",
+                        "Fully qualified ids of the components of the "
+                                + "proposal.", "items",
+                        Map.of("type", "string")),
+                "graphPath", stringProp(GRAPH_PATH),
+                "jobId", stringProp(JOB_ID),
+                "config", configProp(),
+                "configPath", stringProp(CONFIG_PATH)),
+                List.of("components"));
     }
 }

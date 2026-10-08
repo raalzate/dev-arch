@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://static-inference.dev/schema/1.0.0/mcp/reinfer_architecture.response.schema.json",
+  "title": "ReinferArchitectureResponse",
+  "description": "Successful reinfer_architecture response (008-configurable-inference, with or without minViability): the consolidated architecture document re-inferred from a stored dependency graph.",
+  "$ref": "../architecture.schema.json"
+}

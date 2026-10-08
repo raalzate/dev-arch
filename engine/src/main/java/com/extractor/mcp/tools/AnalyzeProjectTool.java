@@ -118,7 +118,8 @@ public final class AnalyzeProjectTool {
             ProgressSink progress = token == null ? ProgressSink.NONE : sink;
 
             AnalysisResult result = service.analyzeProject(projectRoot,
-                    options, phase -> notify(progress, token, phase));
+                    options, phase -> notify(progress, token, phase),
+                    ToolArguments.config(request));
 
             notify(progress, token, AnalysisPhase.WRITING);
             Path outDir = (outputDir != null && !outputDir.isEmpty())

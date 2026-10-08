@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://static-inference.dev/schema/1.0.0/mcp/score_proposal.response.schema.json",
+  "title": "ScoreProposalResponse",
+  "description": "Successful score_proposal response (008-configurable-inference): evaluation of a user-defined proposal with the formulas of the engine's proposals.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "$ref": "../common.schema.json#/$defs/DocumentMeta"
+    },
+    "name": {
+      "type": "string"
+    },
+    "viability": {
+      "enum": [
+        "Alta",
+        "Media",
+        "Baja"
+      ]
+    },
+    "score": {
+      "type": "number"
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cohesion_adjusted": {
+          "type": "number"
+        },
+        "external_coupling": {
+          "type": "number"
+        },
+        "data_cohesion": {
+          "type": "number"
+        },
+        "internal_edge_density": {
+          "type": "number"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cluster_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "cohesion_adjusted",
+        "external_coupling",
+        "data_cohesion",
+        "internal_edge_density",
+        "size",
+        "cluster_count"
+      ]
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "clusters": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "minItems": 1
+    },
+    "rationale": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "meta",
+    "name",
+    "viability",
+    "score",
+    "metrics",
+    "components",
+    "clusters",
+    "rationale",
+    "recommended_actions"
+  ]
+}

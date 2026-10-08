@@ -1,347 +1,216 @@
-# Guía de Configuración y Personalización
+# Guía de Configuración del Motor de Inferencia
 
-Este documento describe qué parámetros, umbrales y listas controlan el comportamiento del motor de inferencia de microservicios, **dónde están en el código** y cómo modificarlos hoy.
-
-> [!IMPORTANT]
-> **Estado actual: todos los umbrales y pesos están hardcodeados.** En el código no existen constantes con nombre como `TABLE_WEIGHT`, `EVIDENCE_THRESHOLD` o `COHESION_WEIGHT`: los valores son **literales numéricos** dentro de los métodos de `src/main/java/com/extractor/inference/`. Para cambiarlos hay que editar el literal y recompilar (`mvn clean package`). No hay variables de entorno, flags de CLI ni archivo de configuración para ajustarlos.
->
-> La configurabilidad (pesos, umbrales y listas externalizados) está **planificada en la feature 008 (InferenceConfig)**. Ver la sección [No implementado](#no-implementado-planificado--feature-008-inferenceconfig).
->
-> El analizador .NET (`src/main/dotnet/DotNetAnalyzer`) no contiene umbrales de inferencia: solo extrae el grafo; el scoring y la consolidación ocurren en Java.
-
-Para la descripción de los algoritmos ver [ALGORITHMS.md](ALGORITHMS.md).
-
-## Variables de Entorno Soportadas
-
-| Variable | Valor por defecto | Efecto | Código |
-|---|---|---|---|
-| `STATIC_INFERENCE_COLLECTED_AT` | ausente (`false`) | Con `true` se emite `meta.collected_at` (timestamp UTC) en el grafo de dependencias. **Por defecto se omite** para que la salida sea determinista (dos ejecuciones sobre el mismo código producen el mismo JSON). | Java: `src/main/java/com/extractor/model/DependencyGraph.java:100,119-130` (acepta también system property `-DSTATIC_INFERENCE_COLLECTED_AT=true`). .NET: `src/main/dotnet/DotNetAnalyzer/Model/DependencyGraph.cs:49-57` |
-
-```bash
-# Incluir meta.collected_at en la salida (rompe la comparación byte a byte entre ejecuciones)
-export STATIC_INFERENCE_COLLECTED_AT=true
-```
-
-## Parámetros (hardcodeados) del Motor
-
-Rutas relativas a `src/main/java/com/extractor/inference/`.
-
-### 1. Pesos de Señales de Consolidación
-
-**Ubicación**: `InterClusterGraph.java:41-42` (literales en `calculateSignals`)
-
-```java
-double evidenceScore = 0.25 * tableJaccard + 0.35 * callDensity +
-                      0.30 * tokenSimilarity + 0.10 * (eventLinks.isEmpty() ? 0 : 1);
-```
-
-| Señal | Peso | Línea |
-|---|---|---|
-| Table Jaccard | 0.25 | `InterClusterGraph.java:41` |
-| Call Density | 0.35 | `InterClusterGraph.java:41` |
-| Token Similarity | 0.30 | `InterClusterGraph.java:42` |
-| Event Links (binario) | 0.10 | `InterClusterGraph.java:42` |
-| Umbral para crear arista | `evidenceScore > 0.1` | `InterClusterGraph.java:28` |
-| Saturación de call density | `min(1.0, cross / (0.5 × internal))` | `InterClusterGraph.java:75` |
-
-**Cuándo modificar** (editando los literales):
-- Subir el peso de tablas si el proyecto tiene clara separación por tablas de BD
-- Subir el peso de llamadas si las llamadas son el principal indicador de cohesión
-- Subir el peso de tokens si los nombres de clases reflejan bien los dominios
-- Subir el peso de eventos para arquitecturas event-driven (ojo: la señal de eventos rara vez dispara, ver ALGORITHMS.md §1.4)
-
-Mantener la suma de pesos = 1.0 para que los umbrales de §2 conserven su significado.
-
-### 2. Umbrales de Consolidación
-
-El umbral de evidencia **no** está en `ClusterConsolidator`, sino en `InterClusterGraph.EdgeSignals.hasStrongEvidence()`.
-
-| Parámetro | Valor | Ubicación |
-|---|---|---|
-| Umbral de evidencia | `evidenceScore >= 0.65` | `InterClusterGraph.java:274` |
-| Mínimo de señales fuertes | `>= 2` | `InterClusterGraph.java:274` |
-| Señal fuerte: tablas | `tableJaccard >= 0.4` | `InterClusterGraph.java:269` |
-| Señal fuerte: llamadas | `callDensity >= 0.35` | `InterClusterGraph.java:270` |
-| Señal fuerte: tokens | `tokenSimilarity >= 0.6` | `InterClusterGraph.java:271` |
-| Señal fuerte: eventos | `eventLinks` no vacío | `InterClusterGraph.java:272` |
-| Guard de tamaño (fase grafo) | rechaza si `totalSize > 40 AND tokenSimilarity < 0.75` | `ClusterConsolidator.java:153` |
-| Ratio de librería de soporte | `>= 0.8` de miembros con keyword infra | `ClusterConsolidator.java:182` |
-| Separación de candidatos fuertes | rechaza si ambos fuertes y `callDensity < 0.15 AND tableJaccard < 0.2` | `ClusterConsolidator.java:155-159` |
-| Candidato fuerte | `cohesion >= 0.7 AND coupling < 0.3 AND size >= 3` | `ClusterConsolidator.java:210-212` |
-| Tamaño máx. fusión por nombre (fase 0) | `totalSize <= 50` | `ClusterConsolidator.java:91` |
-| Infraestructura significativa (fase 0) | `>= 0.3` de miembros con keyword infra | `ClusterConsolidator.java:122` |
-
-**Para consolidación más agresiva** (menos microservicios, más grandes): bajar `0.65` (`InterClusterGraph.java:274`), bajar `strongSignals >= 2` a `1`, subir `40` (`ClusterConsolidator.java:153`).
-
-**Para consolidación más conservadora** (más microservicios, más pequeños): subir `0.65`, exigir `>= 3` señales fuertes, bajar `40`.
-
-### 3. Clasificación de Viabilidad
-
-**Ubicación**: `ViabilityScorer.java`
-
-| Parámetro | Valor | Línea |
-|---|---|---|
-| Peso cohesión ajustada | 0.5 | `:41` |
-| Peso (1 − acoplamiento externo) | 0.35 | `:41` |
-| Peso cohesión de datos | 0.15 | `:41` |
-| Mezcla de cohesión ajustada | `0.7 × avgCohesion + 0.3 × internalDensity` | `:75` |
-| `dataCohesion` sin tablas | 0.5 | `:129` |
-| Penalización tamaño pequeño | `× 0.6` si `totalSize < 3` | `:43-44` |
-| Penalización monolito | `× 0.7` si `totalSize > 50` y `internalDensity < 0.5` | `:45-49` |
-| Umbral Alta | `score >= 0.7` | `:52` |
-| Umbral Media | `score >= 0.5` | `:52` |
-
-Cortes de los mensajes de rationale (no afectan el score): cohesión 0.7/0.5 (`:209-212`), acoplamiento 0.3/0.5 (`:222-225`), CBO 5/10 (`:235-238`), LCOM 0.3/0.6 (`:249-252`), datos 0.6/0.3 (`:262-264`), tamaño 3/50 (`:269-271`).
-
-**Para priorizar bajo acoplamiento**: p. ej. cambiar `:41` a `0.4 * cohesionAdj + 0.45 * (1 - externalCoupling) + 0.15 * dataCohesion`.
-
-**Para clasificación más estricta**: subir `0.7`/`0.5` en `:52` (p. ej. a `0.8`/`0.6`).
-
-### 4. Recomendaciones y Ensamblado de Propuestas
-
-**Ubicación**: `MicroserviceRecommendationEngine.java`
-
-| Parámetro | Valor | Línea |
-|---|---|---|
-| Grupo = librería de soporte | `>= 0.8` de miembros con keyword infra | `:182` |
-| Keywords de infraestructura (nombre simple) | ver §6 | `:18-21` |
-| `data_jaccard` emitido en métricas | `0.8` si hay tablas, `0.0` si no (valor fijo) | `:468` |
-| Acciones recomendadas por viabilidad | textos fijos | `:486-514` |
-
-Este archivo **no** define umbrales de "candidato fuerte" ni de "nano-servicio". El criterio de candidato fuerte vive en `ClusterConsolidator.java:210-212` (ver §2); no existe un umbral de nano-servicio (lo más cercano es la penalización `totalSize < 3` de `ViabilityScorer.java:43-44`).
-
-### 5. Tokens Excluidos en Nombres
-
-**Ubicación**: `MicroserviceNameGenerator.java:7-11`
-
-```java
-private static final Set<String> EXCLUDE_TOKENS = Set.of("entity", "model", "data", "dto",
-    "event", "command", "query", "impl", "repository", "service", "controller", "api", "rest",
-    "http", "adapter", "port", "localevents", "rabbit", "jpa", "repo", "dao", "operations",
-    "listener", "publisher", "handler", "factory", "db", "activityupdaterimpl", "usecase",
-    "primaryports", "secondaryports", "userprofilejpa", "tweetcrud", "suggestion", "suggestions");
-```
-
-Listas relacionadas (independientes, también hardcodeadas):
-- Palabras de rol que habilitan la extracción de tokens: `MicroserviceNameGenerator.java:120-121` y `InterClusterGraph.java:130-131`.
-- Exclusiones para la similitud de tokens del grafo (lista más corta): `InterClusterGraph.java:129` → `entity, model, data, dto, event, command, query`.
-- Longitud mínima de token: `> 2` (`MicroserviceNameGenerator.java:132,139`; en `InterClusterGraph.java:149` solo para el segmento de paquete).
-
-**Cuándo modificar**:
-- **Agregar tokens** si aparecen nombres genéricos no deseados
-- **Remover tokens** si son significativos para tu dominio
-
-Si se cambian las exclusiones del nombre, considerar replicar el cambio en `InterClusterGraph.java:129` para que la consolidación y el nombrado usen el mismo vocabulario.
-
-### 6. Keywords de Infraestructura
-
-Hay **tres** listas distintas:
-
-**a) Etiquetas para nombres de infraestructura** — `MicroserviceNameGenerator.java:13-23` (se comparan contra el FQCN completo; umbral `>= 0.8` en `:56`):
-
-```java
-config → "Configuración", security → "Seguridad", auth → "Autenticación",
-swagger → "Documentación", email → "Notificaciones por Email",
-notification → "Notificaciones", log → "Logging", audit → "Auditoría",
-application → "Aplicación Principal"
-```
-
-**b) Detección de soporte en consolidación** — `ClusterConsolidator.java:8-11` (nombre simple):
-
-```java
-"config", "configuration", "security", "application", "exception",
-"error", "filter", "interceptor", "aspect", "swagger", "openapi", "main"
-```
-(no incluye `auth`)
-
-**c) Filtrado de infraestructura en propuestas** — `MicroserviceRecommendationEngine.java:18-21` (nombre simple): misma lista que (b).
-
-**Cuándo modificar**: agregar keywords específicos de tu stack (p. ej. `gateway`, `discovery`, `feign` para Spring Cloud) en (b) y (c) a la vez para mantenerlas consistentes.
-
-### 7. Constantes de Análisis (AnalysisConstants)
-
-**Ubicación**: `src/main/java/com/extractor/constants/AnalysisConstants.java`
-
-Centraliza patrones y listas para la detección de componentes y datos sensibles (estas sí son constantes con nombre).
-
-```java
-// :16-18
-public static final Set<String> SENSITIVE_KEYWORDS = Set.of(
-    "password", "ssn", "creditcard", "apikey", "secretkey", "token", "auth"
-);
-
-// :21-23
-public static final Pattern SQL_TABLE_PATTERN = Pattern.compile(
-    "\\b(?:FROM|JOIN|INTO|UPDATE)\\s+([a-zA-Z0-9_]+)", Pattern.CASE_INSENSITIVE
-);
-
-// :25 y :38
-public static final Set<String> SPRING_REPO_INTERFACES = Set.of(...);
-public static final Set<String> JPA_ENTITY_ANNOTATIONS = Set.of(...);
-```
-
-**Cuándo modificar**:
-- **Agregar keywords sensibles**: para cumplir políticas de seguridad específicas.
-- **Ajustar patrones SQL**: si se usan dialectos SQL no estándar.
-- **Soportar nuevas anotaciones**: si se migra a Jakarta EE 10+ o nuevas versiones de Spring.
+Este documento describe la **configuración de inferencia** (feature 008-configurable-inference): todos los pesos, umbrales, factores y listas que determinan la agrupación, la consolidación, los nombres, la viabilidad y el ensamblado de propuestas. Para la descripción de los algoritmos ver [ALGORITHMS.md](ALGORITHMS.md).
 
 > [!IMPORTANT]
-> Cualquier cambio en `AnalysisConstants.java` o en los literales de `inference/` requiere recompilar (`mvn clean package`).
+> **Sin configuración, el motor se comporta exactamente como la versión 1.2.0**: los valores por defecto son los antiguos literales del código y los documentos producidos son byte a byte idénticos (regresión `src/test/resources/baseline-v1.2.0`). Solo cambia lo que se declara.
 
-## Casos de Uso (editando literales)
+El analizador .NET (`src/main/dotnet/DotNetAnalyzer`) no contiene umbrales de inferencia: solo extrae el grafo; la inferencia es común y ocurre en Java.
 
-### Caso 1: Arquitectura Hexagonal
-**Problema**: adaptadores detectados como clusters separados.
-**Solución**: subir el peso de tokens y bajar el umbral de evidencia:
-- `InterClusterGraph.java:41-42`: `0.30 * tokenSimilarity` → `0.45`, `0.35 * callDensity` → `0.20` (mantener suma 1.0)
-- `InterClusterGraph.java:274`: `evidenceScore >= 0.65` → `0.60`
+## Cómo se configura
 
-### Caso 2: Microservicios Event-Driven
-**Problema**: eventos no generan relación fuerte.
-**Solución**: subir el peso de eventos en `InterClusterGraph.java:42` (p. ej. `0.25`) y bajar los demás. Nota: dado que la detección de eventos empareja por nombre simple idéntico (`InterClusterGraph.java:161-205`), subir el peso puede no tener efecto sin mejorar antes la detección.
-
-### Caso 3: Monolito con Muchas Dependencias
-**Problema**: todo clasificado como baja viabilidad.
-**Solución**: en `ViabilityScorer.java:41` cambiar a `0.6 * cohesionAdj + 0.25 * (1 - externalCoupling) + 0.15 * dataCohesion`.
-
-### Caso 4: Proyectos Pequeños
-**Problema**: muchos módulos de 1-2 componentes penalizados.
-**Solución**: en `ViabilityScorer.java:43` cambiar `totalSize < 3` por `totalSize < 2` (o suavizar el `0.6` de `:44`); opcionalmente bajar `size >= 3` de candidato fuerte en `ClusterConsolidator.java:212`.
-
-## Extensibilidad: Agregar Nuevas Señales
-
-1. Implementar el cálculo en `InterClusterGraph` (retornar valor en [0, 1]):
-   ```java
-   private double calculateCustomSignal(Cluster a, Cluster b) { ... }
-   ```
-2. Añadirlo a `calculateSignals` (`InterClusterGraph.java:35-45`) y al constructor de `EdgeSignals` (`:252-259`).
-3. Reajustar los literales de `:41-42` para que la suma siga siendo 1.0, p. ej.:
-   ```java
-   double evidenceScore = 0.20 * tableJaccard + 0.30 * callDensity +
-                          0.25 * tokenSimilarity + 0.10 * eventSignal + 0.15 * customSignal;
-   ```
-4. Si debe contar como señal fuerte, añadir su condición en `hasStrongEvidence()` (`:267-275`).
-
-## Mejores Prácticas
-
-### 1. Validación
-Al editar pesos, verificar que:
-```
-0.25 + 0.35 + 0.30 + 0.10 = 1.0        (InterClusterGraph.java:41-42)
-0.5  + 0.35 + 0.15        = 1.0        (ViabilityScorer.java:41)
-```
-
-### 2. Iteración y Ajuste
-1. Ejecutar con los valores por defecto
-2. Revisar resultados en `*_architecture.json`
-3. Identificar problemas (p. ej. muchos módulos diminutos)
-4. Ajustar un literal a la vez
-5. Recompilar, re-ejecutar y comparar
-
-### 3. Documentar Cambios
-Mantener registro de los literales modificados (archivo:línea, valor anterior/nuevo, razón).
-
-### 4. Testing
-```bash
-# Línea base (sin collected_at → salida determinista y comparable con diff)
-mvn exec:java -Dexec.args="/path/to/test-project baseline.json"
-
-# Editar literales, recompilar
-mvn clean package
-mvn exec:java -Dexec.args="/path/to/test-project modified.json"
-
-diff baseline_architecture.json modified_architecture.json
-```
-No activar `STATIC_INFERENCE_COLLECTED_AT` al comparar salidas.
-
-## Troubleshooting
-
-### No se consolida nada
-**Causa**: umbral de evidencia alto o pocas señales fuertes.
-**Solución**: bajar `0.65` y/o `strongSignals >= 2` en `InterClusterGraph.java:274`, o los umbrales de señal fuerte en `:269-272`.
-
-### Todo se consolida en un mega-servicio
-**Causa**: umbral bajo, guardrails débiles.
-**Solución**: subir `0.65` (`InterClusterGraph.java:274`) y bajar `40` (`ClusterConsolidator.java:153`) / `50` (`ClusterConsolidator.java:91`).
-
-### Nombres con tokens no deseados
-**Solución**: agregar el token a `EXCLUDE_TOKENS` (`MicroserviceNameGenerator.java:7-11`).
-
----
-
-## No implementado (planificado — feature 008: InferenceConfig)
-
-Lo siguiente aparecía en versiones anteriores de esta guía pero **no existe en el código**. Se conserva como referencia de diseño para la feature 008.
-
-### Constantes con nombre
-
-Ninguna de estas constantes existe; los valores reales son literales (columna derecha):
-
-| Nombre documentado antes | Valor real hoy | Dónde |
-|---|---|---|
-| `TABLE_WEIGHT = 0.25` | literal `0.25` | `InterClusterGraph.java:41` |
-| `CALL_WEIGHT = 0.35` | literal `0.35` | `InterClusterGraph.java:41` |
-| `TOKEN_WEIGHT = 0.30` | literal `0.30` | `InterClusterGraph.java:42` |
-| `EVENT_WEIGHT = 0.10` | literal `0.10` | `InterClusterGraph.java:42` |
-| `EVIDENCE_THRESHOLD = 0.65` (en ClusterConsolidator) | literal `0.65` en **InterClusterGraph** | `InterClusterGraph.java:274` |
-| `MIN_STRONG_SIGNALS = 2` | literal `2` | `InterClusterGraph.java:274` |
-| `STRONG_SIGNAL_THRESHOLD = 0.5` | no existe un umbral único: 0.4 / 0.35 / 0.6 / presencia | `InterClusterGraph.java:269-272` |
-| `MAX_SIZE_WITHOUT_HIGH_SIMILARITY = 40` | literal `40` | `ClusterConsolidator.java:153` |
-| `HIGH_TOKEN_SIMILARITY = 0.75` | literal `0.75` | `ClusterConsolidator.java:153` |
-| `SUPPORT_RATIO = 0.8` | literal `0.8` | `ClusterConsolidator.java:182` |
-| `COHESION_WEIGHT = 0.5` | literal `0.5` | `ViabilityScorer.java:41` |
-| `COUPLING_WEIGHT = 0.35` | literal `0.35` | `ViabilityScorer.java:41` |
-| `DATA_WEIGHT = 0.15` | literal `0.15` | `ViabilityScorer.java:41` |
-| `HIGH_VIABILITY_THRESHOLD = 0.7` | literal `0.7` | `ViabilityScorer.java:52` |
-| `MEDIUM_VIABILITY_THRESHOLD = 0.5` | literal `0.5` | `ViabilityScorer.java:52` |
-| `SMALL_SIZE_PENALTY = 0.6`, `MIN_SIZE = 3` | literales `0.6`, `3` | `ViabilityScorer.java:43-44` |
-| `MONOLITH_PENALTY = 0.7`, `MAX_SIZE = 50`, `MIN_DENSITY = 0.5` | literales `0.7`, `50`, `0.5` | `ViabilityScorer.java:45-49` |
-| `STRONG_COHESION = 0.7`, `STRONG_COUPLING_MAX = 0.3`, `STRONG_MIN_SIZE = 3` (en MicroserviceRecommendationEngine) | literales en **ClusterConsolidator** | `ClusterConsolidator.java:210-212` |
-| `NANO_MAX_SIZE = 2` | **no existe** ningún equivalente | — |
-
-### Variables de entorno para pesos
-
-Diseño propuesto (no implementado):
-
-```java
-private static final double TABLE_WEIGHT =
-    Double.parseDouble(System.getenv().getOrDefault("TABLE_WEIGHT", "0.25"));
-```
-
-```bash
-export TABLE_WEIGHT=0.30
-export CALL_WEIGHT=0.40
-export TOKEN_WEIGHT=0.20
-export EVENT_WEIGHT=0.10
-mvn exec:java -Dexec.args="/path/to/project output.json"
-```
-
-### Archivo de configuración JSON (`--config`)
-
-Diseño propuesto (no implementado; `MicroserviceInferenceMain` no acepta `--config`):
+Una configuración es un objeto JSON **parcial**: cada propiedad es opcional y las omitidas conservan su valor por defecto. Los objetos se fusionan recursivamente; las listas, los textos, los números y el mapa `naming.infrastructureLabels` reemplazan el valor por defecto completo.
 
 ```json
 {
-  "consolidation": {
-    "weights": { "table": 0.25, "call": 0.35, "token": 0.30, "event": 0.10 },
-    "thresholds": { "evidence": 0.65, "minStrongSignals": 2, "maxSize": 40 }
-  },
-  "viability": {
-    "weights": { "cohesion": 0.5, "coupling": 0.35, "data": 0.15 },
-    "thresholds": { "high": 0.7, "medium": 0.5 }
-  },
-  "naming": {
-    "excludeTokens": ["entity", "dto", "service"],
-    "infraKeywords": { "config": "Configuración", "security": "Seguridad" }
-  }
+  "viability": { "thresholds": { "high": 0.8, "medium": 0.6 } },
+  "evidence": { "evidenceThreshold": 0.6, "weights": { "token": 0.45, "call": 0.20 } },
+  "detection": { "maxDepth": 2 }
 }
 ```
 
-```bash
-mvn exec:java -Dexec.args="/path/to/project output.json --config config.json"
+| Punto de entrada | Cómo |
+|---|---|
+| Línea de comandos | `java -jar engine.jar <proyecto> <salida.json> [--language=java\|dotnet\|auto] [--config=<archivo.json>]` (opciones en cualquier orden tras los dos argumentos posicionales) |
+| MCP `analyze_project`, `reinfer_architecture`, `score_proposal` | `config` (objeto en línea) **o** `configPath` (ruta absoluta a un archivo JSON); ambos a la vez es un error |
+
+No se descubre automáticamente ningún archivo dentro del proyecto analizado: la configuración siempre es explícita. Contrato formal: `schema/1.0.0/inference-config.schema.json`. Los valores por defecto vigentes también se publican como recurso MCP `static-inference://configuration/defaults`.
+
+En el modo servidor, solo los análisis con la configuración por defecto se reutilizan (caché en memoria de 007); un análisis con otra configuración se calcula siempre y no se guarda.
+
+### Validación y errores
+
+La configuración se valida **antes** de analizar; ante un error no se escribe ningún documento (CLI: mensaje en la salida de error y código de salida 1; MCP: `isError: true`).
+
+| Caso | Mensaje |
+|---|---|
+| parámetro desconocido | `Invalid inference configuration: <ruta>: unknown parameter` |
+| tipo JSON incorrecto | `Invalid inference configuration: <ruta>: must be a number` (o `an integer`, `a string`, `an array of strings`, `an object`) |
+| fuera de rango | `Invalid inference configuration: <ruta>: must be between 0 and 1` (o `must be >= 0`, `must be between 0 and 5`) |
+| par incoherente | `Invalid inference configuration: viability.thresholds.medium: must be <= viability.thresholds.high` |
+| enumerado | `Invalid inference configuration: recommendation.dataJaccardMode: must be one of legacy, data_cohesion` |
+| archivo | `Inference configuration file '<ruta>' does not exist` / `is not readable` / `is not valid JSON: <detalle>` |
+
+Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene mantener la suma para que los umbrales conserven su significado.
+
+## Parámetros
+
+| Parámetro | Tipo | Valor por defecto | Rango | Etapa | Efecto |
+|---|---|---|---|---|---|
+| `detection.maxDepth` | int | `0` | 0..5 | detección | Profundidad de búsqueda de marcadores (`pom.xml`, `build.gradle[.kts]`, `*.sln`, `*.csproj`, `*.vbproj`) en subcarpetas cuando la raíz no tiene ninguno. 0 = solo raíz (comportamiento 1.2.0). |
+| `clustering.singleDomainRatio` | double | `0.75` | [0,1] | agrupación | Si el dominio más grande supera esta fracción de componentes, el proyecto se agrupa por entidades (proyecto de un solo dominio). |
+| `clustering.largeClusterRatio` | double | `0.5` | [0,1] | agrupación | Si el clúster más grande de la agrupación por responsabilidad supera esta fracción, se recurre a la agrupación por dominio. |
+| `evidence.weights.table` | double | `0.25` | [0,1] | evidencia | Peso del Jaccard de tablas en el `evidenceScore`. |
+| `evidence.weights.call` | double | `0.35` | [0,1] | evidencia | Peso de la densidad de llamadas. |
+| `evidence.weights.token` | double | `0.3` | [0,1] | evidencia | Peso de la similitud de tokens. |
+| `evidence.weights.event` | double | `0.1` | [0,1] | evidencia | Peso (binario) de los enlaces de eventos. |
+| `evidence.edgeThreshold` | double | `0.1` | [0,1] | evidencia | Se crea arista entre dos clústeres solo si `evidenceScore` es mayor que este valor. |
+| `evidence.callDensitySaturation` | double | `0.5` | (0,1] | evidencia | `callDensity = min(1, cruzadas / (internas × valor))`. |
+| `evidence.strongSignals.table` | double | `0.4` | [0,1] | evidencia | Jaccard de tablas a partir del cual la señal cuenta como fuerte. |
+| `evidence.strongSignals.call` | double | `0.35` | [0,1] | evidencia | Densidad de llamadas a partir de la cual la señal es fuerte. |
+| `evidence.strongSignals.token` | double | `0.6` | [0,1] | evidencia | Similitud de tokens a partir de la cual la señal es fuerte. |
+| `evidence.evidenceThreshold` | double | `0.65` | [0,1] | evidencia | `evidenceScore` mínimo de un candidato a fusión. |
+| `evidence.minStrongSignals` | int | `2` | 0..4 | evidencia | Señales fuertes mínimas de un candidato a fusión. |
+| `evidence.roleKeywords` | string[] | `service, controller, repository, repo, usecase, operations, listener, publisher, adapter, factory, handler, db` | minúsculas | evidencia | Palabras de rol que habilitan la extracción de tokens; gana la primera que aparece en el nombre (orden declarado). |
+| `evidence.excludeTokens` | string[] | `entity, model, data, dto, event, command, query` | no vacías | evidencia | Tokens ignorados por la similitud (se comparan tal cual; los segmentos de paquete conservan mayúsculas). |
+| `evidence.minPackageTokenLength` | int | `3` | >= 0 | evidencia | Longitud mínima del último segmento de paquete usado como token. |
+| `evidence.eventPublisherKeywords` | string[] | `publisher, event` | minúsculas | evidencia | Un componente cuyo FQCN contiene alguna se considera publicador de eventos. |
+| `evidence.eventConsumerKeywords` | string[] | `listener, consumer` | minúsculas | evidencia | Un componente cuyo FQCN contiene alguna se considera consumidor de eventos. |
+| `consolidation.genericNames` | string[] | `Componente de Negocio, Componente Desconocido, Componente de Infraestructura, Componente de Configuración` | no vacías | consolidación | Nombres que nunca disparan la fusión por nombre de dominio (fase 0). |
+| `consolidation.domainMergeMaxSize` | int | `50` | >= 0 | consolidación | Tamaño combinado máximo de una fusión por nombre de dominio (fase 0). |
+| `consolidation.significantInfrastructureRatio` | double | `0.3` | [0,1] | consolidación | Fracción de miembros con palabra de infraestructura que marca a un grupo como infraestructura (fase 0). |
+| `consolidation.supportRatio` | double | `0.8` | [0,1] | consolidación | Fracción de miembros con palabra de infraestructura de un clúster de soporte (salvaguarda de soporte). |
+| `consolidation.maxMergedSizeWithoutSimilarity` | int | `40` | >= 0 | consolidación | Tamaño combinado por encima del cual solo se fusiona con similitud de tokens alta. |
+| `consolidation.highTokenSimilarity` | double | `0.75` | [0,1] | consolidación | Similitud de tokens que levanta la salvaguarda de tamaño. |
+| `consolidation.separationCallDensity` | double | `0.15` | [0,1] | consolidación | Dos candidatos fuertes no se fusionan si la densidad de llamadas es menor que este valor y… |
+| `consolidation.separationTableJaccard` | double | `0.2` | [0,1] | consolidación | …el Jaccard de tablas es menor que este valor. |
+| `consolidation.strongCandidate.minCohesion` | double | `0.7` | [0,1] | consolidación | Cohesión mínima de un candidato fuerte. |
+| `consolidation.strongCandidate.maxCoupling` | double | `0.3` | [0,1] | consolidación | El acoplamiento de un candidato fuerte debe ser menor que este valor. |
+| `consolidation.strongCandidate.minSize` | int | `3` | >= 0 | consolidación | Miembros mínimos de un candidato fuerte. |
+| `consolidation.infrastructureKeywords` | string[] | `config, configuration, security, application, exception, error, filter, interceptor, aspect, swagger, openapi, main` | minúsculas | consolidación | Palabras de infraestructura (nombre simple) de la consolidación. |
+| `viability.weights.cohesion` | double | `0.5` | [0,1] | viabilidad | Peso de la cohesión ajustada en la puntuación. |
+| `viability.weights.coupling` | double | `0.35` | [0,1] | viabilidad | Peso de `1 − acoplamiento externo`. |
+| `viability.weights.data` | double | `0.15` | [0,1] | viabilidad | Peso de la cohesión de datos. |
+| `viability.cohesionBlend.average` | double | `0.7` | [0,1] | viabilidad | Cohesión ajustada = este valor × cohesión media ponderada + … |
+| `viability.cohesionBlend.density` | double | `0.3` | [0,1] | viabilidad | … este valor × densidad interna. |
+| `viability.noTablesDataCohesion` | double | `0.5` | [0,1] | viabilidad | Cohesión de datos de una propuesta sin tablas. |
+| `viability.smallSize.below` | int | `3` | >= 0 | viabilidad | Propuestas con menos miembros se penalizan (y la justificación lo indica). |
+| `viability.smallSize.penalty` | double | `0.6` | [0,1] | viabilidad | Factor de la penalización de tamaño pequeño. |
+| `viability.largeSize.above` | int | `50` | >= 0 | viabilidad | Propuestas con más miembros y densidad baja se penalizan (monolito). |
+| `viability.largeSize.minDensity` | double | `0.5` | [0,1] | viabilidad | Densidad interna por debajo de la cual aplica la penalización de monolito. |
+| `viability.largeSize.penalty` | double | `0.7` | [0,1] | viabilidad | Factor de la penalización de monolito. |
+| `viability.thresholds.high` | double | `0.7` | [0,1], >= medium | viabilidad | Puntuación mínima de "Alta". |
+| `viability.thresholds.medium` | double | `0.5` | [0,1] | viabilidad | Puntuación mínima de "Media". |
+| `viability.rationale.cohesionGood` | double | `0.7` | [0,1] | justificación | Cohesión ajustada de un mensaje ✅. |
+| `viability.rationale.cohesionFair` | double | `0.5` | [0,1], <= cohesionGood | justificación | Cohesión ajustada de un mensaje ⚠️ (por debajo: ❌ y razón de no viabilidad). |
+| `viability.rationale.couplingGood` | double | `0.3` | [0,1], <= couplingFair | justificación | Acoplamiento por debajo del cual el mensaje es ✅. |
+| `viability.rationale.couplingFair` | double | `0.5` | [0,1] | justificación | Acoplamiento por debajo del cual el mensaje es ⚠️ (desde aquí: ❌ y razón). |
+| `viability.rationale.cboGood` | double | `5.0` | >= 0, <= cboFair | justificación | CBO medio de un mensaje ✅. |
+| `viability.rationale.cboFair` | double | `10.0` | >= 0 | justificación | CBO medio de un mensaje ⚠️ (por encima: ❌ y razón). |
+| `viability.rationale.lcomGood` | double | `0.3` | [0,1], <= lcomFair | justificación | LCOM medio de un mensaje ✅. |
+| `viability.rationale.lcomFair` | double | `0.6` | [0,1] | justificación | LCOM medio de un mensaje ⚠️ (por encima: ❌ y razón). |
+| `viability.rationale.dataGood` | double | `0.6` | [0,1] | justificación | Cohesión de datos de un mensaje ✅. |
+| `viability.rationale.dataFair` | double | `0.3` | [0,1], <= dataGood | justificación | Cohesión de datos de un mensaje ⚠️ (por debajo y > 0: razón de no viabilidad). |
+| `recommendation.supportRatio` | double | `0.8` | [0,1] | propuestas | Fracción de miembros con palabra de infraestructura que convierte un grupo en librería de soporte. |
+| `recommendation.infrastructureKeywords` | string[] | `config, configuration, security, application, exception, error, filter, interceptor, aspect, swagger, openapi, main` | minúsculas | propuestas | Palabras de infraestructura (nombre simple) filtradas de las propuestas. |
+| `recommendation.dataJaccardMode` | enum | `legacy` | legacy, data_cohesion | propuestas | `legacy`: `data_jaccard` fijo; `data_cohesion`: la cohesión de datos de la puntuación (opt-in). |
+| `recommendation.legacyDataJaccard` | double | `0.8` | [0,1] | propuestas | `data_jaccard` emitido en modo `legacy` cuando la propuesta tiene tablas (0.0 sin tablas). |
+| `naming.infrastructureRatio` | double | `0.8` | [0,1] | nombres | Fracción de miembros con palabra de infraestructura (FQCN) que produce un nombre de infraestructura. |
+| `naming.infrastructureLabels` | map | `config→Configuración, security→Seguridad, auth→Autenticación, swagger→Documentación, email→Notificaciones por Email, notification→Notificaciones, log→Logging, audit→Auditoría, application→Aplicación Principal` | claves en minúsculas | nombres | Palabra de infraestructura → etiqueta del nombre. |
+| `naming.roleKeywords` | string[] | `service, controller, repository, repo, usecase, operations, listener, publisher, adapter, factory, handler, db` | minúsculas | nombres | Palabras de rol de los nombres de negocio; gana la primera (orden declarado). |
+| `naming.excludeTokens` | string[] | `entity, model, data, dto, event, command, query, impl, repository, service, controller, api, rest, http, adapter, port, localevents, rabbit, jpa, repo, dao, operations, listener, publisher, handler, factory, db, activityupdaterimpl, usecase, primaryports, secondaryports, userprofilejpa, tweetcrud, suggestion, suggestions` | no vacías | nombres | Tokens que nunca forman parte de un nombre (comparación exacta). |
+| `naming.minTokenLength` | int | `3` | >= 0 | nombres | Longitud mínima de un token de nombre. |
+
+Las reglas internas de puntuación de clústeres (`HighCohesionRule`, `LowCouplingRule`, `SharedDataRule`) no forman parte de la configuración: su resultado no llega a ningún documento de salida.
+
+## Re-inferencia y evaluación de propuestas (modo servidor)
+
+La extracción (Spoon/Roslyn) y la inferencia son etapas separadas: la inferencia es una función pura del grafo, de las dependencias declaradas por el proyecto y de las ubicaciones de secretos, sin acceso a las fuentes.
+
+| Herramienta MCP | Entrada | Salida |
+|---|---|---|
+| `reinfer_architecture` | `graphPath` **o** `jobId`; `config` \| `configPath`; `minViability` opcional | documento de arquitectura (mismo formato que `get_architecture_proposal`) |
+| `score_proposal` | `components[]` (ids de componentes); `graphPath` **o** `jobId`; `config` \| `configPath` | nombre, viabilidad, puntuación, métricas (`cohesion_adjusted`, `external_coupling`, `data_cohesion`, `internal_edge_density`, `size`, `cluster_count`), componentes, clústeres, justificación y acciones |
+
+- Las dos herramientas se registran solo si el servidor arranca con `STATIC_INFERENCE_INFERENCE_TOOLS=true` (variable de entorno o `-D`); por defecto el servidor ofrece exactamente las cinco herramientas de 001. La web siempre las habilita.
+- `jobId` se resuelve como `<STATIC_INFERENCE_JOBS_DIR>/<jobId>/out/output.json` (la web fija la variable a `<ARCHVIEW_DATA_DIR>/jobs`); sin la variable solo se admite `graphPath`.
+- Las dependencias de proyecto y las ubicaciones de secretos se toman de `<nombre>_architecture.json` junto al grafo; si falta, se omiten y la respuesta lleva la advertencia `Project metadata not found next to the graph …` en `_meta["static-inference/warnings"]`. Con la configuración por defecto, re-inferir el grafo de un análisis reproduce byte a byte su arquitectura.
+- `score_proposal` descompone la lista en los fragmentos de los clústeres inferidos (misma configuración) que toca y la puntúa como un grupo de clústeres: puntuar exactamente los componentes de una propuesta existente sin infraestructura filtrada reproduce su viabilidad y su justificación.
+- Rendimiento: `reinfer_architecture` sobre un grafo de 500 componentes responde en decenas de milisegundos con el servidor en marcha (criterio < 2 s).
+
+## Correcciones opcionales e inconsistencias conocidas
+
+| Tema | Por defecto (1.2.0) | Opción |
+|---|---|---|
+| `data_jaccard` emitido | 0.8 con tablas, 0.0 sin tablas: no está relacionado con la puntuación | `recommendation.dataJaccardMode = data_cohesion` emite la cohesión de datos usada en la viabilidad |
+| Palabras clave de infraestructura | tres listas distintas: `consolidation.infrastructureKeywords` y `recommendation.infrastructureKeywords` (nombre simple, sin `auth`) y las claves de `naming.infrastructureLabels` (FQCN, con `auth`, `email`, `log`, `audit`, `notification`) | declarar la misma lista en las tres (ver ejemplo) |
+| Salvaguarda de librería de soporte | evalúa solo el clúster raíz del grupo | no hace falta opción: solo se fusionan grupos con el mismo estado de soporte, por lo que todos los clústeres de un grupo comparten el estado de su raíz y la proporción del grupo completo cae del mismo lado del umbral (media ponderada). Lo verifica una prueba de invariante (TS-042). |
+
+Configuración alineada recomendada (cambia la salida respecto de 1.2.0):
+
+```json
+{
+  "consolidation": { "infrastructureKeywords": ["config", "configuration", "security", "auth", "application", "exception", "error", "filter", "interceptor", "aspect", "swagger", "openapi", "main"] },
+  "recommendation": { "infrastructureKeywords": ["config", "configuration", "security", "auth", "application", "exception", "error", "filter", "interceptor", "aspect", "swagger", "openapi", "main"], "dataJaccardMode": "data_cohesion" }
+}
 ```
 
-### Otras ideas de diseño no implementadas
-- `getExcludeTokens()` para quitar tokens (p. ej. `aggregate`) de `EXCLUDE_TOKENS` en tiempo de ejecución. `aggregate` tampoco figura en la lista actual.
-- Un umbral explícito de "nano-servicio" en `MicroserviceRecommendationEngine`.
-- Unificar las tres listas de keywords de infraestructura (§6) en una sola fuente configurable.
+## Detección de proyectos anidados
+
+Con `detection.maxDepth = N > 0` y sin marcadores en la raíz, el motor busca `pom.xml`, `build.gradle[.kts]`, `*.sln`, `*.csproj` y `*.vbproj` en subcarpetas hasta profundidad N, ignorando `target`, `build`, `bin`, `obj`, `node_modules`, `.git`, `.svn`, `.hg`, `.idea`, `.vs`, `out` y `dist`. Un solo lenguaje elige su analizador y añade la advertencia `Nested project markers found (java|dotnet): <carpetas>`; ambos lenguajes producen el error de proyecto ambiguo con las carpetas encontradas. Los marcadores de la raíz siempre mandan. Ejemplo: `test-for-demo/dotnet-unstructured` (solo `Api/NominaDestajo.csproj`) se analiza hoy como Java sin componentes; con `maxDepth = 1` se detecta como .NET.
+
+## Recursos MCP
+
+| URI | Contenido |
+|---|---|
+| `static-inference://algorithms` | la guía de algoritmos (`ALGORITHMS.md`) |
+| `static-inference://configuration` | esta guía |
+| `static-inference://configuration/defaults` | la configuración por defecto en JSON |
+| `static-inference://schema` | `{"schema_version": "1.0.0", "schemas": {<ruta>: <esquema>}}` |
+
+## Casos de uso
+
+### Arquitectura hexagonal (adaptadores en clústeres separados)
+
+```json
+{ "evidence": { "weights": { "token": 0.45, "call": 0.20 }, "evidenceThreshold": 0.60 } }
+```
+
+### Microservicios orientados a eventos
+
+```json
+{ "evidence": { "weights": { "event": 0.25, "token": 0.20, "table": 0.20, "call": 0.35 } } }
+```
+
+La detección de eventos empareja por nombre simple idéntico (ver ALGORITHMS.md §1.4): subir el peso puede no tener efecto.
+
+### Monolito muy acoplado (todo sale "Baja")
+
+```json
+{ "viability": { "weights": { "cohesion": 0.6, "coupling": 0.25, "data": 0.15 } } }
+```
+
+### Proyectos pequeños
+
+```json
+{ "viability": { "smallSize": { "below": 2 } }, "consolidation": { "strongCandidate": { "minSize": 2 } } }
+```
+
+### Consolidación más agresiva / más conservadora
+
+```json
+{ "evidence": { "evidenceThreshold": 0.55, "minStrongSignals": 1 }, "consolidation": { "maxMergedSizeWithoutSimilarity": 60 } }
+```
+
+```json
+{ "evidence": { "evidenceThreshold": 0.75, "minStrongSignals": 3 }, "consolidation": { "maxMergedSizeWithoutSimilarity": 25 } }
+```
+
+## Variables de entorno
+
+| Variable | Por defecto | Efecto |
+|---|---|---|
+| `STATIC_INFERENCE_COLLECTED_AT` | ausente | Con `true` se emite `meta.collected_at` en el grafo (rompe la comparación byte a byte). |
+| `STATIC_INFERENCE_INFERENCE_TOOLS` | ausente | Con `true` el modo servidor registra `reinfer_architecture` y `score_proposal`. |
+| `STATIC_INFERENCE_JOBS_DIR` | ausente | Carpeta de análisis de la web para resolver `jobId`. |
+
+## Constantes de análisis (extracción)
+
+`src/main/java/com/extractor/constants/AnalysisConstants.java` centraliza las palabras de datos sensibles, el patrón SQL de tablas y las anotaciones de repositorios/entidades usadas por la **extracción**; no forman parte de la configuración de inferencia y cambiarlas exige recompilar.
+
+## Iteración recomendada
+
+1. Analizar una vez (CLI o `analyze_project`).
+2. Re-inferir con `reinfer_architecture` cambiando un parámetro cada vez y comparar las propuestas.
+3. Evaluar variantes manuales con `score_proposal`.
+4. Fijar la configuración elegida en un archivo y usarla con `--config` o `configPath`.
