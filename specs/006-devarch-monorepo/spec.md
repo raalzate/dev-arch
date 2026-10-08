@@ -166,7 +166,7 @@ Como desarrollador o agente de IA trabajando en dev-arch, quiero un único conju
 
 - **FR-001**: El producto MUST residir en una única carpeta del monorepo con seis áreas: web, motor, contrato, skills, documentación y contenedores; además de las áreas, la raíz del producto solo contiene gobernanza (Constitución, Premisa, especificaciones, instrucciones de agentes), la fuente de versión, la configuración unificada y el soporte de orquestación y de pruebas de aceptación del producto.
 - **FR-002**: El motor MUST importarse con su historia completa de commits, de modo que la historia de cualquier archivo del motor muestre sus commits originales.
-- **FR-003**: La aplicación web existente MUST reubicarse íntegra en el área web sin cambios funcionales, salvo los exigidos por FR-013 a FR-016.
+- **FR-003**: La aplicación web existente MUST reubicarse íntegra en el área web sin cambios funcionales, salvo los exigidos por FR-013 a FR-016. La verificación se hace sobre el estado del producto al cierre de esta feature (línea base de 006), no sobre el estado vigente: las features posteriores cambian legítimamente la web.
 - **FR-004**: Ningún binario del analizador (paquete ejecutable Java ni ejecutable del analizador .NET) MUST estar versionado; el binario copiado a mano y el archivo de salida antiguo de la web MUST eliminarse.
 - **FR-005**: La Constitución, la Premisa y las especificaciones iikit 001–005 MUST ubicarse en la raíz del producto, sin alterar su contenido ni sus anclas de integridad de aserciones; la Constitución se traslada sin enmiendas.
 - **FR-006**: Las skills para agentes y la documentación del motor MUST ubicarse en sus áreas de producto respectivas.
@@ -253,6 +253,10 @@ Como desarrollador o agente de IA trabajando en dev-arch, quiero un único conju
 - Q: ¿Cómo se nombran las etiquetas de publicación en un monorepo con otros proyectos? -> A: Con prefijo de producto (`dev-arch-v<versión>`), para no colisionar con etiquetas de otros proyectos; la publicación en la rama principal sigue generando pre-releases. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-023, US5-AS7]
 - Q: ¿"La web muestra componentes y propuestas" (US3-AS1) se verifica en el navegador? -> A: En esta feature se verifica sobre la respuesta del análisis (componentes y propuestas no vacíos, versión de contrato); la verificación visual automatizada en navegador es la feature 011. (default elegido por agente — confirmado por usuario 2026-10-08) [US3, SC-002]
 - Q: ¿Desde dónde se espera que un agente de IA arranque el servidor MCP local configurado? -> A: Desde la raíz del producto (la ruta relativa al motor se resuelve desde allí). (default elegido por agente — confirmado por usuario 2026-10-08) [FR-027, US7-AS1]
+
+### Session 2026-10-08 (re-testify tras la feature 007)
+
+- Q: ¿Contra qué estado se verifica que la reubicación dejó la web intacta (FR-003, TS-042)? -> A: Contra la etiqueta anotada `dev-arch-006-baseline` (commit `889c95a`, cierre de esta feature), no contra el estado vigente de la rama. Motivo: la feature 007 (runtime nativa del motor) cambia legítimamente la web (rutas nuevas de análisis asíncrono, visor restringido, interfaz), lo que hacía fallar TS-042 aunque la reubicación de 006 siguiera intacta (conflicto con el principio III). El escenario se regeneró con `/iikit-04-testify`; su intención no cambia. (confirmado por usuario 2026-10-08) [FR-003]
 
 ### Assumptions
 

@@ -240,14 +240,18 @@ Given('the web files imported into the monorepo before this feature', function (
   assert.ok((this.data.webBefore as string[]).includes('src/app/api/analyze/route.ts'), 'not the web import');
 });
 
-When('they are compared with the files of the web area', function (this: DevArchWorld) {
+// Evaluated at the 006 baseline tag (re-testify 2026-10-08): later features legitimately change web/.
+When('they are compared with the files of the web area at the 006 baseline tag {string}', function (this: DevArchWorld, tag: string) {
   const repo = layout.monorepoRoot;
+  assert.ok(gitOk(['rev-parse', '--verify', '--quiet', `refs/tags/${tag}^{commit}`], repo),
+    `the baseline tag ${tag} is missing (see docs/BASELINES.md; fetch it with: git fetch origin tag ${tag})`);
+  const ref = `${tag}^{commit}`;
   const before = this.data.webBefore as string[];
-  const after = trackedFiles(repo, 'HEAD', `${PRODUCT_REL}/web`).map((f) => f.slice(`${PRODUCT_REL}/web/`.length));
-  const blob = (ref: string, p: string) => git(['rev-parse', `${ref}:${p}`], repo);
+  const after = trackedFiles(repo, ref, `${PRODUCT_REL}/web`).map((f) => f.slice(`${PRODUCT_REL}/web/`.length));
+  const blob = (r: string, p: string) => git(['rev-parse', `${r}:${p}`], repo);
   this.data.missing = before.filter((f) => !after.includes(f));
   this.data.changed = before.filter(
-    (f) => after.includes(f) && blob(this.data.mainline as string, `${PRODUCT_REL}/${f}`) !== blob('HEAD', `${PRODUCT_REL}/web/${f}`),
+    (f) => after.includes(f) && blob(this.data.mainline as string, `${PRODUCT_REL}/${f}`) !== blob(ref, `${PRODUCT_REL}/web/${f}`),
   );
   this.data.added = after.filter((f) => !before.includes(f));
 });

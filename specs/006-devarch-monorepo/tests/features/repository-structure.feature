@@ -47,8 +47,8 @@ Feature: Single product with the engine history preserved
     And every assertion integrity hash in their context files still verifies
 
   @TS-042 @FR-003 @P1 @contract
-  Scenario: The web is relocated intact into the web area
+  Scenario: The web is relocated intact into the web area by this feature
     Given the web files imported into the monorepo before this feature
-    When they are compared with the files of the web area
+    When they are compared with the files of the web area at the 006 baseline tag "dev-arch-006-baseline"
     Then every source, documentation and configuration file is present with its relative path preserved
     And only the analysis route, the web manifest and the newly added engine resolution files differ
