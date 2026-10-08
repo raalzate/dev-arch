@@ -12,7 +12,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test:acceptance": "cucumber-js"
+    "test:acceptance": "NODE_OPTIONS=\"--import tsx\" cucumber-js"
   },
   "devDependencies": {
     "@cucumber/cucumber": "11.3.0",

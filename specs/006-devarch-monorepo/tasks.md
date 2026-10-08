@@ -42,7 +42,7 @@ description: "Task list for 006-devarch-monorepo"
 
 **Purpose**: soporte de pruebas y localización de rutas del motor; bloquea todas las historias
 
-- [ ] T009 [P] Crear soporte de aceptación en `P/tests/acceptance/support/`: `layout.ts` (monorepoRoot, productRoot, engineRoot, webDir, engineDist), `process.ts` (ejecución con env, captura de exit/stdout, timeout, `JAVA_HOME`), `git.ts` (clon limpio en directorio temporal, `ls-files`, `rev-list`), `gates.ts` (`@slow` solo con `DEVARCH_E2E=true`; guarda anti-recursión `DEVARCH_TEST_RUNNING=1`), `world.ts`
+- [x] T009 [P] Crear soporte de aceptación en `P/tests/acceptance/support/`: `layout.ts` (monorepoRoot, productRoot, engineRoot, webDir, engineDist), `process.ts` (ejecución con env, captura de exit/stdout, timeout, `JAVA_HOME`), `git.ts` (clon limpio en directorio temporal, `ls-files`, `rev-list`), `gates.ts` (`@slow` solo con `DEVARCH_E2E=true`; guarda anti-recursión `DEVARCH_TEST_RUNNING=1`), `world.ts`
 - [x] T010 [P] Escribir primero `P/engine/src/test/java/com/extractor/testsupport/ProductLayoutTest.java` (propiedades explícitas > búsqueda ascendente > error que nombra la propiedad; `find()` producto→motor; `ciWorkflow()` monorepo→producto) y verla fallar
 - [x] T011 Implementar `P/engine/src/test/java/com/extractor/testsupport/ProductLayout.java` hasta pasar T010 (research D3)
 - [x] T012 Adaptar **solo localización** en `P/engine/src/test/java/com/extractor/schema/{SchemaRegistry,DemoOutputs}.java` y `P/engine/src/test/java/com/extractor/bdd/{BaselineArtifacts,GovernanceSteps,GeneratedTypesSteps,SchemaCheckSteps,DotNetRawSteps,CiWorkflowSteps,RunSchemaContractFeaturesTest}.java` para usar `ProductLayout` (productRoot para `schema/`, `specs/`, `docs/`, `skills/`, `MCP.md` vía `find()`; engineRoot para `pom.xml`, `target/`, `test-for-demo/`, `src/test/dotnet`, cwd de `mvn`/`dotnet`; `ciWorkflow()` para el workflow; `npm ci` en productRoot); en `P/engine/pom.xml` surefire: `engine.root`, `product.root`, `schema.dir=${project.basedir}/../schema`, `features.dir=${project.basedir}/../specs/005-json-schema-contract/tests/features`, `devarch.ci.workflow=${project.basedir}/../../../.github/workflows/dev-arch.yml`
@@ -62,8 +62,8 @@ description: "Task list for 006-devarch-monorepo"
 
 **Independent Test**: `npx cucumber-js --tags @US-001` en `P/`
 
-- [ ] T018 [US1] Escribir `P/tests/acceptance/steps/repository-structure.steps.ts` [TS-001, TS-002, TS-003, TS-004, TS-005, TS-042] y ejecutarlos en rojo contra el commit `a32d5f5` (antes de T002–T008)
-- [ ] T019 [US1] Completar lo que falte de Phase 1 hasta que pasen [TS-001, TS-002, TS-003, TS-004, TS-005, TS-042] (lista de entradas de raíz permitidas en `layout.ts`, según FR-001 y plan *Project Structure*)
+- [x] T018 [US1] Escribir `P/tests/acceptance/steps/repository-structure.steps.ts` [TS-001, TS-002, TS-003, TS-004, TS-005, TS-042] y ejecutarlos en rojo contra el commit `a32d5f5` (antes de T002–T008)
+- [x] T019 [US1] Completar lo que falte de Phase 1 hasta que pasen [TS-001, TS-002, TS-003, TS-004, TS-005, TS-042] (lista de entradas de raíz permitidas en `layout.ts`, según FR-001 y plan *Project Structure*)
 
 **Checkpoint**: US1 verde.
 
