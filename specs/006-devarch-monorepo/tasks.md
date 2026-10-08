@@ -109,9 +109,9 @@ description: "Task list for 006-devarch-monorepo"
 
 **Independent Test**: `DEVARCH_E2E=true npx cucumber-js --tags @US-004`
 
-- [ ] T032 [US4] Escribir `P/tests/acceptance/steps/product-contract.steps.ts` [TS-020, TS-021, TS-022, TS-023, TS-024] (TS-021 sobre copia temporal del producto) y verlos fallar
-- [ ] T033 [US4] Declarar `"@static-inference/schema": "*"` en `P/web/package.json` y reinstalar (`npm install` en `P/`) [TS-022]
-- [ ] T034 [US4] Ajustar `P/Makefile` `schema-check` → `bash scripts/schema-check.sh` y validar [TS-020, TS-021, TS-023]; reutilizar T014 para [TS-024]
+- [x] T032 [US4] Escribir `P/tests/acceptance/steps/product-contract.steps.ts` [TS-020, TS-021, TS-022, TS-023, TS-024] (TS-021 sobre copia temporal del producto) y verlos fallar
+- [x] T033 [US4] Declarar `"@static-inference/schema": "*"` en `P/web/package.json` y reinstalar (`npm install` en `P/`) [TS-022]
+- [x] T034 [US4] Ajustar `P/Makefile` `schema-check` → `bash scripts/schema-check.sh` y validar [TS-020, TS-021, TS-023]; reutilizar T014 para [TS-024]
 
 **Checkpoint**: US4 verde; 005 sigue verde desde el producto.
 

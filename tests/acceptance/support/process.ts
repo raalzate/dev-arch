@@ -19,10 +19,16 @@ export interface RunOptions {
   input?: string;
 }
 
-/** Environment of nested product commands: marks them as running inside the acceptance suite. */
+/**
+ * Environment of nested product commands: marks them as running inside the acceptance suite and drops the
+ * runner's own NODE_OPTIONS (tsx loader), which would otherwise leak into every nested node/npm process.
+ */
 export function childEnv(extra: NodeJS.ProcessEnv = {}, replace = false): NodeJS.ProcessEnv {
-  const base = replace ? {} : { ...process.env };
-  return { ...base, DEVARCH_TEST_RUNNING: '1', ...extra };
+  const base: NodeJS.ProcessEnv = replace ? {} : { ...process.env };
+  delete base.NODE_OPTIONS;
+  const env: NodeJS.ProcessEnv = { ...base, DEVARCH_TEST_RUNNING: '1', ...extra };
+  for (const [k, v] of Object.entries(env)) if (v === undefined) delete env[k];
+  return env;
 }
 
 export function run(file: string, args: string[], opts: RunOptions): RunResult {

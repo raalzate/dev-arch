@@ -58,7 +58,8 @@ Before({ tags: '@TS-011' }, function (this: DevArchWorld) {
 
 Given('the product is built', function (this: DevArchWorld) {
   ensureCheckout(this);
-  const product = productDir(this);
+  // Scenarios that run their command on a work copy (see product-contract steps) need the checkout built.
+  const product = this.data.workCopy ? layout.productRoot : productDir(this);
   if (isBuilt(product)) return;
   // Always the real tools: scenario shims and fakes apply to the command under test only.
   const env = { ...commandEnv(this), PATH: process.env.PATH };
@@ -71,7 +72,8 @@ When('{string} is executed from the product root', function (this: DevArchWorld,
   ensureCheckout(this);
   const [file, ...args] = command.split(' ');
   const env = { ...commandEnv(this), ...this.env };
-  const res = run(file, args, { cwd: productDir(this), env, timeoutMs: BUILD_TIMEOUT });
+  const cwd = (this.data.workCopy as string | undefined) ?? productDir(this);
+  const res = run(file, args, { cwd, env, timeoutMs: BUILD_TIMEOUT });
   this.result = res;
   this.results[command] = res;
 });
