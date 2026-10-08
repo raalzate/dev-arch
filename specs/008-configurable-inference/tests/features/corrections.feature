@@ -63,8 +63,8 @@ Feature: Optional corrections and per-stage parameters
   @TS-045 @FR-004 @SC-005 @US-007 @P2 @acceptance
   Scenario: The naming stage is configurable
     Given the stored analysis of the demo project "java-standar" in a folder without its sources
-    When reinfer_architecture is called with the graphPath of that analysis and the configuration {"naming": {"excludeTokens": ["persistence", "entity", "model", "data", "dto"]}}
-    Then no proposal name contains "Persistence"
+    When reinfer_architecture is called with the graphPath of that analysis and the configuration {"naming": {"excludeTokens": ["globalexception", "entity", "model", "data", "dto"]}}
+    Then no proposal name contains "Globalexception"
 
   @TS-046 @FR-004 @SC-005 @US-007 @P2 @acceptance
   Scenario: The viability stage is configurable through its weights
