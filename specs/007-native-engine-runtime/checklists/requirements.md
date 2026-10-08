@@ -73,6 +73,6 @@
 
 ## Summary
 
-- Total: 41 ítems · Checked: 41 · Deferred: 0
+- Total: 38 ítems · Checked: 38 · Deferred: 0
 - Gaps resueltos: 5 (CHK002 → FR-005, CHK003 → FR-011, CHK004 → FR-007, CHK005 → FR-016, CHK029 → Assumption); ambigüedades resueltas: 1 (CHK013 → FR-007); conflictos resueltos: 1 (CHK018 → Assumption)
 - Completitud: 100 %
