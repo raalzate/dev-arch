@@ -20,6 +20,10 @@ export function cleanClone(source: string, checkout: boolean): { dir: string; co
   const commit = git(['rev-parse', 'HEAD'], source);
   const dir = path.join(mkdtempSync(path.join(os.tmpdir(), 'devarch-006 clone-')), 'repo');
   runOk('git', ['clone', '--quiet', '--no-checkout', source, dir], { cwd: os.tmpdir(), timeoutMs: 15 * 60 * 1000 });
+  // A clone only copies the source's local branches: carry its main branch too (as origin/main), so scenarios
+  // comparing against the monorepo main branch also work inside nested clones (clean clone of a clone, CI).
+  const main = ['refs/heads/main', 'refs/remotes/origin/main'].find((ref) => gitOk(['rev-parse', '--verify', '--quiet', ref], source));
+  if (main) runOk('git', ['fetch', '--quiet', source, `+${main}:refs/remotes/origin/main`], { cwd: dir, timeoutMs: 15 * 60 * 1000 });
   if (checkout) runOk('git', ['checkout', '--quiet', commit], { cwd: dir, timeoutMs: 15 * 60 * 1000 });
   return { dir, commit };
 }
