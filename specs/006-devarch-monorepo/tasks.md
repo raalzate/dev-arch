@@ -80,7 +80,7 @@ description: "Task list for 006-devarch-monorepo"
 - [x] T022 [US2] Implementar `P/scripts/engine-build.sh` (`mvn -B -DskipTests package` en `engine/` con `JAVA_HOME`; `dotnet publish` framework-dependent a `engine/target/dotnet-analyzer-publish/` + lanzador `engine/target/dotnet-analyzer` con `DOTNET_ROOT`, como 005) y `P/scripts/engine-stage.sh` (copia a `web/engine-dist/engine.jar` y `web/engine-dist/dotnet-analyzer*`) [TS-006]
 - [x] T023 [US2] Crear `P/Makefile` con `build`, `build-engine`, `test`, `test-engine`, `test-web`, `test-acceptance`, `schema-check`, `clean`, `e2e`, `doctor` (marcadores con los mensajes del contrato), `prereqs` [TS-006, TS-007, TS-010, TS-011, TS-012]
 - [x] T024 [US2] Verificar workspace y lockfile único (sin locks en `web/` ni `schema/`) [TS-013]
-- [ ] T025 [US2] Ejecutar `DEVARCH_E2E=true` [TS-006, TS-007, TS-011] en clon limpio y corregir hasta verde; `git status --porcelain` vacío tras build+test (SC-003)
+- [x] T025 [US2] Ejecutar `DEVARCH_E2E=true` [TS-006, TS-007, TS-011] en clon limpio y corregir hasta verde; `git status --porcelain` vacío tras build+test (SC-003)
 
 **Checkpoint**: criterio de salida 1/2 cumplido.
 
@@ -165,13 +165,20 @@ description: "Task list for 006-devarch-monorepo"
 
 ## Phase 10: Polish & Cross-Cutting Concerns
 
-- [ ] T048 Validar `quickstart.md` completo en un clon limpio (`DEVARCH_E2E=true make test-acceptance`), registrando tiempos para SC-002 y SC-009
+- [x] T048 Validar `quickstart.md` completo en un clon limpio (`DEVARCH_E2E=true make test-acceptance`), registrando tiempos para SC-002 y SC-009
 - [x] T049 [P] Actualizar `P/engine/README.md` y `P/web/README.md` con una sección breve "Cómo construir y ejecutar desde el producto" (`make build`, `make dev`); sin fusionar documentación (Fase 7)
 - [x] T050 [P] Verificar que `project/dev-arch` y `project/static-inference` del monorepo no tienen cambios en la rama (`git diff main --stat -- project/`) [TS-004]
 - [x] T051 Re-ejecutar T014 y `testify-tdd.sh verify-hash` para 001–006 antes de cada commit final; commits convencionales; sin push
 
 ---
 
+
+## Validation record (2026-10-08, clean clone of feature/dev-arch-monorepo)
+
+- `make build`: OK, 57 s. `make test`: OK, 2 min 39 s (engine-java 308 tests 0 failures; engine-dotnet 156/156; schema-check OK; web OK; acceptance 48/49, 1 skipped). `git status --porcelain` empty afterwards (SC-003).
+- SC-002: `next start` + POST ZIP to `/api/analyze` → java-standar HTTP 200 in 1.1 s (schema 1.0.0, spoon, 27 components, 2 proposals); dotnet-ecommerce HTTP 200 in 2.6 s (roslyn, 22 components, 5 proposals).
+- `DEVARCH_E2E=true make test-acceptance`: OK, 12 min 43 s, 57/58 scenarios; skipped TS-041 (iikit tiles require `tessl install`, not versioned — expected).
+- SC-009 (20 min) met by `make test`; clean-clone E2E runs in its own CI job (45 min, T053).
 
 ## Phase 11: Decisiones de usuario 2026-10-08 (A2, A3, A4)
 
