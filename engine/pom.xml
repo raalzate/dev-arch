@@ -121,6 +121,13 @@
     </dependencies>
 
     <build>
+        <!-- 006-devarch-monorepo: the MCP server reports ${project.version} through a filtered resource. -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -161,6 +168,7 @@
                         <schema.dir>${project.basedir}/../schema</schema.dir>
                         <features.dir>${project.basedir}/../specs/005-json-schema-contract/tests/features</features.dir>
                         <devarch.ci.workflow>${project.basedir}/../../../.github/workflows/dev-arch.yml</devarch.ci.workflow>
+                        <project.version>${project.version}</project.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

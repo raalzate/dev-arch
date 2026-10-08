@@ -5,11 +5,11 @@
 SHELL := /bin/bash
 
 .PHONY: help prereqs build build-engine test test-engine test-web test-acceptance e2e schema-check \
-        schema-generate dev clean doctor
+        schema-generate dev clean doctor version-sync version-check
 
 help:
 	@echo "make build | test | test-engine | test-web | test-acceptance | schema-check | dev | clean"
-	@echo "make e2e | doctor (reserved) | schema-generate"
+	@echo "make e2e | doctor (reserved) | schema-generate | version-sync | version-check"
 
 ## Verify JDK 17, .NET SDK >= 8 + .NET 8 runtime and Node >= 20 before compiling anything.
 prereqs:
@@ -47,6 +47,13 @@ schema-generate:
 ## Web in development mode (http://localhost:9002) with the engine built from this checkout.
 dev: prereqs
 	@bash scripts/dev.sh
+
+## Single product version: edit VERSION, then propagate it to every declaration.
+version-sync:
+	@bash scripts/version.sh sync
+
+version-check:
+	@bash scripts/version.sh check
 
 clean:
 	@bash scripts/clean.sh

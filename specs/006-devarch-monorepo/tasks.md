@@ -137,11 +137,11 @@ description: "Task list for 006-devarch-monorepo"
 
 **Independent Test**: `npx cucumber-js --tags @US-006` + `McpServerVersionTest`
 
-- [ ] T038 [P] [US6] Escribir `P/tests/acceptance/steps/product-version.steps.ts` [TS-031, TS-032, TS-033, TS-035] (sobre copia temporal) y verlos fallar
-- [ ] T039 [P] [US6] Escribir `P/engine/src/test/java/com/extractor/mcp/McpServerVersionTest.java` (serverInfo.version == `project.version` pasado por surefire) [TS-034] y verlo fallar (hoy literal)
-- [ ] T040 [US6] Crear `P/VERSION` (`1.2.0`) e implementar `P/scripts/version.sh sync|check` + objetivos `version-sync`/`version-check` en `P/Makefile` según contracts/version.md; añadir `version-check` a `make test` [TS-031, TS-032, TS-033, TS-035]
-- [ ] T041 [US6] Añadir `P/engine/src/main/resources/static-inference-version.properties` (`version=${project.version}`), filtrado de recursos en `P/engine/pom.xml` y lectura en `P/engine/src/main/java/com/extractor/mcp/McpServerMain.java` (sin literal) [TS-034]
-- [ ] T042 [US6] Añadir `<Version>` a `P/engine/src/main/dotnet/DotNetAnalyzer/DotNetAnalyzer.csproj` y ejecutar `make version-sync` (web `0.1.0` → `1.2.0`; `package.json` de producto) [TS-031]
+- [x] T038 [P] [US6] Escribir `P/tests/acceptance/steps/product-version.steps.ts` [TS-031, TS-032, TS-033, TS-035] (sobre copia temporal) y verlos fallar
+- [x] T039 [P] [US6] Escribir `P/engine/src/test/java/com/extractor/mcp/McpServerVersionTest.java` (serverInfo.version == `project.version` pasado por surefire) [TS-034] y verlo fallar (hoy literal)
+- [x] T040 [US6] Crear `P/VERSION` (`1.2.0`) e implementar `P/scripts/version.sh sync|check` + objetivos `version-sync`/`version-check` en `P/Makefile` según contracts/version.md; añadir `version-check` a `make test` [TS-031, TS-032, TS-033, TS-035]
+- [x] T041 [US6] Añadir `P/engine/src/main/resources/static-inference-version.properties` (`version=${project.version}`), filtrado de recursos en `P/engine/pom.xml` y lectura en `P/engine/src/main/java/com/extractor/mcp/McpServerMain.java` (sin literal) [TS-034]
+- [x] T042 [US6] Añadir `<Version>` a `P/engine/src/main/dotnet/DotNetAnalyzer/DotNetAnalyzer.csproj` y ejecutar `make version-sync` (web `0.1.0` → `1.2.0`; `package.json` de producto) [TS-031]
 
 **Checkpoint**: US6 verde; `schema/VERSION` sigue en 1.0.0.
 

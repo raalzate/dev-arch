@@ -9,7 +9,10 @@ import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
 import io.modelcontextprotocol.spec.McpSchema;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * MCP server entry point. Starts a synchronous MCP server over stdio transport
@@ -18,7 +21,40 @@ import java.util.List;
 public class McpServerMain {
 
     private static final String SERVER_NAME = "static-inference";
-    private static final String SERVER_VERSION = "1.2.0";
+
+    /** Classpath resource filtered by Maven with the product version. */
+    private static final String VERSION_RESOURCE =
+            "/static-inference-version.properties";
+
+    /** Product version reported in serverInfo (single VERSION, FR-021). */
+    private static final String SERVER_VERSION = loadServerVersion();
+
+    /**
+     * Product version reported by the server.
+     *
+     * @return the version filtered into the version resource
+     */
+    static String serverVersion() {
+        return SERVER_VERSION;
+    }
+
+    /**
+     * Reads the product version from the Maven-filtered resource.
+     *
+     * @return the version, or "unknown" when the resource is unreadable
+     */
+    private static String loadServerVersion() {
+        Properties props = new Properties();
+        try (InputStream in =
+                McpServerMain.class.getResourceAsStream(VERSION_RESOURCE)) {
+            if (in != null) {
+                props.load(in);
+            }
+        } catch (IOException e) {
+            return "unknown";
+        }
+        return props.getProperty("version", "unknown");
+    }
 
     /**
      * Creates tool specifications for all 5 MCP tools.
