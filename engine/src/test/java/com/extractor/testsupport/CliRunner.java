@@ -1,0 +1,53 @@
+package com.extractor.testsupport;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Runs the CLI ({@code MicroserviceInferenceMain}) in a child JVM with the test classpath: the CLI calls
+ * {@code System.exit}, and the child resolves the .NET analyzer next to {@code target/classes} like the jar does.
+ */
+public final class CliRunner {
+
+    /** Exit code, standard output and error output of a CLI run. */
+    public record Result(int exitCode, String stdout, String stderr) {
+    }
+
+    private CliRunner() {
+    }
+
+    public static Result run(Path workDir, List<String> args) {
+        try {
+            Files.createDirectories(workDir);
+            Path out = Files.createTempFile(workDir, "cli-out", ".txt");
+            Path err = Files.createTempFile(workDir, "cli-err", ".txt");
+            List<String> cmd = new ArrayList<>();
+            cmd.add(Path.of(System.getProperty("java.home"), "bin", "java").toString());
+            cmd.add("-cp");
+            cmd.add(System.getProperty("java.class.path"));
+            cmd.add("com.extractor.MicroserviceInferenceMain");
+            cmd.addAll(args);
+            Process p = new ProcessBuilder(cmd).directory(workDir.toFile())
+                    .redirectOutput(out.toFile()).redirectError(err.toFile()).start();
+            if (!p.waitFor(10, TimeUnit.MINUTES)) {
+                p.destroyForcibly();
+                throw new IllegalStateException("CLI did not finish in 10 minutes: " + args);
+            }
+            Result r = new Result(p.exitValue(), Files.readString(out, StandardCharsets.UTF_8),
+                    Files.readString(err, StandardCharsets.UTF_8));
+            Files.deleteIfExists(out);
+            Files.deleteIfExists(err);
+            return r;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
+    }
+}

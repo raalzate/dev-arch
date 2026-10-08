@@ -1,6 +1,7 @@
 package com.extractor.mcp;
 
 import com.extractor.mcp.tools.*;
+import com.extractor.service.AnalysisCache;
 import com.extractor.service.AnalysisService;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
@@ -57,6 +58,25 @@ public class McpServerMain {
     }
 
     /**
+     * Analysis service of the server mode.
+     *
+     * @return the service shared by the five tools
+     */
+    public static AnalysisService createService() {
+        return createService(AnalysisCache.fromEnvironment().capacity());
+    }
+
+    /**
+     * Analysis service of the server mode with an explicit reuse capacity.
+     *
+     * @param reuseCapacity projects kept in memory, 0 disables reuse
+     * @return the service
+     */
+    public static AnalysisService createService(final int reuseCapacity) {
+        return new AnalysisService(new AnalysisCache(reuseCapacity));
+    }
+
+    /**
      * Creates tool specifications for all 5 MCP tools.
      * Exposed as package-private for testing.
      */
@@ -78,7 +98,7 @@ public class McpServerMain {
         // Redirect SLF4J Simple to stderr — stdout is reserved for MCP protocol (research.md Decision 7)
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.err");
 
-        AnalysisService service = new AnalysisService();
+        AnalysisService service = createService();
         List<McpServerFeatures.SyncToolSpecification> tools = createToolSpecs(service);
 
         StdioServerTransportProvider transport = new StdioServerTransportProvider(

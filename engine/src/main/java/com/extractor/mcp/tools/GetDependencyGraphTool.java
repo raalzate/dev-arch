@@ -2,6 +2,7 @@ package com.extractor.mcp.tools;
 
 import com.extractor.mcp.ToolSchemas;
 import com.extractor.model.DependencyGraph;
+import com.extractor.service.AnalysisOptions;
 import com.extractor.service.AnalysisService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -31,10 +32,11 @@ public final class GetDependencyGraphTool {
 
     public static McpSchema.CallToolResult handle(AnalysisService service, McpSchema.CallToolRequest request) {
         try {
+            AnalysisOptions options = ToolArguments.options(request);
             String projectPath = (String) request.arguments().get("projectPath");
             Path projectRoot = Paths.get(projectPath);
 
-            DependencyGraph graph = service.getDependencyGraph(projectRoot);
+            DependencyGraph graph = service.getDependencyGraph(projectRoot, options);
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.enable(SerializationFeature.INDENT_OUTPUT);

@@ -46,6 +46,9 @@ public class ProjectAnalyzer {
     private StaticCodeAnalyzer staticCodeAnalyzer;
     private OpenApiExtractor openApiExtractor;
 
+    /** Syntax errors of the last analysis (007, FR-026). */
+    private SortedMap<String, String> syntaxProblems = new TreeMap<>();
+
     public ProjectAnalyzer() {
         this(false);
     }
@@ -73,6 +76,15 @@ public class ProjectAnalyzer {
     }
 
     /**
+     * Syntax errors found while parsing the last project.
+     *
+     * @return absolute file name to "line N (message)", sorted by file
+     */
+    public final SortedMap<String, String> getSyntaxProblems() {
+        return syntaxProblems;
+    }
+
+    /**
      * Analyzes a Java project and returns a dependency graph.
      */
     public DependencyGraph analyzeProject(Path projectRoot) throws Exception {
@@ -90,6 +102,7 @@ public class ProjectAnalyzer {
 
         // Build the model
         CtModel model = launcher.buildModel();
+        syntaxProblems = SyntaxProblems.of(launcher);
 
         // PASS 1: Analyze all types (classes, interfaces, enums)
         analyzeTypes(model);

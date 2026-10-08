@@ -2,6 +2,7 @@ package com.extractor.mcp.tools;
 
 import com.extractor.mcp.ToolSchemas;
 import com.extractor.model.Component;
+import com.extractor.service.AnalysisOptions;
 import com.extractor.service.AnalysisService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -32,13 +33,16 @@ public final class GetComponentMetricsTool {
 
     public static McpSchema.CallToolResult handle(AnalysisService service, McpSchema.CallToolRequest request) {
         try {
+            AnalysisOptions options = ToolArguments.options(request);
             String projectPath = (String) request.arguments().get("projectPath");
             String componentId = (String) request.arguments().get("componentId");
             Path projectRoot = Paths.get(projectPath);
 
-            Component component = service.getComponentMetrics(projectRoot, componentId);
+            Component component = service.getComponentMetrics(
+                    projectRoot, componentId, options);
             if (component == null) {
-                List<String> available = service.getComponentIds(projectRoot);
+                List<String> available = service.getComponentIds(
+                        projectRoot, options);
                 return AnalyzeProjectTool.errorResult(
                         "Component '" + componentId + "' not found in project. Available components: " + available);
             }

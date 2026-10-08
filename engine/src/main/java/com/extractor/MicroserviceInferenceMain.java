@@ -1,6 +1,9 @@
 package com.extractor;
 
 import com.extractor.mcp.McpServerMain;
+import com.extractor.service.AnalysisLanguage;
+import com.extractor.service.AnalysisOptions;
+import com.extractor.service.AnalysisProgressListener;
 import com.extractor.service.AnalysisResult;
 import com.extractor.service.AnalysisService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,13 +44,22 @@ public class MicroserviceInferenceMain {
 
         String projectPath = args[0];
         String outputFile = args[1];
+        AnalysisOptions options;
+        try {
+            options = parseOptions(args);
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+            return;
+        }
 
         try {
             System.out.println("🔍 Iniciando análisis del proyecto: " + projectPath);
 
             Path projectPathObj = Paths.get(projectPath);
             AnalysisService service = new AnalysisService();
-            AnalysisResult result = service.analyzeProject(projectPathObj);
+            AnalysisResult result = service.analyzeProject(projectPathObj,
+                    options, AnalysisProgressListener.NOOP);
 
             System.out.println("📊 Componentes encontrados: " + result.getComponentCount());
             System.out.println("🔗 Relaciones encontradas: " + result.getEdgeCount());
@@ -81,11 +93,32 @@ public class MicroserviceInferenceMain {
             // Print summary
             System.out.println("\n" + result.getArchitecture().getSummary());
 
+            // 007 FR-026: warnings on the error output, outputs unchanged
+            for (String warning : result.getWarnings()) {
+                System.err.println("[warning] " + warning);
+            }
+
         } catch (Exception e) {
             System.err.println("❌ Error durante el análisis: " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    /**
+     * Optional third argument {@code --language=java|dotnet|auto}
+     * (007-native-engine-runtime, FR-024).
+     *
+     * @param args command-line arguments
+     * @return the analysis options
+     */
+    static AnalysisOptions parseOptions(final String[] args) {
+        String prefix = "--language=";
+        if (args.length > 2 && args[2].startsWith(prefix)) {
+            return AnalysisOptions.of(AnalysisLanguage.parse(
+                    args[2].substring(prefix.length())));
+        }
+        return AnalysisOptions.DEFAULT;
     }
 
     private static void saveToFile(String content, String filePath) throws IOException {

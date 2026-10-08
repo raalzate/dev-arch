@@ -2,6 +2,7 @@ package com.extractor.mcp.tools;
 
 import com.extractor.mcp.ToolSchemas;
 import com.extractor.inference.ConsolidatedArchitecture;
+import com.extractor.service.AnalysisOptions;
 import com.extractor.service.AnalysisService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -31,11 +32,13 @@ public final class GetArchitectureTool {
 
     public static McpSchema.CallToolResult handle(AnalysisService service, McpSchema.CallToolRequest request) {
         try {
+            AnalysisOptions options = ToolArguments.options(request);
             String projectPath = (String) request.arguments().get("projectPath");
             String minViability = (String) request.arguments().get("minViability");
             Path projectRoot = Paths.get(projectPath);
 
-            ConsolidatedArchitecture architecture = service.getArchitectureProposal(projectRoot, minViability);
+            ConsolidatedArchitecture architecture = service.getArchitectureProposal(
+                    projectRoot, minViability, options);
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
