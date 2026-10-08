@@ -1,7 +1,7 @@
 # Requirements Checklist: 009-vb-legacy-completion
 
 **Purpose**: Validar la calidad de la especificación (contenido, completitud, preparación) antes de plan/testify
-**Created**: 2026-10-08 (`/iikit-01-specify`)
+**Created**: 2026-10-08 (`/iikit-01-specify`), extendido por `/iikit-03-checklist` el 2026-10-08
 **Feature**: [spec.md](../spec.md)
 
 > Modo no interactivo: los huecos se resolvieron con defaults conservadores registrados en spec.md *Clarifications* como "(default elegido por agente — pendiente confirmar)". La decisión de corpus es del usuario (2026-10-08).
@@ -32,3 +32,29 @@
 
 - [x] **CHK009**: ¿Cada FR se puede trazar a un escenario de aceptación o a un SC? [Traceability]
 - [x] **CHK010**: ¿La feature puede entregarse por historias independientes (US1, US2, US3 como MVP)? [Readiness]
+
+## Requirement Consistency
+
+- [x] **CHK011**: ¿Las reglas de capa VB (FR-040) son consistentes con FR-020/FR-021 de 004 (`*Controller` → `Negocio`, `*Adapter` → `Datos`, `Controlador` solo con evidencia HTTP)? [Consistency, FR-040, US5-AS6] — sí: la regla 4 precede a la de datos; los servicios ASMX/WCF son evidencia HTTP/SOAP
+- [x] **CHK012**: ¿FR-060 (`roslyn-fallback` para VB) es consistente con FR-080 (C# byte-idéntico)? [Consistency] — sí: solo cambia la rama de carga por proyecto `.vbproj`; el demo C# `dotnet-unstructured` ya emitía `roslyn-fallback` antes (sin cambio)
+- [x] **CHK013**: ¿FR-061/FR-063 (advertencias solo VB) son consistentes con el canal de 007 (advertencias solo si existen)? [Consistency, contracts/dotnet-warnings-channel.md]
+- [x] **CHK014**: ¿La semántica de `sensitive_data` VB (FR-033) es coherente con la de Java? [Consistency, Clarifications] — más estrecha por diseño; registrada como default pendiente de confirmar
+
+## Acceptance Criteria Quality & SC Coverage
+
+- [x] **CHK015**: ¿Cada SC-XXX es verificable por una prueba automatizada? [SC Coverage] — SC-001/003/008 con el corpus sintético; SC-002 con la matriz de issues; SC-004 con pruebas de oro C# + baseline Java + suites existentes; SC-005 con doble ejecución; SC-006 con el escenario `@engine`; SC-007 con validación de esquema; SC-009 con el clon limpio
+- [x] **CHK016**: ¿Los escenarios de aceptación indican severidades, tipos y textos exactos donde importan? [Measurability, US2, US4]
+
+## Edge Case & Scenario Coverage
+
+- [x] **CHK017**: ¿Se cubren tipos parciales repartidos en varios archivos con distinta `Option Strict`? [Edge Case, FR-011] — un issue por archivo con la opción explícita
+- [x] **CHK018**: ¿Se cubren tipos anidados (a qué componente se atribuyen los hallazgos)? [Gap → resuelto en plan/research D2: bloque de tipo más interno]
+- [x] **CHK019**: ¿Se cubre el fallback global (directorio sin `.vbproj` con fuentes VB) para la advertencia? [Gap → resuelto en contracts/dotnet-warnings-channel.md]
+- [x] **CHK020**: ¿Se cubre la confidencialidad en mensajes de diagnóstico (no solo en la salida)? [Completeness, FR-034]
+
+## Non-Functional Requirements, Dependencies & Assumptions
+
+- [x] **CHK021**: ¿Hay requisito de rendimiento? [Assumption] — sin requisito nuevo en la spec; plan fija < 2 s adicionales sobre el corpus sintético
+- [x] **CHK022**: ¿Se documenta la dependencia del entorno Windows/Build Tools para la fidelidad completa? [Dependencies, Assumptions, FR-064]
+- [x] **CHK023**: ¿Las dependencias nuevas están justificadas (principio VI)? [Dependencies] — ninguna en runtime; runner BDD solo en pruebas (plan, research D9)
+- [x] **CHK024**: ¿La ausencia del corpus real está reflejada en supuestos y criterios? [Assumptions, FR-071, SC-009]
