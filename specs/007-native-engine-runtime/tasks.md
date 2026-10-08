@@ -55,14 +55,14 @@ description: "Task list for 007-native-engine-runtime"
 
 - [ ] T015 [P] Escribir primero `web/src/server/config.test.ts` (defaults de research D13 — `MAX_CONCURRENT_ANALYSES` según el resultado de T014 —; valores inválidos nombran la variable; `allowLocalPath` true solo en desarrollo o por `DEVARCH_ALLOW_LOCAL_PATH`; `DEVARCH_API_TOKEN` vacío o en blanco = sin token); verla fallar
 - [ ] T016 Implementar `web/src/server/config.ts` hasta pasar T015 (depende de T014 para el valor por defecto de concurrencia)
-- [ ] T017 [P] Escribir primero `web/src/server/jobs/job-store.test.ts` (UUID, rechazo de ids inválidos incluido `../`, escritura atómica, transiciones de data-model.md, `paths(id)`, `list`, `delete`); verla fallar
-- [ ] T018 Implementar `web/src/server/jobs/job-store.ts` hasta pasar T017 (data-model.md)
-- [ ] T019 [P] Escribir primero `web/src/server/upload/{stream-to-file,safe-extract,project-root}.test.ts` con el catálogo de `zip-catalog.ts` (conteo y corte por límite, `Content-Length` previo, validación del directorio central: `..`, absoluta, unidad, `\`, NUL, symlink, duplicados/colisión de mayúsculas, Σ declarado, nº entradas; extracción manual con conteo real; raíz = carpeta única de primer nivel; error de escritura `ENOSPC` → `STORAGE_FULL` y sin restos); verlas fallar
-- [ ] T020 Implementar `web/src/server/upload/{stream-to-file,safe-extract,project-root}.ts` hasta pasar T019 (research D8, FR-037)
-- [ ] T021 [P] Escribir primero `web/src/server/engine/engine-locator.test.ts` (reglas de 006 intactas + `ENGINE_JAVA_OPTS`, `DOTNET_ANALYZER_PATH`, args `[...opts, -jar, jar, --mcp]`); verla fallar
-- [ ] T022 Implementar `web/src/server/engine/engine-locator.ts` reutilizando `resolveEngine` de `engine-path.ts` (sin modificar `engine-path.test.ts`) hasta pasar T021 (contracts/engine-client.md)
-- [ ] T023 [P] Escribir primero `web/src/server/security/{api-token,path-redaction}.test.ts` (sin token configurado todo pasa; con token: falta, formato distinto de `Bearer`, valor distinto → 401 `UNAUTHORIZED` + `WWW-Authenticate`, correcto → pasa; `redactDocument` elimina `<raíz>/` en forma JSON-escapada para la ruta y su `realpath`, la raíz exacta → `.`, resto byte a byte; `redactText` relativiza raíz y `ARCHVIEW_DATA_DIR`; `publicProjectRoot`); verlas fallar
-- [ ] T024 Implementar `web/src/server/security/{api-token,path-redaction}.ts` hasta pasar T023 (plan nota 15, research D15)
+- [x] T017 [P] Escribir primero `web/src/server/jobs/job-store.test.ts` (UUID, rechazo de ids inválidos incluido `../`, escritura atómica, transiciones de data-model.md, `paths(id)`, `list`, `delete`); verla fallar
+- [x] T018 Implementar `web/src/server/jobs/job-store.ts` hasta pasar T017 (data-model.md)
+- [x] T019 [P] Escribir primero `web/src/server/upload/{stream-to-file,safe-extract,project-root}.test.ts` con el catálogo de `zip-catalog.ts` (conteo y corte por límite, `Content-Length` previo, validación del directorio central: `..`, absoluta, unidad, `\`, NUL, symlink, duplicados/colisión de mayúsculas, Σ declarado, nº entradas; extracción manual con conteo real; raíz = carpeta única de primer nivel; error de escritura `ENOSPC` → `STORAGE_FULL` y sin restos); verlas fallar
+- [x] T020 Implementar `web/src/server/upload/{stream-to-file,safe-extract,project-root}.ts` hasta pasar T019 (research D8, FR-037)
+- [x] T021 [P] Escribir primero `web/src/server/engine/engine-locator.test.ts` (reglas de 006 intactas + `ENGINE_JAVA_OPTS`, `DOTNET_ANALYZER_PATH`, args `[...opts, -jar, jar, --mcp]`); verla fallar
+- [x] T022 Implementar `web/src/server/engine/engine-locator.ts` reutilizando `resolveEngine` de `engine-path.ts` (sin modificar `engine-path.test.ts`) hasta pasar T021 (contracts/engine-client.md)
+- [x] T023 [P] Escribir primero `web/src/server/security/{api-token,path-redaction}.test.ts` (sin token configurado todo pasa; con token: falta, formato distinto de `Bearer`, valor distinto → 401 `UNAUTHORIZED` + `WWW-Authenticate`, correcto → pasa; `redactDocument` elimina `<raíz>/` en forma JSON-escapada para la ruta y su `realpath`, la raíz exacta → `.`, resto byte a byte; `redactText` relativiza raíz y `ARCHVIEW_DATA_DIR`; `publicProjectRoot`); verlas fallar
+- [x] T024 Implementar `web/src/server/security/{api-token,path-redaction}.ts` hasta pasar T023 (plan nota 15, research D15)
 
 **Checkpoint**: motor acepta `language`, emite progreso y es reentrante (TS-064 verde); base web probada en unitarias.
 
