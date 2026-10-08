@@ -148,7 +148,7 @@ engine/src/test/java/com/extractor/
   runtimebdd/{RunNativeEngineRuntimeFeaturesTest,*Steps}.java
 web/src/
   instrumentation.ts
-  server/config.ts
+  server/config.ts · server/runtime.ts        # singleton por proceso: config, store, cliente del motor, runner
   server/engine/{engine-locator,engine-client}.ts (+ .test.ts)
   server/jobs/{job-store,job-runner,cleaner}.ts (+ .test.ts)
   server/upload/{stream-to-file,safe-extract,project-root}.ts (+ .test.ts)

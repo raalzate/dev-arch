@@ -5,7 +5,7 @@ description: "Task list for 007-native-engine-runtime"
 # Tasks: Integración runtime nativa del motor en dev-arch
 
 **Input**: Design documents from `specs/007-native-engine-runtime/`
-**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md, tests/features/ (87 escenarios TS-001..TS-087, hash LOCKED)
+**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md, tests/features/ (87 escenarios TS-001, TS-002, TS-003, TS-004, TS-005, TS-006, TS-007, TS-008, TS-009, TS-010, TS-011, TS-012, TS-013, TS-014, TS-015, TS-016, TS-017, TS-018, TS-019, TS-020, TS-021, TS-022, TS-023, TS-024, TS-025, TS-026, TS-027, TS-028, TS-029, TS-030, TS-031, TS-032, TS-033, TS-034, TS-035, TS-036, TS-037, TS-038, TS-039, TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046, TS-047, TS-048, TS-049, TS-050, TS-051, TS-052, TS-053, TS-054, TS-055, TS-056, TS-057, TS-058, TS-059, TS-060, TS-061, TS-062, TS-063, TS-064, TS-065, TS-066, TS-067, TS-068, TS-069, TS-070, TS-071, TS-072, TS-073, TS-074, TS-075, TS-076, TS-077, TS-078, TS-079, TS-080, TS-081, TS-082, TS-083, TS-084, TS-085, TS-086, TS-087, hash LOCKED)
 
 **Tests**: TDD obligatorio (CONSTITUTION.md principio III). Cada tarea de pruebas / step definitions DEBE ejecutarse y fallar antes de su tarea de implementación. Prohibido modificar `.feature`, aserciones existentes (001–006, `analyze-route.test.ts`, `engine-path.test.ts`) o `context.json` para pasar.
 
@@ -71,7 +71,7 @@ description: "Task list for 007-native-engine-runtime"
 ## Phase 3: User Story 1 — Analizar un proyecto sin esperar (P1) 🎯 MVP
 
 **Goal**: `POST /api/analyses` → 202; estado con fases; tres documentos; UI asíncrona Java y .NET.
-**Independent Test**: TS-001..TS-015.
+**Independent Test**: TS-001, TS-002, TS-003, TS-004, TS-005, TS-006, TS-007, TS-008, TS-009, TS-010, TS-011, TS-012, TS-013, TS-014, TS-015.
 
 - [ ] T025 [US1] Escribir step definitions `tests/acceptance/steps/native-runtime-async.steps.ts` para [TS-001, TS-002, TS-003, TS-004, TS-005, TS-006, TS-007, TS-008, TS-009, TS-010, TS-011, TS-012] (web-harness + fake MCP; `@slow` con motor real; TS-011 reutiliza los Given de 006); ejecutar y verlas fallar
 - [ ] T026 [P] [US1] Escribir primero `web/src/server/engine/engine-client.test.ts` contra `fake-mcp-server.ts`: arranque perezoso singleton, `analyze` con `onPhase` (ignora regresiones), advertencias desde `_meta`, `isError` → `EngineToolError`/`AMBIGUOUS_PROJECT`, respuesta validada con `parseAnalyzeProjectResponse`; verla fallar
@@ -90,7 +90,7 @@ description: "Task list for 007-native-engine-runtime"
 ## Phase 4: User Story 2 — Análisis concurrentes aislados que sobreviven a la recarga (P1)
 
 **Goal**: aislamiento, persistencia, recuperación al reiniciar, serialización por proyecto, reanudación en el navegador.
-**Independent Test**: TS-016..TS-022.
+**Independent Test**: TS-016, TS-017, TS-018, TS-019, TS-020, TS-021, TS-022.
 
 - [ ] T034 [US2] Escribir step definitions `tests/acceptance/steps/native-runtime-isolation.steps.ts` para [TS-016, TS-017, TS-018, TS-019, TS-020, TS-021, TS-022]; ejecutar y verlas fallar
 - [ ] T035 [P] [US2] Ampliar primero `web/src/server/jobs/job-runner.test.ts` con `recoverOnStart` (`queued|running` → `failed/INTERRUPTED`) y mutex por `realpath(projectRoot)`; verla fallar
@@ -105,7 +105,7 @@ description: "Task list for 007-native-engine-runtime"
 ## Phase 5: User Story 3 — Carga segura y acotada (P1)
 
 **Goal**: límites, zip-slip, cuota previa a la carga, registro de rechazos, TTL, disco lleno.
-**Independent Test**: TS-023..TS-033, TS-086, TS-087.
+**Independent Test**: TS-023, TS-024, TS-025, TS-026, TS-027, TS-028, TS-029, TS-030, TS-031, TS-032, TS-033, TS-086, TS-087.
 
 - [ ] T039 [US3] Escribir step definitions `tests/acceptance/steps/native-runtime-upload-security.steps.ts` para [TS-023, TS-024, TS-025, TS-026, TS-027, TS-028, TS-029, TS-030, TS-031, TS-032, TS-033, TS-086, TS-087]; ejecutar y verlas fallar
 - [ ] T040 [US3] Integrar en `web/src/app/api/analyses/route.ts` la verificación de cuota **antes** de leer el cuerpo (429 + `Retry-After`), los errores de `safe-extract` (400/413 con `entry`/`limit`), `507 STORAGE_FULL` al guardar la carga, borrado del área en todo rechazo y registro de rechazos de seguridad sin contenido hasta pasar [TS-023, TS-024, TS-025, TS-027, TS-028, TS-029, TS-030, TS-031, TS-086]
@@ -120,7 +120,7 @@ description: "Task list for 007-native-engine-runtime"
 ## Phase 6: User Story 4 — Visor de código restringido (P1)
 
 **Goal**: `/api/source?jobId&path` contenido en la raíz del job.
-**Independent Test**: TS-034..TS-039.
+**Independent Test**: TS-034, TS-035, TS-036, TS-037, TS-038, TS-039.
 
 - [ ] T044 [US4] Escribir step definitions `tests/acceptance/steps/native-runtime-source.steps.ts` para [TS-034, TS-035, TS-036, TS-037, TS-038, TS-039]; ejecutar y verlas fallar
 - [ ] T045 [P] [US4] Escribir primero `web/src/server/source/source-sandbox.test.ts` (catálogo de escapes: absoluta, `..`, `%2e%2e`, `\`, NUL, unidad, symlink saliente, otro job, directorio, inexistente, extensión, tamaño; respuesta 404 uniforme fuera de la raíz); verla fallar
@@ -134,7 +134,7 @@ description: "Task list for 007-native-engine-runtime"
 ## Phase 7: User Story 5 — Importar resultados validados (P2)
 
 **Goal**: `POST /api/analyses/import` validado contra el contrato 1.0.0.
-**Independent Test**: TS-040..TS-047.
+**Independent Test**: TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046, TS-047.
 
 - [ ] T048 [US5] Escribir step definitions `tests/acceptance/steps/native-runtime-import.steps.ts` para [TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046, TS-047]; ejecutar y verlas fallar
 - [ ] T049 [P] [US5] Escribir primero `web/src/server/import/import-validator.test.ts` (fixtures `schema/fixtures/valid/*` aceptadas; `schema/fixtures/invalid/*` → violaciones con `document`/`pointer`/`message`; versión presente ≠ 1.0.0 → `UNSUPPORTED_SCHEMA_VERSION`; versión ausente → `SCHEMA_VIOLATION`; documento obligatorio ausente); verla fallar
@@ -148,7 +148,7 @@ description: "Task list for 007-native-engine-runtime"
 ## Phase 8: User Story 6 — Progreso, advertencias, lenguaje y reutilización en el motor (P2)
 
 **Goal**: caché, advertencias, `--language` en CLI, paridad y determinismo (la parte concurrente, TS-064, ya se verificó en T014).
-**Independent Test**: TS-048..TS-063, TS-065.
+**Independent Test**: TS-048, TS-049, TS-050, TS-051, TS-052, TS-053, TS-054, TS-055, TS-056, TS-057, TS-058, TS-059, TS-060, TS-061, TS-062, TS-063, TS-065.
 
 - [ ] T052 [US6] Escribir step definitions JVM `engine/src/test/java/com/extractor/runtimebdd/{CacheSteps,WarningsSteps,ParitySteps}.java` para [TS-050, TS-052, TS-055, TS-056, TS-057, TS-058, TS-059, TS-060, TS-061]; ejecutar y ver fallar los no cubiertos por Foundational
 - [ ] T053 [P] [US6] Escribir primero `engine/src/test/java/com/extractor/service/{TreeFingerprintTest,AnalysisCacheTest}.java` (exclusión de `output*.json` raíz; cambios de mtime/tamaño/alta/baja cambian la huella; LRU con capacidad; `0` desactiva; clave con lenguaje; cómputo único concurrente; no mutación tras `minViability`); verlas fallar
@@ -167,7 +167,7 @@ description: "Task list for 007-native-engine-runtime"
 ## Phase 9: User Story 7 — Servicio del motor resistente a fallos (P2)
 
 **Goal**: proceso único, reinicio con backoff, indisponibilidad temporal, timeout con reciclado, stderr por job.
-**Independent Test**: TS-066..TS-072.
+**Independent Test**: TS-066, TS-067, TS-068, TS-069, TS-070, TS-071, TS-072.
 
 - [ ] T061 [US7] Escribir step definitions `tests/acceptance/steps/native-runtime-resilience.steps.ts` para [TS-066, TS-067, TS-068, TS-069, TS-070, TS-071, TS-072] (TS-072 reutiliza los Given de entorno y directorio de trabajo de 006); ejecutar y verlas fallar
 - [ ] T062 [P] [US7] Ampliar primero `web/src/server/engine/engine-client.test.ts` (un solo lanzamiento para N análisis; caída → `EngineCrashedError` < 1 s y relanzamiento; > 3 caídas en 60 s → `EngineUnavailableError`; espera durante reinicio; timeout → `EngineTimeoutError` y `recycleWhenIdle`; stderr → `[engine]` y `onStderr` por job en vuelo); verla fallar
@@ -180,7 +180,7 @@ description: "Task list for 007-native-engine-runtime"
 ## Phase 10: User Story 8 — Compatibilidad del análisis síncrono (P3)
 
 **Goal**: `/api/analyze` igual hacia fuera, aislado por petición, obsoleto; UI no la usa; artefactos bloqueados intactos.
-**Independent Test**: TS-073..TS-077 + escenarios 006 TS-014..TS-019 + `analyze-route.test.ts`.
+**Independent Test**: TS-073, TS-074, TS-075, TS-076, TS-077 + escenarios 006 TS-014, TS-015, TS-016, TS-017, TS-018, TS-019 + `analyze-route.test.ts`.
 
 - [ ] T064 [US8] Escribir step definitions `tests/acceptance/steps/native-runtime-compat.steps.ts` para [TS-073, TS-074, TS-075, TS-076] (TS-076 compara contra la etiqueta `dev-arch-006-baseline` de T007, nunca contra un hash de commit; TS-077 se cubre íntegramente con steps de 006); ejecutar y verlas fallar
 - [ ] T065 [US8] Reescribir `web/src/app/api/analyze/route.ts` (job `origin: sync`, `safe-extract`, `execFile` con `cwd=<job>/out`, lectura desde `<job>/out`, cabeceras `Deprecation`/`Link`) manteniendo verdes, sin modificarlos, `web/src/server/engine/analyze-route.test.ts` y los escenarios 006 [TS-073, TS-074] (research D9)
@@ -193,7 +193,7 @@ description: "Task list for 007-native-engine-runtime"
 ## Phase 11: User Story 9 — API sin rutas del servidor y con token opcional (P2)
 
 **Goal**: FR-034..FR-036 en todas las rutas y en la UI (decisión A3).
-**Independent Test**: TS-078..TS-085.
+**Independent Test**: TS-078, TS-079, TS-080, TS-081, TS-082, TS-083, TS-084, TS-085.
 
 - [ ] T067 [US9] Escribir step definitions `tests/acceptance/steps/native-runtime-exposure.steps.ts` para [TS-078, TS-079, TS-080, TS-081, TS-082, TS-083, TS-084, TS-085]; ejecutar y verlas fallar
 - [ ] T068 [US9] Aplicar `requireApiToken` como primera instrucción en `web/src/app/api/analyses/route.ts`, `analyses/[id]/route.ts`, `analyses/[id]/[doc]/route.ts`, `analyses/import/route.ts`, `source/route.ts` y `analyze/route.ts`, y completar la relativización (`projectRoot`, documentos, advertencias, motivos de fallo) hasta pasar [TS-078, TS-079, TS-080, TS-081, TS-082, TS-083]
@@ -207,7 +207,7 @@ description: "Task list for 007-native-engine-runtime"
 
 ## Phase 12: Polish & Cross-Cutting Concerns
 
-- [ ] T072 Actualizar `<monorepo>/.github/workflows/dev-arch.yml`: filtro `acceptance` + `apps/dev-arch/specs/007-*/tests/**`; job `e2e-browser` (`if` compuesto web/engine-java/engine-dotnet/acceptance, JDK 17, .NET 8, Node 20, `make build`, `npx playwright install --with-deps chromium`, `make test-e2e-browser`, `timeout-minutes: 30`); confirmar que TS-025..TS-030 de 006 siguen verdes (research D11, E13)
+- [ ] T072 Actualizar `<monorepo>/.github/workflows/dev-arch.yml`: filtro `acceptance` + `apps/dev-arch/specs/007-*/tests/**`; job `e2e-browser` (`if` compuesto web/engine-java/engine-dotnet/acceptance, JDK 17, .NET 8, Node 20, `make build`, `npx playwright install --with-deps chromium`, `make test-e2e-browser`, `timeout-minutes: 30`); confirmar que TS-025, TS-026, TS-027, TS-028, TS-029, TS-030 de 006 siguen verdes (research D11, E13)
 - [ ] T073 [P] Documentar variables y flujo en `web/docs/ENVIRONMENT.md` (incluidos `DEVARCH_API_TOKEN`, la advertencia de exposición y `HOSTNAME`) y `web/docs/DEVELOPERS.md` (research D13, D15), `language`/progreso/`_meta`/caché en `engine/MCP.md` y `--language` en `engine/README.md`; entrada en `CHANGELOG.md` (sin bump de contrato)
 - [ ] T074 [P] Eliminar del frontend el almacenamiento de resultados en `localStorage` y código muerto de la subida síncrona en `web/src/components/software-architecture-analyzer.tsx`
 - [ ] T075 Gates completos con JDK 17: `make test` (incluye `mvn -B verify`, `dotnet format --verify-no-changes`, `schema-check`, web, aceptación sin `@slow`), Checkstyle ≤ 4763 y SpotBugs 0 con los comandos de CI, `DEVARCH_E2E=true make test-acceptance`, `make test-e2e-browser`; `testify-tdd.sh verify-hash` para 001–007 [TS-076, TS-077]

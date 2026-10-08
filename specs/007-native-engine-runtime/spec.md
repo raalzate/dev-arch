@@ -222,7 +222,7 @@ Como operador que expone dev-arch más allá de su máquina, quiero que las resp
 - **FR-004**: La consulta de resultados de un análisis no completado MUST indicar que aún no están disponibles (o el motivo del fallo), y la de un identificador inexistente o caducado MUST indicar que no existe.
 - **FR-005**: En modo desarrollo (servidor web arrancado en modo desarrollo, o habilitación explícita por configuración), la web MUST permitir analizar una carpeta local del servidor en lugar de un ZIP; en cualquier otro caso esa opción MUST rechazarse.
 - **FR-006**: El envío de un análisis MUST aceptar una elección opcional de lenguaje (java, dotnet, auto; por defecto auto); un proyecto ambiguo sin elección MUST fallar con un mensaje que pida elegir el lenguaje.
-- **FR-007**: La interfaz de la web MUST usar el flujo asíncrono: mostrar el estado y la fase del análisis, mostrar componentes, propuestas y advertencias al completarse, reflejar cada cambio de estado o de fase en 3 segundos o menos, y recordar en el navegador solo el identificador del análisis activo (no sus resultados) para retomarlo tras recargar.
+- **FR-007**: La interfaz de la web MUST usar el flujo asíncrono: mostrar el estado y la fase del análisis, mostrar componentes, propuestas y advertencias al completarse, reflejar cada cambio de estado o de fase en 3 segundos o menos, y recordar en el navegador, del análisis, solo el identificador del análisis activo (nunca sus resultados) para retomarlo tras recargar; el token de acceso de FR-035, si se usa, puede conservarse solo durante la sesión del navegador.
 
 **Aislamiento y persistencia**
 
