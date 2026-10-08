@@ -198,16 +198,16 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - **FR-002**: La web MUST permitir consultar el estado de un análisis por su identificador: estado (en cola, en ejecución, completado, fallido), fase actual (detección, extracción, inferencia, escritura), instantes de creación, inicio y fin, motivo del fallo y advertencias.
 - **FR-003**: Al completarse un análisis, la web MUST permitir consultar por separado el grafo de dependencias, la arquitectura propuesta y los contratos de API, tal como los produjo el motor y validados contra el contrato de datos vigente (1.0.0), sin alterarlos.
 - **FR-004**: La consulta de resultados de un análisis no completado MUST indicar que aún no están disponibles (o el motivo del fallo), y la de un identificador inexistente o caducado MUST indicar que no existe.
-- **FR-005**: En modo desarrollo, la web MUST permitir analizar una carpeta local del servidor en lugar de un ZIP; fuera del modo desarrollo esa opción MUST rechazarse.
+- **FR-005**: En modo desarrollo (servidor web arrancado en modo desarrollo, o habilitación explícita por configuración), la web MUST permitir analizar una carpeta local del servidor en lugar de un ZIP; en cualquier otro caso esa opción MUST rechazarse.
 - **FR-006**: El envío de un análisis MUST aceptar una elección opcional de lenguaje (java, dotnet, auto; por defecto auto); un proyecto ambiguo sin elección MUST fallar con un mensaje que pida elegir el lenguaje.
-- **FR-007**: La interfaz de la web MUST usar el flujo asíncrono: mostrar el estado y la fase del análisis, mostrar componentes, propuestas y advertencias al completarse, y recordar en el navegador el identificador del análisis activo para retomarlo tras recargar.
+- **FR-007**: La interfaz de la web MUST usar el flujo asíncrono: mostrar el estado y la fase del análisis, mostrar componentes, propuestas y advertencias al completarse, reflejar cada cambio de estado o de fase en 3 segundos o menos, y recordar en el navegador solo el identificador del análisis activo (no sus resultados) para retomarlo tras recargar.
 
 **Aislamiento y persistencia**
 
 - **FR-008**: Cada análisis MUST tener su propia área de trabajo para la carga, las fuentes extraídas y los resultados; ningún análisis MUST leer ni escribir archivos con nombre fijo en el directorio de trabajo del servidor.
 - **FR-009**: Los análisis y sus resultados MUST persistir en el disco del servidor sin base de datos y sobrevivir a la recarga del navegador y al reinicio del servidor web; un análisis que estaba en cola o en ejecución al reiniciarse el servidor MUST quedar fallido con el motivo "interrumpido".
 - **FR-010**: Análisis concurrentes de proyectos distintos MUST producir resultados independientes; los análisis sobre la misma ruta de proyecto MUST serializarse.
-- **FR-011**: La web MUST limitar el número de análisis en ejecución simultánea (configurable, por defecto 2) y el de análisis en cola (configurable, por defecto 10); por encima de ambos, el envío MUST rechazarse indicando que se reintente más tarde.
+- **FR-011**: La web MUST limitar el número de análisis en ejecución simultánea (configurable, por defecto 2) y el de análisis en cola (configurable, por defecto 10); por encima de ambos, el envío MUST rechazarse indicando que se reintente más tarde, y esa verificación MUST hacerse antes de recibir el contenido del envío.
 - **FR-012**: Los análisis terminados (completados, fallidos o importados) y todos sus archivos MUST eliminarse al superar un periodo de retención configurable (por defecto 24 horas desde su fin) mediante una limpieza periódica; los análisis en cola o en ejecución nunca se eliminan por caducidad.
 
 **Seguridad de la carga**
@@ -215,7 +215,7 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - **FR-013**: La web MUST rechazar, antes de procesarla y sin conservar archivos, toda carga que supere un límite de tamaño configurable (por defecto 200 MB), indicando el límite.
 - **FR-014**: La web MUST rechazar íntegramente un ZIP con cualquier entrada cuya ruta resuelta quede fuera del área de extracción del análisis (componentes `..`, rutas absolutas, letras de unidad, enlaces simbólicos), indicando la entrada culpable, sin escribir nada fuera de esa área.
 - **FR-015**: La web MUST rechazar un ZIP cuyo tamaño descomprimido total supere un límite configurable (por defecto 1 GB) o cuyo número de entradas supere un límite configurable (por defecto 100 000), indicando el límite superado.
-- **FR-016**: La web MUST rechazar con un mensaje claro los archivos que no son ZIP válidos y MUST eliminar los archivos temporales de todo envío rechazado o fallido.
+- **FR-016**: La web MUST rechazar con un mensaje claro los archivos que no son ZIP válidos, MUST eliminar los archivos temporales de todo envío rechazado o fallido y MUST anotar en el registro del servidor cada rechazo de seguridad (motivo y entrada culpable, sin contenido del archivo).
 
 **Visor de código fuente**
 
@@ -299,6 +299,9 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - Q: ¿Qué documentos exige la importación? -> A: Grafo y arquitectura obligatorios; contratos de API opcionales. (default elegido por agente — pendiente confirmar) [FR-020]
 - Q: ¿Lista permitida y tamaño máximo del visor? -> A: Archivos de código y configuración de los lenguajes soportados (Java, C#, VB.NET, descriptores de proyecto y de construcción, configuración y SQL); 2 MB por defecto. (default elegido por agente — pendiente confirmar) [FR-018]
 - Q: ¿Cancelación explícita de un análisis por el usuario? -> A: Fuera de alcance (la fase 5 trata la experiencia de usuario); cerrar o recargar el navegador no cancela. (default elegido por agente — pendiente confirmar) [FR-007]
+- Q: ¿Qué es "modo desarrollo" para el análisis de carpetas locales? -> A: El servidor web arrancado en modo desarrollo, o una habilitación explícita por configuración; nunca por defecto en producción. (default elegido por agente — pendiente confirmar) [FR-005]
+- Q: ¿Con qué rapidez debe la interfaz reflejar el progreso? -> A: Cada cambio de estado o fase visible en 3 segundos o menos. (default elegido por agente — pendiente confirmar) [FR-007]
+- Q: ¿La cuota se verifica antes de recibir el ZIP? -> A: Sí, para que envíos rechazados no consuman disco ni ancho de banda. (default elegido por agente — pendiente confirmar) [FR-011]
 - Q: ¿Alcance de la reutilización del motor? -> A: Solo en memoria durante la vida del proceso del modo servidor, acotada a 8 proyectos por defecto; la línea de comandos no reutiliza. (default elegido por agente — pendiente confirmar) [FR-025]
 
 ### Assumptions
@@ -308,3 +311,4 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - La máquina de referencia y la integración continua disponen de un navegador automatizable para la prueba extremo a extremo.
 - El comando reservado de pruebas extremo a extremo del producto (bloqueado por la feature 006 como marcador de la feature 011) no se modifica en esta feature; la prueba en navegador de esta feature se ejecuta con su propio comando.
 - La Constitución v1.0.0 no se enmienda en esta feature.
+- El espacio en disco del host se dimensiona por el operador (cuota × límite descomprimido + resultados); la vigilancia de espacio libre y las alertas son de la Fase 6. Ante disco lleno se aplica el caso límite correspondiente (fallo claro y limpieza).

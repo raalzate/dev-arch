@@ -18,7 +18,7 @@ Registers an analysis and returns before it runs (FR-001).
 | `202 {"jobId": "<uuid>", "status": "queued"\|"running"}` + `Location: /api/analyses/<id>` | accepted |
 | `400 INVALID_ZIP` / `ZIP_ENTRY_OUTSIDE_ROOT` (+`entry`) / `ZIP_SYMLINK` (+`entry`) / `ZIP_DUPLICATE_ENTRY` (+`entry`) / `ZIP_TOO_MANY_ENTRIES` (+`limit`) / `INVALID_LANGUAGE` / `LOCAL_PATH_NOT_DIRECTORY` | validation |
 | `413 UPLOAD_TOO_LARGE` (+`limitBytes`) / `UNCOMPRESSED_TOO_LARGE` (+`limitBytes`) | limits |
-| `429 TOO_MANY_ANALYSES` + `Retry-After: 30` | running = max and queue full |
+| `429 TOO_MANY_ANALYSES` + `Retry-After: 30` | running = max and queue full — checked **before** reading the body (FR-011) |
 | `500 ENGINE_NOT_BUILT` — message contains `Engine not built`, the tried path and `make build` | engine jar missing (FR-032, same text as 006 `resolveEngine`) |
 
 Rejected submissions leave no files (FR-016). Response time target < 2 s for the Java demo ZIP (SC-004).
