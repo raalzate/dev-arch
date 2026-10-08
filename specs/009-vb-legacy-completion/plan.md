@@ -147,3 +147,20 @@ CHANGELOG.md                                  # [Unreleased] entry
 | Heurística SQL sobre literales | Sin flujo de datos no se puede seguir `sql` hasta el comando | Gramática estricta (data-model §SQL), casos negativos en la matriz; limitaciones documentadas |
 | Capa `Web` para formularios/reportes | El catálogo cerrado no tiene "Presentación"/"Reportes" | Default pendiente de confirmar; las capas no afectan a la inferencia |
 | `ProjectAnalyzer` (archivo compartido C#/VB) | Punto único de despacho | Prueba de oro C# antes del cambio; ramas nuevas solo para VB |
+
+## Requirement Coverage
+
+| Requisitos | Diseño | Tareas |
+|------------|--------|--------|
+| FR-001, FR-002, FR-003, FR-004 | Design 4 (data-model §SQL, §DataSet; research D4, D5) | T008, T009 |
+| FR-010, FR-011, FR-012, FR-013, FR-014, FR-015 | Design 7 (data-model §Code issues; research D6) | T010 |
+| FR-020, FR-021, FR-022, FR-023 | Design 5 (data-model §Métricas) | T011 |
+| FR-030, FR-031, FR-032, FR-033, FR-034, FR-035 | Design 6 (data-model §Configuración) | T012, T013, T010 (secreto en código) |
+| FR-040, FR-041, FR-042 | Design 8 (data-model §Capas; research D7) | T014 |
+| FR-050, FR-051, FR-052, FR-053 | Design 9 (data-model §Endpoints; research D8) | T015 |
+| FR-060, FR-061, FR-062, FR-063, FR-064, FR-065 | Design 10 (contracts/dotnet-warnings-channel.md; research D10, D13) | T007, T016, T017 |
+| FR-070, FR-071 | research D11 | T002, T018 |
+| FR-080, FR-081, FR-082, FR-083 | Design 1 (research D1, D12); contracts/vb-analysis-output.md | T003, T018, T019, T020 |
+| SC-001, SC-002, SC-003, SC-005, SC-007, SC-008 | corpus sintético + escenarios Reqnroll | T004, T009–T015, T018 |
+| SC-004, SC-009 | pruebas de oro C#, suites existentes, clon limpio | T003, T019, T020 |
+| SC-006 | escenarios `@engine` | T005, T016 |
