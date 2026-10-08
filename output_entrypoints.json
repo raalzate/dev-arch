@@ -1,0 +1,262 @@
+{
+  "endpoints" : [ {
+    "id" : "AccountController.create",
+    "path" : "/cuentas",
+    "method" : "POST",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : "CreateAccountRequest",
+    "response_schema" : "AccountResponse",
+    "component_id" : "com.reto.tecnico.account_service.controller.AccountController"
+  }, {
+    "id" : "AccountController.deactivate",
+    "path" : "/cuentas/accountNumber",
+    "method" : "DELETE",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "accountNumber",
+      "in" : "path",
+      "type" : "String",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "Void",
+    "component_id" : "com.reto.tecnico.account_service.controller.AccountController"
+  }, {
+    "id" : "AccountController.getAll",
+    "path" : "/cuentas",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "/false",
+      "in" : "query",
+      "type" : "UUID",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "List",
+    "component_id" : "com.reto.tecnico.account_service.controller.AccountController"
+  }, {
+    "id" : "AccountController.getByAccountNumber",
+    "path" : "/cuentas/accountNumber",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "accountNumber",
+      "in" : "path",
+      "type" : "String",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "AccountResponse",
+    "component_id" : "com.reto.tecnico.account_service.controller.AccountController"
+  }, {
+    "id" : "AccountController.update",
+    "path" : "/cuentas/accountNumber",
+    "method" : "PUT",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "accountNumber",
+      "in" : "path",
+      "type" : "String",
+      "required" : true
+    } ],
+    "request_body_schema" : "UpdateAccountRequest",
+    "response_schema" : "AccountResponse",
+    "component_id" : "com.reto.tecnico.account_service.controller.AccountController"
+  }, {
+    "id" : "MovementController.create",
+    "path" : "/movimientos",
+    "method" : "POST",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : "CreateMovementRequest",
+    "response_schema" : "MovementResponse",
+    "component_id" : "com.reto.tecnico.account_service.controller.MovementController"
+  }, {
+    "id" : "MovementController.getById",
+    "path" : "/movimientos/movementId",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "movementId",
+      "in" : "path",
+      "type" : "UUID",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "MovementResponse",
+    "component_id" : "com.reto.tecnico.account_service.controller.MovementController"
+  }, {
+    "id" : "MovementController.rectify",
+    "path" : "/movimientos/movementId",
+    "method" : "PUT",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "movementId",
+      "in" : "path",
+      "type" : "UUID",
+      "required" : true
+    } ],
+    "request_body_schema" : "UpdateMovementRequest",
+    "response_schema" : "RectifyMovementResponse",
+    "component_id" : "com.reto.tecnico.account_service.controller.MovementController"
+  }, {
+    "id" : "MovementController.search",
+    "path" : "/movimientos",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "/false",
+      "in" : "query",
+      "type" : "String",
+      "required" : true
+    }, {
+      "name" : "/false",
+      "in" : "query",
+      "type" : "UUID",
+      "required" : true
+    }, {
+      "name" : "/false",
+      "in" : "query",
+      "type" : "LocalDate",
+      "required" : true
+    }, {
+      "name" : "/false",
+      "in" : "query",
+      "type" : "LocalDate",
+      "required" : true
+    }, {
+      "name" : "/false",
+      "in" : "query",
+      "type" : "boolean",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "List",
+    "component_id" : "com.reto.tecnico.account_service.controller.MovementController"
+  }, {
+    "id" : "MovementController.voidMovement",
+    "path" : "/movimientos/movementId",
+    "method" : "DELETE",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "movementId",
+      "in" : "path",
+      "type" : "UUID",
+      "required" : true
+    } ],
+    "request_body_schema" : "VoidMovementRequest",
+    "response_schema" : "VoidMovementResponse",
+    "component_id" : "com.reto.tecnico.account_service.controller.MovementController"
+  }, {
+    "id" : "ReportController.getReport",
+    "path" : "/reportes",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "fechaDesde",
+      "in" : "query",
+      "type" : "LocalDate",
+      "required" : true
+    }, {
+      "name" : "fechaHasta",
+      "in" : "query",
+      "type" : "LocalDate",
+      "required" : true
+    }, {
+      "name" : "/false",
+      "in" : "query",
+      "type" : "UUID",
+      "required" : true
+    }, {
+      "name" : "/false",
+      "in" : "query",
+      "type" : "String",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "ReportResponse",
+    "component_id" : "com.reto.tecnico.account_service.controller.ReportController"
+  }, {
+    "id" : "CustomerEventListener.onMessage",
+    "path" : "#@rabbitProperties.queue",
+    "method" : "RABBIT_LISTEN",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : "CustomerEvent",
+    "response_schema" : null,
+    "component_id" : "com.reto.tecnico.account_service.messaging.CustomerEventListener"
+  }, {
+    "id" : "CustomerController.create",
+    "path" : "/clientes",
+    "method" : "POST",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : "CreateCustomerRequest",
+    "response_schema" : "CustomerResponse",
+    "component_id" : "com.reto.tecnico.customer_service.controller.CustomerController"
+  }, {
+    "id" : "CustomerController.deactivate",
+    "path" : "/clientes/clienteId",
+    "method" : "DELETE",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "clienteId",
+      "in" : "path",
+      "type" : "UUID",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "Void",
+    "component_id" : "com.reto.tecnico.customer_service.controller.CustomerController"
+  }, {
+    "id" : "CustomerController.getById",
+    "path" : "/clientes/clienteId",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "clienteId",
+      "in" : "path",
+      "type" : "UUID",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "CustomerResponse",
+    "component_id" : "com.reto.tecnico.customer_service.controller.CustomerController"
+  }, {
+    "id" : "CustomerController.getByIdentificacion",
+    "path" : "/clientes/identificacion",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "identificacion",
+      "in" : "query",
+      "type" : "String",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "CustomerResponse",
+    "component_id" : "com.reto.tecnico.customer_service.controller.CustomerController"
+  }, {
+    "id" : "CustomerController.update",
+    "path" : "/clientes/clienteId",
+    "method" : "PUT",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "clienteId",
+      "in" : "path",
+      "type" : "UUID",
+      "required" : true
+    } ],
+    "request_body_schema" : "UpdateCustomerRequest",
+    "response_schema" : "CustomerResponse",
+    "component_id" : "com.reto.tecnico.customer_service.controller.CustomerController"
+  } ],
+  "schemas" : {
+    "List" : {
+      "type" : "object",
+      "properties" : { }
+    }
+  }
+}
