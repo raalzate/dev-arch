@@ -24,6 +24,12 @@ import { ScrollArea } from './ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from './ui/separator';
+import AnalysisProgress from '@/components/analysis-progress';
+import ImportDialog from '@/components/import-dialog';
+import {
+  ApiAuthError, ApiRequestError, getActiveJobId, getDocuments, pollAnalysis, setActiveJobId, setApiToken, submitAnalysis,
+  type AnalysisStatus, type Language,
+} from '@/lib/analyses-client';
 
 
 const SoftwareArchitectureAnalyzer = () => {
@@ -35,6 +41,16 @@ const SoftwareArchitectureAnalyzer = () => {
   const [docError, setDocError] = useState<string | null>(null);
   const [isDocLoading, setIsDocLoading] = useState(false);
 
+  // Active analysis (007): the browser keeps only its identifier, never its results (FR-007).
+  const [analysis, setAnalysis] = useState<AnalysisStatus | null>(null);
+  const [language, setLanguage] = useState<Language>('auto');
+  const [expired, setExpired] = useState(false);
+  // API token prompt (FR-035): shown when the server answers 401; the pending action is retried after it.
+  const [needsToken, setNeedsToken] = useState(false);
+  const [tokenInput, setTokenInput] = useState('');
+  const pendingAction = useRef<(() => Promise<void>) | null>(null);
+  const pollAbort = useRef<AbortController | null>(null);
+
   // State for the details modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<{ title: string; content: React.ReactNode } | null>(null);
@@ -43,28 +59,57 @@ const SoftwareArchitectureAnalyzer = () => {
   const fileZipRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    try {
-      const cachedComponentsData = localStorage.getItem('componentsData');
-      const cachedArchData = localStorage.getItem('archData');
-
-      if (cachedComponentsData && cachedArchData) {
-        setComponentsData(JSON.parse(cachedComponentsData));
-        setArchData(JSON.parse(cachedArchData));
-        toast({
-          title: "Datos cargados desde caché",
-          description: "Se han cargado los datos analizados previamente.",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to load data from localStorage", error);
-      localStorage.removeItem('componentsData');
-      localStorage.removeItem('archData');
+  /** Returns true when the error was an authentication request (the action is retried after the token). */
+  const handleAuth = useCallback((e: unknown, retry: () => Promise<void>): boolean => {
+    if (e instanceof ApiAuthError) {
+      pendingAction.current = retry;
+      setNeedsToken(true);
+      return true;
     }
-  }, [toast]);
+    return false;
+  }, []);
 
+  const followAnalysis = useCallback(async (jobId: string): Promise<void> => {
+    pollAbort.current?.abort();
+    const abort = new AbortController();
+    pollAbort.current = abort;
+    setActiveJobId(jobId);
+    setExpired(false);
+    setIsLoading(true);
+    try {
+      const final = await pollAnalysis(jobId, setAnalysis, abort.signal);
+      if (!final || abort.signal.aborted) return;
+      if (final.status === 'completed') {
+        const docs = await getDocuments(jobId);
+        if (abort.signal.aborted) return;
+        setComponentsData(docs.componentsData);
+        setArchData(docs.archData);
+        toast({ title: "Análisis completado", description: "El proyecto ha sido analizado con éxito." });
+      } else if (final.error) {
+        toast({ variant: "destructive", title: "Error en el Análisis", description: final.error.message, duration: 9000 });
+      }
+    } catch (e) {
+      if (handleAuth(e, () => followAnalysis(jobId))) return;
+      if (e instanceof ApiRequestError && e.status === 404) {
+        setActiveJobId(null);
+        setAnalysis(null);
+        setExpired(true);
+        return;
+      }
+      toast({ variant: "destructive", title: "Error", description: e instanceof Error ? e.message : String(e) });
+    } finally {
+      if (pollAbort.current === abort) setIsLoading(false);
+    }
+  }, [handleAuth, toast]);
 
-  const handleAnalyze = async () => {
+  useEffect(() => {
+    // Resume the analysis that was active before a reload or a new visit (FR-007, SC-002).
+    const jobId = getActiveJobId();
+    if (jobId) void followAnalysis(jobId);
+    return () => pollAbort.current?.abort();
+  }, [followAnalysis]);
+
+  const handleAnalyze = async (): Promise<void> => {
     const file = fileZipRef.current?.files?.[0];
 
     if (!file) {
@@ -76,38 +121,19 @@ const SoftwareArchitectureAnalyzer = () => {
       return;
     }
 
-    setIsLoading(true);
+    pollAbort.current?.abort();
     setComponentsData(null);
     setArchData(null);
-    setDocumentation(null); 
+    setAnalysis(null);
+    setDocumentation(null);
     setDocError(null);
-
-    const formData = new FormData();
-    formData.append('file', file);
-
+    setIsLoading(true);
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to analyze project');
-      }
-
-      setComponentsData(result.componentsData);
-      setArchData(result.archData);
-      localStorage.setItem('componentsData', JSON.stringify(result.componentsData));
-      localStorage.setItem('archData', JSON.stringify(result.archData));
-
-      toast({
-        title: "Análisis completado",
-        description: "El proyecto ha sido analizado con éxito.",
-      });
-
+      const { jobId } = await submitAnalysis(file, language);
+      void followAnalysis(jobId);
     } catch (error) {
+      setIsLoading(false);
+      if (handleAuth(error, handleAnalyze)) return;
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       toast({
         variant: "destructive",
@@ -115,9 +141,24 @@ const SoftwareArchitectureAnalyzer = () => {
         description: <pre className="whitespace-pre-wrap">{errorMessage}</pre>,
         duration: 9000
       });
-    } finally {
-      setIsLoading(false);
     }
+  };
+
+  const handleImported = (jobId: string) => {
+    setComponentsData(null);
+    setArchData(null);
+    setAnalysis(null);
+    void followAnalysis(jobId);
+  };
+
+  const handleTokenSubmit = async () => {
+    if (!tokenInput.trim()) return;
+    setApiToken(tokenInput);
+    setNeedsToken(false);
+    setTokenInput('');
+    const retry = pendingAction.current;
+    pendingAction.current = null;
+    if (retry) await retry();
   };
 
   const handleGenerateDocumentation = async () => {
@@ -151,16 +192,19 @@ const SoftwareArchitectureAnalyzer = () => {
   };
 
   const handleClearCache = () => {
-    localStorage.removeItem('componentsData');
-    localStorage.removeItem('archData');
+    pollAbort.current?.abort();
+    setActiveJobId(null);
+    setAnalysis(null);
+    setExpired(false);
+    setIsLoading(false);
     setComponentsData(null);
     setArchData(null);
     setDocumentation(null);
     setDocError(null);
     if(fileZipRef.current) fileZipRef.current.value = "";
     toast({
-      title: "Caché Limpiado",
-      description: "Los datos de análisis almacenados han sido eliminados.",
+      title: "Datos Limpiados",
+      description: "Se ha olvidado el análisis activo en este navegador.",
     });
   };
 
@@ -168,17 +212,16 @@ const SoftwareArchitectureAnalyzer = () => {
     setModalContent({ title, content });
     setIsModalOpen(true);
   };
-  
+
   const handleProposalUpdate = (updatedProposal: Proposal) => {
     if (!archData) return;
 
     const updatedProposals = archData.proposals?.map(p =>
       p.id === updatedProposal.id ? updatedProposal : p
     );
-    
+
     const newArchData = { ...archData, proposals: updatedProposals };
     setArchData(newArchData);
-    localStorage.setItem('archData', JSON.stringify(newArchData));
 
     toast({
       title: "Propuesta Actualizada",
@@ -192,18 +235,17 @@ const SoftwareArchitectureAnalyzer = () => {
     const newProposals = archData.proposals.map(p => {
       // Remove component from its old cluster
       const filteredComponents = p.components?.filter(cId => cId !== updatedComponent.id) ?? [];
-      
+
       // Add component to its new cluster
       if (p.id === newClusterId) {
         return { ...p, components: [...filteredComponents, updatedComponent.id] };
       }
-      
+
       return { ...p, components: filteredComponents };
     });
 
     const newArchData = { ...archData, proposals: newProposals };
     setArchData(newArchData);
-    localStorage.setItem('archData', JSON.stringify(newArchData));
 
     toast({
       title: "Componente Actualizado",
@@ -224,9 +266,9 @@ const SoftwareArchitectureAnalyzer = () => {
 
     const dataStr = JSON.stringify(archData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+
     const exportFileDefaultName = 'architecture_updated.json';
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
@@ -246,7 +288,7 @@ const SoftwareArchitectureAnalyzer = () => {
 
   const allCodeIssues = React.useMemo(() => {
     if (!componentsData?.components) return [];
-    return componentsData.components.flatMap(comp => 
+    return componentsData.components.flatMap(comp =>
       (comp.code_issues || []).map(issue => ({ ...issue, componentId: comp.id }))
     );
   }, [componentsData]);
@@ -268,15 +310,17 @@ const SoftwareArchitectureAnalyzer = () => {
   const handleShowComponentDetails = useCallback((componentId: string) => {
     const component = componentsData?.components?.find(c => c.id === componentId);
     if (component) {
-      showDetails(`Detalles del Componente: ${component.id}`, 
-        <ComponentDetails 
-          component={component} 
-          showDetails={showDetails} 
-          inferLayer={inferLayer} 
+      showDetails(`Detalles del Componente: ${component.id}`,
+        <ComponentDetails
+          component={component}
+          showDetails={showDetails}
+          inferLayer={inferLayer}
+          jobId={analysis?.jobId}
+          hasSources={analysis?.hasSources ?? false}
         />
       );
     }
-  }, [componentsData, inferLayer]);
+  }, [componentsData, inferLayer, analysis]);
 
   const MetricCard = ({ title, icon, children, onDetailClick }: { title: string, icon: React.ReactNode, children: React.ReactNode, onDetailClick?: () => void }) => (
     <Card>
@@ -328,9 +372,9 @@ const SoftwareArchitectureAnalyzer = () => {
                         return (
                           <TableCell key={cellIndex} className="font-mono text-xs">
                             {isComponentId ? (
-                              <Button 
-                                variant="link" 
-                                className="p-0 h-auto text-xs font-mono" 
+                              <Button
+                                variant="link"
+                                className="p-0 h-auto text-xs font-mono"
                                 onClick={() => handleShowComponentDetails(cell as string)}
                               >
                                 {cell}
@@ -346,7 +390,7 @@ const SoftwareArchitectureAnalyzer = () => {
           </TableBody>
       </Table>
   );
-  
+
   return (
     <div className="space-y-6">
       <header className="bg-card shadow-sm rounded-lg p-6">
@@ -356,17 +400,31 @@ const SoftwareArchitectureAnalyzer = () => {
 
       <Card>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 gap-6 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-end">
             <div>
               <label htmlFor="file-zip" className="flex items-center text-sm font-medium text-foreground mb-2">
                 <Package className="mr-2 h-4 w-4" />
                 Archivo .zip del Proyecto
               </label>
-              <Input id="file-zip" type="file" accept=".zip" ref={fileZipRef} className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+              <Input id="file-zip" data-testid="upload-input" type="file" accept=".zip" ref={fileZipRef} className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+            </div>
+            <div>
+              <label htmlFor="language" className="text-sm font-medium text-foreground mb-2 block">Lenguaje</label>
+              <select
+                id="language"
+                data-testid="language-select"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="auto">Detectar automáticamente</option>
+                <option value="java">Java</option>
+                <option value="dotnet">.NET</option>
+              </select>
             </div>
           </div>
           <div className="mt-6 flex flex-col md:flex-row gap-4">
-             <Button onClick={handleAnalyze} disabled={isLoading} className="w-full md:w-auto">
+             <Button data-testid="analyze-button" onClick={() => void handleAnalyze()} disabled={isLoading} className="w-full md:w-auto">
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
               Analizar Proyecto (.zip)
             </Button>
@@ -381,7 +439,43 @@ const SoftwareArchitectureAnalyzer = () => {
           </div>
         </CardContent>
       </Card>
-      
+
+      {needsToken && (
+        <Card>
+          <CardContent className="p-6 space-y-3">
+            <Alert>
+              <ShieldCheck className="h-4 w-4" />
+              <AlertTitle>Token de acceso requerido</AlertTitle>
+              <AlertDescription>Este servidor exige un token de acceso a la API. Se guarda solo durante esta sesión del navegador.</AlertDescription>
+            </Alert>
+            <div className="flex gap-2">
+              <Input
+                data-testid="api-token-input"
+                type="password"
+                autoComplete="off"
+                placeholder="Token de acceso"
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') void handleTokenSubmit(); }}
+              />
+              <Button data-testid="api-token-submit" onClick={() => void handleTokenSubmit()}>Continuar</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {expired && (
+        <Alert data-testid="analysis-expired">
+          <Info className="h-4 w-4" />
+          <AlertTitle>El análisis ya no está disponible</AlertTitle>
+          <AlertDescription>El análisis que tenías abierto caducó o no existe. Sube de nuevo el .zip para analizarlo otra vez.</AlertDescription>
+        </Alert>
+      )}
+
+      {analysis && <AnalysisProgress status={analysis} />}
+
+      <ImportDialog onImported={handleImported} onError={(e) => handleAuth(e, async () => undefined)} />
+
       <Tabs defaultValue="analysis" onValueChange={(value) => setIsGraphTabActive(value === 'graph')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="analysis">Análisis General</TabsTrigger>
@@ -399,8 +493,8 @@ const SoftwareArchitectureAnalyzer = () => {
                 <div className="text-2xl font-bold mt-2">{(archData.project_metadata?.total_loc || componentsData.components?.reduce((acc, c) => acc + (c.loc || 0), 0) || 0).toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">Líneas de Código Totales (LOC)</p>
               </MetricCard>
-              <MetricCard 
-                title="Análisis de Datos" 
+              <MetricCard
+                title="Análisis de Datos"
                 icon={<Database className="h-4 w-4 text-muted-foreground" />}
                 onDetailClick={() => {
                   const dbProposals = archData.proposals?.filter(p => p.metrics.tables && p.metrics.tables.length > 0) || [];
@@ -431,8 +525,8 @@ const SoftwareArchitectureAnalyzer = () => {
                  <p className="text-xs text-muted-foreground">Componentes con Secretos</p>
               </MetricCard>
 
-              <MetricCard 
-                title="Tipos de Componentes" 
+              <MetricCard
+                title="Tipos de Componentes"
                 icon={<Code className="h-4 w-4 text-muted-foreground" />}
                 onDetailClick={() => {
                   const deprecated = componentsData.components?.filter(c => c.annotations?.includes("Deprecated")) || [];
@@ -476,9 +570,9 @@ const SoftwareArchitectureAnalyzer = () => {
                     </div>
                  </ScrollArea>
               </MetricCard>
-              
-              <MetricCard 
-                title="Componentes por Capa" 
+
+              <MetricCard
+                title="Componentes por Capa"
                 icon={<Users className="h-4 w-4 text-muted-foreground" />}
                 onDetailClick={() => {
                    const layers = (componentsData.components || []).reduce((acc, c) => {
@@ -511,9 +605,9 @@ const SoftwareArchitectureAnalyzer = () => {
                   </div>
                  </ScrollArea>
               </MetricCard>
-              
-              <MetricCard 
-                title="Dependencias Externas" 
+
+              <MetricCard
+                title="Dependencias Externas"
                 icon={<ExternalLink className="h-4 w-4 text-muted-foreground" />}
                 onDetailClick={() => {
                   const deps = archData.project_metadata?.external_dependencies || {};
@@ -535,7 +629,7 @@ const SoftwareArchitectureAnalyzer = () => {
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap font-sans">{archData.summary || "No hay resumen disponible."}</p>
                 </CardContent>
               </Card>
-              
+
               {archData.project_metadata?.package_dependencies && Object.keys(archData.project_metadata.package_dependencies).length > 0 && (
                 <Card className="md:col-span-3">
                     <CardHeader>
@@ -548,7 +642,36 @@ const SoftwareArchitectureAnalyzer = () => {
                     </CardContent>
                 </Card>
               )}
-              
+
+              <Card className="md:col-span-2 lg:col-span-3">
+                <CardHeader>
+                  <CardTitle className="flex items-center"><Network className="mr-2 h-5 w-5"/>Componentes ({componentsData.components?.length ?? 0})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-64 pr-4">
+                    <ul className="space-y-1">
+                      {(componentsData.components ?? []).map(c => (
+                        <li key={c.id} data-testid="component-node" data-component-id={c.id} data-file={c.files?.[0] ?? ''} className="flex items-center gap-2 text-xs font-mono">
+                          <Button variant="link" className="p-0 h-auto text-xs font-mono" onClick={() => handleShowComponentDetails(c.id)}>{c.id}</Button>
+                          <Badge variant="outline" className="text-[10px]">{inferLayer(c.id, c)}</Badge>
+                          {analysis?.hasSources && c.files && c.files.length > 0 && (
+                            <Button
+                              data-testid="component-open-source"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 ml-auto"
+                              onClick={() => showDetails(`Código Fuente: ${c.id}`, <CodeViewer jobId={analysis.jobId} filePath={c.files![0]} />)}
+                            >
+                              <FileCode className="h-3 w-3 mr-1" />Ver código
+                            </Button>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+
               <div className="md:col-span-3 space-y-6">
                 <div>
                   <h2 className="text-2xl font-semibold tracking-tight mb-4 flex items-center"><Blocks className="mr-2 h-6 w-6"/>Propuestas de Microservicios (Clusters)</h2>
@@ -571,7 +694,7 @@ const SoftwareArchitectureAnalyzer = () => {
             <div className="flex flex-col items-center justify-center text-center py-20 bg-muted rounded-lg">
               <UploadCloud className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-xl font-semibold">Esperando análisis de proyecto</h3>
-              <p className="text-muted-foreground mt-2">Sube el archivo .zip de tu proyecto para comenzar.</p>
+              <p className="text-muted-foreground mt-2">Sube el archivo .zip de tu proyecto (o importa resultados existentes) para comenzar.</p>
             </div>
           )}
         </TabsContent>
@@ -580,9 +703,9 @@ const SoftwareArchitectureAnalyzer = () => {
           <Card>
             <CardContent className="p-6">
               {allCodeIssues.length > 0 ? (
-                <CodeIssues 
-                  issues={allCodeIssues} 
-                  onShowComponentDetails={handleShowComponentDetails} 
+                <CodeIssues
+                  issues={allCodeIssues}
+                  onShowComponentDetails={handleShowComponentDetails}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center text-center py-20 bg-muted rounded-lg">
@@ -599,12 +722,14 @@ const SoftwareArchitectureAnalyzer = () => {
           <Card>
             <CardContent className="p-6">
               {componentsData && archData ? (
-                  <ComponentGraph 
-                    componentsData={componentsData} 
-                    archData={archData} 
-                    isGraphTabActive={isGraphTabActive} 
+                  <ComponentGraph
+                    componentsData={componentsData}
+                    archData={archData}
+                    isGraphTabActive={isGraphTabActive}
                     onComponentUpdate={handleComponentUpdate}
                     showDetails={showDetails}
+                    jobId={analysis?.jobId}
+                    hasSources={analysis?.hasSources ?? false}
                   />
               ) : (
                 <div className="flex flex-col items-center justify-center text-center h-[800px] bg-muted rounded-lg">
@@ -631,7 +756,7 @@ const SoftwareArchitectureAnalyzer = () => {
                     {isDocLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
                     Generar Documentación
                 </Button>
-                
+
                 {isDocLoading && (
                   <div className="space-y-2">
                     <Skeleton className="h-32 w-full" />
@@ -639,7 +764,7 @@ const SoftwareArchitectureAnalyzer = () => {
                     <Skeleton className="h-32 w-full" />
                   </div>
                 )}
-                
+
                 {docError && (
                   <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />

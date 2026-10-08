@@ -95,7 +95,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
 
 
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card data-testid="proposal-card" className="shadow-lg hover:shadow-xl transition-shadow duration-300">
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl text-primary">{proposal.name} (Cluster {proposal.id})</CardTitle>

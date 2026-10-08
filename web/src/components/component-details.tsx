@@ -12,9 +12,12 @@ interface ComponentDetailsProps {
   component: Component;
   showDetails: (title: string, content: React.ReactNode) => void;
   inferLayer: (componentId: string, component?: Component) => string;
+  /** Analysis the component belongs to; without it (or without sources) the code viewer is not offered. */
+  jobId?: string | null;
+  hasSources?: boolean;
 }
 
-const ComponentDetails: React.FC<ComponentDetailsProps> = ({ component, showDetails, inferLayer }) => {
+const ComponentDetails: React.FC<ComponentDetailsProps> = ({ component, showDetails, inferLayer, jobId, hasSources = true }) => {
   const DetailSection: React.FC<{title: string; icon: React.ReactNode; children: React.ReactNode;}> = ({ title, icon, children }) => (
     <div>
       <h4 className="font-semibold mb-2 flex items-center text-primary/90">
@@ -45,12 +48,12 @@ const ComponentDetails: React.FC<ComponentDetailsProps> = ({ component, showDeta
         <div><strong>Interfaz:</strong> {component.interface ? 'Sí' : 'No'}</div>
         <div><strong>Tipo EJB:</strong> {component.ejb_type || 'N/A'}</div>
         <div><strong>Datos Sensibles:</strong> {component.sensitive_data ? <span className="font-bold text-destructive">Sí</span> : 'No'}</div>
-        {component.files && component.files.length > 0 && (
+        {jobId && hasSources && component.files && component.files.length > 0 && (
           <div className="md:col-span-2 mt-2">
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => showDetails(`Código Fuente: ${component.id}`, <CodeViewer filePath={component.files![0]} />)}
+              onClick={() => showDetails(`Código Fuente: ${component.id}`, <CodeViewer jobId={jobId} filePath={component.files![0]} />)}
             >
               <FileCode className="mr-2 h-4 w-4" />
               Ver Código Fuente

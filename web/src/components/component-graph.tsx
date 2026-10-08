@@ -38,10 +38,12 @@ interface ComponentGraphProps {
   archData: ArchitectureData;
   isGraphTabActive: boolean;
   onComponentUpdate: (updatedComponent: Component, newClusterId: number) => void;
+  jobId?: string | null;
+  hasSources?: boolean;
   showDetails: (title: string, content: React.ReactNode) => void;
 }
 
-const ComponentGraph: React.FC<ComponentGraphProps> = ({ componentsData, archData, isGraphTabActive, onComponentUpdate, showDetails }) => {
+const ComponentGraph: React.FC<ComponentGraphProps> = ({ componentsData, archData, isGraphTabActive, onComponentUpdate, showDetails, jobId, hasSources }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -381,6 +383,8 @@ const ComponentGraph: React.FC<ComponentGraphProps> = ({ componentsData, archDat
                     component={selectedNode} 
                     showDetails={showDetails} 
                     inferLayer={inferLayer} 
+                    jobId={jobId}
+                    hasSources={hasSources}
                 />
           </ScrollArea>
           <Separator className="my-4" />
