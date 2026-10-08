@@ -51,3 +51,15 @@ export_dotnet_root() {
     export DOTNET_ROOT
   fi
 }
+
+# Node >= 25 exposes a global localStorage that breaks Next.js 15.3 server rendering ("localStorage.getItem is
+# not a function"); the flag (known since Node 22) keeps the Node 20 behaviour. Prints NODE_OPTIONS to use.
+node_options_for_web() {
+  local major
+  major="$(node --version 2>/dev/null | sed -E 's/^v([0-9]+).*/\1/')"
+  if [ -n "$major" ] && [ "$major" -ge 22 ] 2>/dev/null; then
+    echo "--no-experimental-webstorage ${NODE_OPTIONS:-}"
+  else
+    echo "${NODE_OPTIONS:-}"
+  fi
+}

@@ -44,6 +44,10 @@ schema-check:
 schema-generate:
 	npm --prefix schema run generate
 
+## Web in development mode (http://localhost:9002) with the engine built from this checkout.
+dev: prereqs
+	@bash scripts/dev.sh
+
 clean:
 	@bash scripts/clean.sh
 

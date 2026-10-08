@@ -1,17 +1,19 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
+import { existsSync } from 'fs';
 import path from 'path';
 import os from 'os';
-import { exec, type ExecException } from 'child_process';
+import { execFile, type ExecFileException } from 'child_process';
 import AdmZip from 'adm-zip';
+import { buildEngineCommand, resolveEngine } from '../../../server/engine/engine-path';
 
-// Helper function to execute a command in a shell
-function executeCommand(command: string): Promise<{ stdout: string; stderr: string }> {
+// Helper function to execute a command without a shell (arguments are passed as is, paths with spaces included)
+function executeFile(file: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
+    execFile(file, args, { env: process.env, maxBuffer: 64 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Command failed: ${command}`);
+        console.error(`Command failed: ${file} ${args.join(' ')}`);
         console.error(stderr);
         reject(error);
         return;
@@ -50,15 +52,11 @@ export async function POST(request: NextRequest) {
     }
 
 
-    // --- 4. Locate the JAR file ---
-    const jarPath = path.resolve(process.cwd(), 'java-dependency-extractor.jar');
-
-    // Check if JAR exists
-    try {
-      await fs.access(jarPath);
-    } catch {
-      console.error("java-dependency-extractor.jar not found in project root directory");
-      return NextResponse.json({ error: 'Analyzer tool (java-dependency-extractor.jar) not found on server. Please make sure it is in the project root directory.' }, { status: 500 });
+    // --- 4. Locate the locally built engine (web/engine-dist/engine.jar or ENGINE_JAR_PATH) ---
+    const engine = resolveEngine(process.env, process.cwd(), existsSync);
+    if (engine.kind === 'not-built') {
+      console.error(engine.message);
+      return NextResponse.json({ error: engine.message }, { status: 500 });
     }
 
     // --- 5. Run the Java dependency extractor ---
@@ -74,14 +72,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const command = `java -jar ${jarPath} ${projectRoot} output.json`;
-    console.log(`Executing: ${command}`);
+    const command = buildEngineCommand(engine, projectRoot, 'output.json');
+    console.log(`Executing: ${command.file} ${command.args.join(' ')}`);
 
     try {
-      await executeCommand(command);
+      await executeFile(command.file, command.args);
     } catch (error) {
-      console.error('Error running java-dependency-extractor.jar:', error);
-      const execError = error as ExecException;
+      console.error('Error running the engine:', error);
+      const execError = error as ExecFileException;
       return NextResponse.json({ error: `Failed to analyze the project with the Java tool.\n\nDetails:\n${execError.message}` }, { status: 500 });
     }
     // --- 6. Read the generated JSON files ---

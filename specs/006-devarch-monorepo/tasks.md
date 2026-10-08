@@ -92,12 +92,12 @@ description: "Task list for 006-devarch-monorepo"
 
 **Independent Test**: `DEVARCH_E2E=true npx cucumber-js --tags @US-003`
 
-- [ ] T026 [P] [US3] Escribir `P/web/src/server/engine/engine-path.test.ts` (`node:test`) para `resolveEngine` y `buildEngineCommand` según contracts/engine-resolution.md [TS-015, TS-016, TS-017, TS-018] y verla fallar
-- [ ] T027 [P] [US3] Escribir `P/tests/acceptance/steps/web-local-engine.steps.ts` (levanta `next dev` en puerto libre, genera ZIP de `engine/test-for-demo/<proyecto>` en temporal, `POST /api/analyze`) [TS-014, TS-015, TS-016, TS-017, TS-018, TS-019] y verlos fallar
-- [ ] T028 [US3] Implementar `P/web/src/server/engine/engine-path.ts` (`resolveEngine`, `buildEngineCommand`, mensaje `Engine not built ... make build`) [TS-015, TS-016, TS-017, TS-018]
-- [ ] T029 [US3] Modificar `P/web/src/app/api/analyze/route.ts`: usar `resolveEngine(process.env, process.cwd(), existsSync)` y `execFile(file, args)`; devolver 500 con el mensaje `not-built`; sin otros cambios de flujo [TS-014, TS-015, TS-019]
-- [ ] T030 [US3] Implementar `P/scripts/dev.sh` y el objetivo `dev` en `P/Makefile` (build del motor si falta u obsoleto; exporta `JAVA_HOME`, `DOTNET_ROOT`; `npm run dev -w web`) [TS-014]
-- [ ] T031 [US3] Ejecutar `DEVARCH_E2E=true` [TS-014, TS-019] y comprobar que la web ignora campos nuevos sin fallar (research E3)
+- [x] T026 [P] [US3] Escribir `P/web/src/server/engine/engine-path.test.ts` (`node:test`) para `resolveEngine` y `buildEngineCommand` según contracts/engine-resolution.md [TS-015, TS-016, TS-017, TS-018] y verla fallar
+- [x] T027 [P] [US3] Escribir `P/tests/acceptance/steps/web-local-engine.steps.ts` (levanta `next dev` en puerto libre, genera ZIP de `engine/test-for-demo/<proyecto>` en temporal, `POST /api/analyze`) [TS-014, TS-015, TS-016, TS-017, TS-018, TS-019] y verlos fallar
+- [x] T028 [US3] Implementar `P/web/src/server/engine/engine-path.ts` (`resolveEngine`, `buildEngineCommand`, mensaje `Engine not built ... make build`) [TS-015, TS-016, TS-017, TS-018]
+- [x] T029 [US3] Modificar `P/web/src/app/api/analyze/route.ts`: usar `resolveEngine(process.env, process.cwd(), existsSync)` y `execFile(file, args)`; devolver 500 con el mensaje `not-built`; sin otros cambios de flujo [TS-014, TS-015, TS-019]
+- [x] T030 [US3] Implementar `P/scripts/dev.sh` y el objetivo `dev` en `P/Makefile` (build del motor si falta u obsoleto; exporta `JAVA_HOME`, `DOTNET_ROOT`; `npm run dev -w web`) [TS-014]
+- [x] T031 [US3] Ejecutar `DEVARCH_E2E=true` [TS-014, TS-019] y comprobar que la web ignora campos nuevos sin fallar (research E3)
 
 **Checkpoint**: criterio de salida 2/2 cumplido — MVP de la fase.
 
