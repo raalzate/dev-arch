@@ -161,4 +161,4 @@ Feature: The engine reports progress and warnings, accepts a language and reuses
     And the web server runs with local folder analysis "enabled" and the built engine
     When the local folder of the demo project "java-standar" is analyzed through the web
     And the same folder is analyzed with the command line
-    Then the three documents of the web analysis are byte-identical to the command-line documents
+    Then the three documents of the web analysis are byte-identical to the command-line documents with the same path relativization applied

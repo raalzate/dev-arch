@@ -104,7 +104,7 @@ Feature: Asynchronous analysis of an uploaded project
     And no engine path override is configured
     When a ZIP is submitted for analysis
     Then the response status is 500 with error code "ENGINE_NOT_BUILT"
-    And the error message contains "Engine not built", the path that was tried and "make build"
+    And the error message names "Engine not built", the engine path that was tried and "make build"
 
   @TS-012 @FR-005 @P2 @validation
   Scenario Outline: Local folder analysis is only allowed in development mode

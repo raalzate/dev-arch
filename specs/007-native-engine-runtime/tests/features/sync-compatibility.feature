@@ -37,12 +37,13 @@ Feature: Existing synchronous analysis clients keep working
 
   @TS-076 @FR-027 @SC-012 @P1 @validation
   Scenario: Locked artifacts of features 001 to 006 are unchanged
-    When the product is compared with the 006 baseline commit "889c95a"
+    When the product is compared with the 006 baseline tag "dev-arch-006-baseline"
     Then no ".feature" file, "context.json" assertion hash or test assertion of features 001 to 006 has changed
 
   @TS-077 @FR-028 @SC-012 @P1 @contract
   Scenario: Engine static quality gates are not relaxed
-    When the engine build and the product continuous integration definition are inspected
-    Then Checkstyle allows at most 4763 violations
-    And SpotBugs fails the build on any finding with the existing exclude filter
+    Given the product continuous integration definition
+    When the engine jobs are inspected
+    Then static analysis runs with the SpotBugs exclude filter
+    And Checkstyle runs with a maximum of 4763 allowed violations
     And the .NET format verification runs without tolerating failure

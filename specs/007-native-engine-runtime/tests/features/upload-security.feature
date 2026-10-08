@@ -81,6 +81,26 @@ Feature: Safe and bounded project uploads
       | src/App.java | src/App.java |
       | src/App.java | src/app.java |
 
+  @TS-086 @FR-037 @SC-015 @P2 @validation
+  Scenario: A disk that fills up while storing the upload rejects the submission without leftovers
+    Given the web server is running with a stub engine and a disk that fills up while storing the upload
+    When the ZIP of the demo project "java-standar" is submitted for analysis
+    Then the response status is 507 with error code "STORAGE_FULL"
+    And no file of that submission remains on disk
+
+  @TS-087 @FR-037 @SC-015 @P2 @validation
+  Scenario Outline: A disk that fills up during the analysis fails it and removes partial files
+    Given the web server is running with a stub engine and a disk that fills up while <stage>
+    When the ZIP of the demo project "java-standar" is submitted for analysis
+    Then the analysis ends with status "failed" and error code "STORAGE_FULL"
+    And the failure message mentions "disk space" without a stack trace
+    And its analysis area contains no extracted sources and no partial result documents
+
+    Examples:
+      | stage                   |
+      | extracting the project  |
+      | writing the results     |
+
   @TS-030 @FR-011 @P1 @contract
   Scenario: Submissions beyond the running quota and the queue are rejected before upload
     Given the web server is running with 1 concurrent analysis, a queue of 1 and a stub engine that takes 30 seconds per analysis
