@@ -32,3 +32,33 @@
 
 - [x] **FR-READY-001**: Todos los FR tienen escenario o criterio de éxito asociado
 - [x] **FR-READY-002**: Defaults del agente registrados para confirmación del usuario
+
+## Requirement Clarity (iikit-03)
+
+- [x] **CHK009**: ¿Está definido qué ocurre con un filtro de viabilidad mínima inválido en la re-inferencia? [Gap → resuelto ampliando FR-012]
+- [x] **CHK010**: ¿Está claro si la configuración de inferencia altera el grafo o los contratos de API? [Gap → resuelto en Edge Cases: solo la profundidad de detección puede cambiar el analizador]
+- [x] **CHK011**: ¿Se define el modelo de confianza de la ruta del archivo de configuración en el modo servidor? [Gap → resuelto en Edge Cases: igual que la ruta del proyecto]
+- [x] **CHK012**: ¿"Mismas fórmulas" (FR-019) es verificable sin la puntuación numérica en la salida? [Clarity] — sí: SC-007 compara viabilidad y justificación, que expresa las submétricas
+- [x] **CHK013**: ¿Están acotados los rangos de cada parámetro? [Clarity, FR-009] — rangos por parámetro en data-model.md; la spec exige rechazo con nombre y motivo
+
+## Acceptance Criteria Quality
+
+- [x] **CHK014**: ¿Cada SC tiene un umbral numérico o de igualdad? [Measurability] — SC-001 18/18, SC-002 6/6, SC-003 < 2 s ×5, SC-004 100 %, SC-006 100 %, SC-007 100 %, SC-008 4/4, SC-009 ≤ 4655, SC-010 6 + 4 casos
+- [x] **CHK015**: ¿US1-AS3 tiene dirección esperada verificable? [Clarity] — umbral de evidencia inalcanzable ⇒ número de grupos ≥ por defecto
+
+## Scenario & Edge Case Coverage
+
+- [x] **CHK016**: ¿Se cubren los caminos de error de las dos operaciones nuevas (ruta, documento, versión, identificador, lista vacía, desconocidos)? [Coverage, US1-AS7, US4-AS3/AS4]
+- [x] **CHK017**: ¿Se cubre el grafo .NET en la re-inferencia? [Edge Case] — sí (Edge Cases; SC-002 incluye los 3 proyectos .NET)
+- [x] **CHK018**: ¿Se cubre la reutilización del modo servidor con configuración? [Edge Case, FR-011]
+
+## Non-Functional Requirements
+
+- [x] **CHK019**: ¿El rendimiento tiene método de medición definido? [Clarity, FR-017 + Clarification]
+- [x] **CHK020**: ¿Determinismo de las operaciones nuevas exigido? [NFR, US1-AS8, US4-AS6, FR-010]
+- [x] **CHK021**: ¿Se exige no añadir dependencias? [NFR] — principio VI; plan: 0 dependencias nuevas
+
+## Dependencies & Assumptions
+
+- [x] **CHK022**: ¿Se documenta la dependencia con las aserciones bloqueadas de 001/005/007? [Assumption, FR-027 + Clarification]
+- [x] **CHK023**: ¿Se documenta la convivencia con la feature 009? [Assumption]

@@ -162,6 +162,8 @@ Como usuario avanzado, puedo activar por configuración las correcciones de las 
 - Lectura de recursos con el motor empaquetado: los recursos se sirven desde el propio artefacto distribuido, no desde el repositorio.
 - Análisis con configuración no por defecto en el modo servidor: no reutiliza ni contamina los análisis reutilizados sin configuración.
 - Profundidad de búsqueda negativa o desmesurada: rechazada por validación (rango permitido acotado).
+- Configuración que solo cambia parámetros de inferencia: el grafo de dependencias y los contratos de API no cambian; solo la profundidad de detección puede cambiar el analizador elegido (y con él todos los documentos).
+- Ruta de archivo de configuración en el modo servidor: se lee con los mismos permisos y el mismo modelo de confianza que la ruta del proyecto (servidor local de un solo usuario).
 
 ## Requirements *(mandatory)*
 
@@ -186,7 +188,7 @@ Como usuario avanzado, puedo activar por configuración las correcciones de las 
 
 **Re-inferencia**
 
-- **FR-012**: El modo servidor MUST ofrecer una operación de re-inferencia que reciba un grafo de dependencias (por ruta o por identificador de análisis), una configuración opcional y un filtro opcional de viabilidad mínima, y devuelva un documento de arquitectura con la misma forma que el de la operación de propuesta de arquitectura.
+- **FR-012**: El modo servidor MUST ofrecer una operación de re-inferencia que reciba un grafo de dependencias (por ruta o por identificador de análisis), una configuración opcional y un filtro opcional de viabilidad mínima, y devuelva un documento de arquitectura con la misma forma que el de la operación de propuesta de arquitectura; un filtro de viabilidad con un valor fuera de "Alta", "Media" o "Baja" se rechaza.
 - **FR-013**: Con la configuración por defecto, la re-inferencia del grafo de un análisis MUST producir una arquitectura byte a byte idéntica a la guardada por ese análisis cuando el documento de arquitectura de ese análisis está disponible junto al grafo (de él se toman las dependencias de nivel de proyecto y las ubicaciones de secretos).
 - **FR-014**: Cuando la arquitectura del análisis no está disponible junto al grafo, la re-inferencia MUST producir el documento igualmente, sin dependencias declaradas de nivel de proyecto ni ubicaciones de secretos, y con una advertencia que lo indique.
 - **FR-015**: La resolución por identificador de análisis MUST limitarse al área de resultados que el servidor tenga configurada, aceptar solo identificadores sin separadores ni componentes de ruta y rechazar con mensaje claro los identificadores mal formados, inexistentes o sin área configurada.
