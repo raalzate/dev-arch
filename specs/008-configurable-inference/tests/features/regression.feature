@@ -52,3 +52,10 @@ Feature: Default outputs do not change
   Scenario: Documents keep declaring contract version 1.0.0
     When the demo project "java-standar" is analyzed from the command line without configuration
     Then the graph, architecture and entrypoints documents declare schema_version "1.0.0"
+
+  @TS-049 @FR-028 @SC-009 @US-003 @P2 @contract
+  Scenario: Static analysis runs without the legacy exclusions tagged for this feature
+    Given the SpotBugs exclude filter of the engine
+    Then it contains no exclusion tagged for feature 008
+    And it has no exclusion for "ProjectAnalyzer", "ClusteringAlgorithm" or "MicroserviceRecommendationEngine"
+    And the continuous integration Checkstyle limit is not above 4763 allowed violations

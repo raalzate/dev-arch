@@ -14,7 +14,7 @@ Feature: Re-infer the architecture with other thresholds without analyzing again
   Background:
     Given the server mode with the inference tools enabled
 
-  @TS-014 @FR-001 @FR-012 @FR-013 @SC-002 @US-001 @P1 @acceptance
+  @TS-014 @FR-001 @FR-003 @FR-012 @FR-013 @SC-002 @US-001 @P1 @acceptance
   Scenario Outline: Re-inference with defaults reproduces the stored architecture
     Given the stored analysis of the demo project "<project>" in a folder without its sources
     When reinfer_architecture is called with the graphPath of that analysis and no configuration

@@ -117,3 +117,33 @@ specs/008-configurable-inference/tests/features/*.feature
 | Grafo deserializado ≠ grafo en memoria | La re-inferencia debe reproducir byte a byte | Prueba SC-002 en los 6 proyectos; Jackson con setters existentes; `interface` duplicado aceptado |
 | Orden de iteración de `Set.of` en `InterClusterGraph` | Elegir el rol por iteración de `Set.of` es sensible al orden de inserción | Construir con `Set.of(array)` en el orden vigente (research D3); regresión |
 | Tiempo de reinfer en 500 componentes | `ClusterConsolidator`/`InterClusterGraph` tienen búsquedas lineales | Medición temprana con grafo sintético; optimizar con índices `clusterId → Cluster` sin cambiar el orden si supera 2 s |
+
+## Requirement Traceability
+
+| Requirement | Design notes / tasks |
+|---|---|
+| FR-001, FR-002, FR-003 | DN 4 (stage split, facade, secrets in extraction) — T008, T009 |
+| FR-004, FR-005 | DN 2, DN 3, DN 1 — T004..T007, T010 |
+| FR-006 | DN 10 — T014 |
+| FR-007, FR-008, FR-009 | DN 2, DN 6 (config xor configPath, partial merge, validation) — T004, T005, T013 |
+| FR-010, FR-011 | research D9 (parity, cache only with defaults) — T009, T012 |
+| FR-012, FR-013, FR-014, FR-015, FR-016, FR-017 | DN 5, DN 6 — T016..T021 |
+| FR-018, FR-019, FR-020 | DN 7 — T022..T025 |
+| FR-021 | DN 8 — T026..T028 |
+| FR-022 | DN 14 — T015, T035 |
+| FR-023, FR-024 | DN 9 — T029, T030 |
+| FR-025 | research D7 — T031, T032 |
+| FR-026 | DN 11 — T020, T025, T028 |
+| FR-027 | DN 6, DN 12 — T011, T033 |
+| FR-028 | DN 13 — T034 |
+| FR-029 | DN 6 — T019, T024 |
+| SC-001 | DN 1 — T001, T010 |
+| SC-002 | DN 5 — T016, T019 |
+| SC-003 | research D13 — T003, T021 |
+| SC-004 | DN 2, DN 14 — T013, T015 |
+| SC-005 | DN 3 — T006, T031 |
+| SC-006 | DN 2 — T004, T012 |
+| SC-007 | DN 7 — T022, T023 |
+| SC-008 | DN 8 — T026, T027 |
+| SC-009 | DN 13, Constraints — T034, T036 |
+| SC-010 | DN 9 — T029, T030 |

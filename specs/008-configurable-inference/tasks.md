@@ -5,7 +5,7 @@ description: "Task list for 008-configurable-inference"
 # Tasks: Extracción e inferencia separadas y configurables
 
 **Input**: Design documents from `specs/008-configurable-inference/`
-**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md, tests/features/ (48 escenarios TS-001, TS-002, TS-003, TS-004, TS-005, TS-006, TS-007, TS-008, TS-009, TS-010, TS-011, TS-012, TS-013, TS-014, TS-015, TS-016, TS-017, TS-018, TS-019, TS-020, TS-021, TS-022, TS-023, TS-024, TS-025, TS-026, TS-027, TS-028, TS-029, TS-030, TS-031, TS-032, TS-033, TS-034, TS-035, TS-036, TS-037, TS-038, TS-039, TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046, TS-047, TS-048, hash LOCKED)
+**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md, tests/features/ (49 escenarios TS-001, TS-002, TS-003, TS-004, TS-005, TS-006, TS-007, TS-008, TS-009, TS-010, TS-011, TS-012, TS-013, TS-014, TS-015, TS-016, TS-017, TS-018, TS-019, TS-020, TS-021, TS-022, TS-023, TS-024, TS-025, TS-026, TS-027, TS-028, TS-029, TS-030, TS-031, TS-032, TS-033, TS-034, TS-035, TS-036, TS-037, TS-038, TS-039, TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046, TS-047, TS-048, TS-049, hash LOCKED)
 
 **Tests**: TDD obligatorio (CONSTITUTION.md principio III). Cada tarea de pruebas / step definitions DEBE ejecutarse y fallar antes de su tarea de implementación. Prohibido modificar `.feature`, aserciones existentes (001–007) o `context.json` para pasar.
 
@@ -27,7 +27,7 @@ description: "Task list for 008-configurable-inference"
 - [ ] T002 [P] Crear runner JVM `engine/src/test/java/com/extractor/configbdd/RunConfigurableInferenceFeaturesTest.java` (`@SelectDirectories("../specs/008-configurable-inference/tests/features")`, glue `com.extractor.configbdd`) con `World.java`, `Hooks.java` y soporte compartido (`Demo.java`: copias herméticas, almacenes de análisis sin fuentes; `Mcp.java`: llamadas en proceso a tools y recursos, cliente stdio); ejecutar: escenarios indefinidos (rojo)
 - [ ] T003 [P] Generador determinista de grafo sintético de 500 componentes en `engine/src/test/java/com/extractor/testsupport/SyntheticGraph.java` (25 dominios × 20 clases, llamadas intra/inter dominio, tablas) con prueba de determinismo `SyntheticGraphTest.java` (research D13)
 
-**Checkpoint**: línea base versionada; los 48 escenarios se descubren (rojos).
+**Checkpoint**: línea base versionada; los 49 escenarios se descubren (rojos).
 
 ---
 
@@ -149,7 +149,7 @@ description: "Task list for 008-configurable-inference"
 ## Phase 10: Polish & Cross-Cutting Concerns
 
 - [ ] T033 [P] Web: `STATIC_INFERENCE_INFERENCE_TOOLS=true` y `STATIC_INFERENCE_JOBS_DIR=<dataDir>/jobs` en el entorno del proceso del motor (`web/src/server/engine/`) con prueba `node:test` (FR-027)
-- [ ] T034 Eliminar las 3 entradas "feature 008" de `engine/spotbugs-exclude.xml` corrigiendo `DLS_DEAD_LOCAL_STORE` (`ProjectAnalyzer.analyzeSpringEvents`), `DLS_DEAD_LOCAL_STORE`/`UC_USELESS_CONDITION`/`WMI_WRONG_MAP_ITERATOR` (`ClusteringAlgorithm`) y `WMI_WRONG_MAP_ITERATOR` (`MicroserviceRecommendationEngine.aggregatePackageDependencies`) sin cambio de comportamiento (FR-028) [TS-001, TS-002]
+- [ ] T034 Step definitions de TS-049 en `engine/src/test/java/com/extractor/configbdd/RegressionSteps.java` (rojo) y eliminar las 3 entradas "feature 008" de `engine/spotbugs-exclude.xml` corrigiendo `DLS_DEAD_LOCAL_STORE` (`ProjectAnalyzer.analyzeSpringEvents`), `DLS_DEAD_LOCAL_STORE`/`UC_USELESS_CONDITION`/`WMI_WRONG_MAP_ITERATOR` (`ClusteringAlgorithm`) y `WMI_WRONG_MAP_ITERATOR` (`MicroserviceRecommendationEngine.aggregatePackageDependencies`) sin cambio de comportamiento (FR-028) [TS-001, TS-002, TS-049]
 - [ ] T035 [P] Actualizar `engine/ALGORITHMS.md` (parámetros por nombre, invariante de soporte), `engine/MCP.md` (tools nuevas, variables, recursos), `CHANGELOG.md` y `docs/SCHEMA.md` (definiciones nuevas aditivas en 1.0.0) (FR-022, FR-026)
 - [ ] T036 Verificar gates: `make build`, `make test`, Checkstyle ≤ 4655, SpotBugs 0, `dotnet format`, determinismo y paridad; `git diff` sin cambios en `.feature`/`context.json`/aserciones de 001–007 (SC-009)
 - [ ] T037 Validación final: clon limpio de la rama → `make build && make test`; evidencia de tiempos de `reinfer_architecture` (quickstart.md)
