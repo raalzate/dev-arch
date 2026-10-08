@@ -2,9 +2,10 @@
 // DEVARCH_MONOREPO_ROOT points the scenarios at another checkout (e.g. the pre-feature commit for the RED run).
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
+// CommonJS under tsx (the product package has no "type": "module": the iikit dashboard generator of the
+// installed tile is plain CommonJS .js and would break under it).
+const here = __dirname;
 
 export const PRODUCT_REL = 'apps/dev-arch';
 

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "tessl": {
+      "type": "stdio",
+      "command": "tessl",
+      "args": ["mcp", "start"]
+    },
+    "dev-arch-engine": {
+      "type": "stdio",
+      "command": "java",
+      "args": ["-jar", "engine/target/java-dependency-extractor.jar", "--mcp"]
+    }
+  }
+}

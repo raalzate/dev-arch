@@ -3,7 +3,6 @@
   "version": "1.2.0",
   "private": true,
   "description": "dev-arch product workspace: Next.js web and the Static Inference output contract package (006-devarch-monorepo).",
-  "type": "module",
   "workspaces": [
     "web",
     "schema"

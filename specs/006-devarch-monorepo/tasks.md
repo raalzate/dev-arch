@@ -153,11 +153,11 @@ description: "Task list for 006-devarch-monorepo"
 
 **Independent Test**: `DEVARCH_E2E=true npx cucumber-js --tags @US-007`
 
-- [ ] T043 [US7] Escribir `P/tests/acceptance/steps/unified-configuration.steps.ts` (TS-038 con `git check-ignore`; TS-037 arranca el servidor MCP por stdio y lista herramientas) [TS-036, TS-037, TS-038, TS-039, TS-040, TS-041] y verlos fallar
-- [ ] T044 [P] [US7] Crear `P/.editorconfig` (research D10) [TS-040]
-- [ ] T045 [P] [US7] Crear `P/.mcp.json` con `tessl` y `dev-arch-engine` (`java -jar engine/target/java-dependency-extractor.jar --mcp`) [TS-036, TS-037]
-- [ ] T046 [US7] Revisar `P/AGENTS.md`/`P/CLAUDE.md` (referencian `.tessl/RULES.md`; sin copias en `web/`, `engine/`, `schema/`) y ajustar `P/.gitignore` hasta pasar [TS-038, TS-039, TS-040]
-- [ ] T047 [US7] Generar el tablero iikit desde `P/` (`bash .tessl/tiles/tessl-labs/intent-integrity-kit/skills/iikit-core/scripts/bash/generate-dashboard-safe.sh`, previo `tessl install`) [TS-041]
+- [x] T043 [US7] Escribir `P/tests/acceptance/steps/unified-configuration.steps.ts` (TS-038 con `git check-ignore`; TS-037 arranca el servidor MCP por stdio y lista herramientas) [TS-036, TS-037, TS-038, TS-039, TS-040, TS-041] y verlos fallar
+- [x] T044 [P] [US7] Crear `P/.editorconfig` (research D10) [TS-040]
+- [x] T045 [P] [US7] Crear `P/.mcp.json` con `tessl` y `dev-arch-engine` (`java -jar engine/target/java-dependency-extractor.jar --mcp`) [TS-036, TS-037]
+- [x] T046 [US7] Revisar `P/AGENTS.md`/`P/CLAUDE.md` (referencian `.tessl/RULES.md`; sin copias en `web/`, `engine/`, `schema/`) y ajustar `P/.gitignore` hasta pasar [TS-038, TS-039, TS-040]
+- [x] T047 [US7] Generar el tablero iikit desde `P/` (`bash .tessl/tiles/tessl-labs/intent-integrity-kit/skills/iikit-core/scripts/bash/generate-dashboard-safe.sh`, previo `tessl install`) [TS-041]
 
 **Checkpoint**: todas las historias verdes.
 
@@ -175,7 +175,7 @@ description: "Task list for 006-devarch-monorepo"
 
 ## Phase 11: Decisiones de usuario 2026-10-08 (A2, A3, A4)
 
-- [ ] T052 [A2] Añadir en `apps/dev-arch/AGENTS.md` una nota NO normativa: "CONSTITUTION.md v1.x gobierna `engine/`; alcance producto (web) se define en la enmienda 2.0.0 de la Fase 7". No modificar CONSTITUTION.md.
+- [x] T052 [A2] Añadir en `apps/dev-arch/AGENTS.md` una nota NO normativa: "CONSTITUTION.md v1.x gobierna `engine/`; alcance producto (web) se define en la enmienda 2.0.0 de la Fase 7". No modificar CONSTITUTION.md.
 - [x] T053 [A3] En `.github/workflows/dev-arch.yml`, ejecutar TS-006/TS-007 (clon limpio + `make build && make test`) en un job propio `acceptance-clean-clone` con `timeout-minutes: 45`, solo en push a main y tags `dev-arch-v*`; el resto del job `acceptance` respeta el límite de SC-009.
 - [ ] T054 [A4] Tras T002, congelar el repo origen `project/static-inference`: README con aviso "Movido a maestria-ia/apps/dev-arch/engine; este repo queda de solo lectura" y commit en su `main`. No borrar nada.
 
