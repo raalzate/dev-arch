@@ -30,7 +30,7 @@ description: "Task list for 007-native-engine-runtime"
 - [x] T003 [P] Añadir `.archview/` y `web/.archview/` a `.gitignore` del producto (research D7)
 - [x] T004 Ampliar `cucumber.mjs`: rutas `specs/006-devarch-monorepo/...` y `specs/007-native-engine-runtime/tests/features/**/*.feature`; filtro de tags `not @engine`, `not @e2e` salvo `DEVARCH_E2E_BROWSER=true`, `not @slow` salvo `DEVARCH_E2E=true` (research D12)
 - [x] T005 [P] Crear runner JVM `engine/src/test/java/com/extractor/runtimebdd/RunNativeEngineRuntimeFeaturesTest.java` (`@SelectDirectories("../specs/007-native-engine-runtime/tests/features")`, filtro `@engine`, glue `com.extractor.runtimebdd`) con `World.java`, `Hooks.java` y cliente MCP de prueba (`McpTestClient.java`, SDK Java `McpClient.sync` + `StdioClientTransport` sobre el jar o en proceso); ejecutar y ver escenarios `@engine` indefinidos (rojo)
-- [ ] T006 [P] Crear soporte de aceptación 007 en `tests/acceptance/support/`: `fake-mcp-server.ts` (servidor MCP stdio con SDK TS; comportamientos por env: retardo, fases, advertencias y fallos que nombran la ruta absoluta del proyecto, línea stderr, caída, error "No space left on device", archivo contador de lanzamientos, log de intervalos de llamada; escribe los tres JSON en `outputDir` con `meta.schema_version` 1.0.0 y `components[*].files` absolutos bajo `projectPath`), `zip-catalog.ts` (ZIP benignos y maliciosos generados en memoria: traversal, absoluta, letra de unidad, `\`, symlink, sobretamaño, bomba con tamaño declarado falso, exceso de entradas, duplicados, no-ZIP), `web-harness.ts` (invocación en proceso de route handlers con env y `ARCHVIEW_DATA_DIR` temporal, "reinicio" = recarga del runtime sobre el mismo directorio, reloj inyectable, inyección de E/S que falla con `ENOSPC`, cabecera `Authorization` opcional), `browser.ts` (Chromium, contextos aislados, `data-testid`)
+- [x] T006 [P] Crear soporte de aceptación 007 en `tests/acceptance/support/`: `fake-mcp-server.ts` (servidor MCP stdio con SDK TS; comportamientos por env: retardo, fases, advertencias y fallos que nombran la ruta absoluta del proyecto, línea stderr, caída, error "No space left on device", archivo contador de lanzamientos, log de intervalos de llamada; escribe los tres JSON en `outputDir` con `meta.schema_version` 1.0.0 y `components[*].files` absolutos bajo `projectPath`), `zip-catalog.ts` (ZIP benignos y maliciosos generados en memoria: traversal, absoluta, letra de unidad, `\`, symlink, sobretamaño, bomba con tamaño declarado falso, exceso de entradas, duplicados, no-ZIP), `web-harness.ts` (invocación en proceso de route handlers con env y `ARCHVIEW_DATA_DIR` temporal, "reinicio" = recarga del runtime sobre el mismo directorio, reloj inyectable, inyección de E/S que falla con `ENOSPC`, cabecera `Authorization` opcional), `browser.ts` (Chromium, contextos aislados, `data-testid`)
 - [x] T007 [P] Crear la etiqueta anotada `dev-arch-006-baseline` sobre `889c95a` (cierre de 006) como ancla estable de TS-076 que sobrevive a un squash (hallazgo A8) y documentarla en `docs/` del producto (`docs/BASELINES.md`: qué fija y cómo publicarla con `git push origin dev-arch-006-baseline`)
 
 **Checkpoint**: dependencias instaladas; runners descubren los 87 escenarios (todos indefinidos/rojos).
@@ -80,8 +80,8 @@ description: "Task list for 007-native-engine-runtime"
 - [x] T029 [US1] Implementar `web/src/server/jobs/job-runner.ts` (pipeline, semáforo, cola FIFO, dependencias de E/S inyectables `JobRuntimeDeps`) y `web/src/server/runtime.ts` (singleton por proceso: config, store, cliente, runner) hasta pasar T028 (research D2, D7)
 - [x] T030 [US1] Implementar rutas `web/src/app/api/analyses/route.ts` (POST binario/multipart/JSON `localPath`, `language`, `ENGINE_NOT_BUILT`, `LOCAL_PATH_DISABLED`), `web/src/app/api/analyses/[id]/route.ts` (estado con `projectRoot` relativo, `no-store`) y `web/src/app/api/analyses/[id]/[doc]/route.ts` (`graph|architecture|contracts` con `redactDocument`, `NOT_READY`, `ANALYSIS_FAILED`, `NOT_FOUND`) hasta pasar [TS-001, TS-002, TS-005, TS-006, TS-007, TS-010, TS-011, TS-012] (contracts/analyses-api.md)
 - [ ] T031 [US1] Verificar con motor real (`DEVARCH_E2E=true`) [TS-003, TS-004, TS-008, TS-009]
-- [ ] T032 [US1] Escribir step definitions `tests/acceptance/steps/native-runtime-browser.steps.ts` para [TS-013, TS-014, TS-015] (Playwright, `data-testid`); ejecutar con `make test-e2e-browser` y verlas fallar
-- [ ] T033 [US1] Implementar `web/src/lib/analyses-client.ts` (subida binaria, polling 1 s / máx. 2 s, documentos) y adaptar `web/src/components/software-architecture-analyzer.tsx` + nuevo `web/src/components/analysis-progress.tsx` (selector de lenguaje, fases en español, `localStorage['devarch.activeJobId']` sin resultados, `data-testid` de plan nota 10) hasta pasar [TS-013, TS-014, TS-015]
+- [x] T032 [US1] Escribir step definitions `tests/acceptance/steps/native-runtime-browser.steps.ts` para [TS-013, TS-014, TS-015] (Playwright, `data-testid`); ejecutar con `make test-e2e-browser` y verlas fallar
+- [x] T033 [US1] Implementar `web/src/lib/analyses-client.ts` (subida binaria, polling 1 s / máx. 2 s, documentos) y adaptar `web/src/components/software-architecture-analyzer.tsx` + nuevo `web/src/components/analysis-progress.tsx` (selector de lenguaje, fases en español, `localStorage['devarch.activeJobId']` sin resultados, `data-testid` de plan nota 10) hasta pasar [TS-013, TS-014, TS-015]
 
 **Checkpoint**: MVP — subir ZIP Java/.NET y ver propuestas vía jobs asíncronos.
 
@@ -95,8 +95,8 @@ description: "Task list for 007-native-engine-runtime"
 - [x] T034 [US2] Escribir step definitions `tests/acceptance/steps/native-runtime-isolation.steps.ts` para [TS-016, TS-017, TS-018, TS-019, TS-020, TS-021, TS-022]; ejecutar y verlas fallar
 - [x] T035 [P] [US2] Ampliar primero `web/src/server/jobs/job-runner.test.ts` con `recoverOnStart` (`queued|running` → `failed/INTERRUPTED`) y mutex por `realpath(projectRoot)`; verla fallar
 - [x] T036 [US2] Implementar recuperación y mutex en `web/src/server/jobs/job-runner.ts` y crear `web/src/instrumentation.ts` (`register()` en runtime Node: recuperación + arranque del runner) hasta pasar T035 y [TS-018, TS-020, TS-021, TS-022]
-- [ ] T037 [US2] Implementar reanudación en `web/src/components/software-architecture-analyzer.tsx` (al cargar, si existe `devarch.activeJobId`, consultar estado y retomar polling/resultados; mensaje de caducidad con opción de reanalizar) hasta pasar [TS-019]
-- [ ] T038 [US2] Verificar con motor real [TS-016, TS-017] (`DEVARCH_E2E=true`, `make test-e2e-browser`) con la concurrencia por defecto fijada en T014/T016
+- [x] T037 [US2] Implementar reanudación en `web/src/components/software-architecture-analyzer.tsx` (al cargar, si existe `devarch.activeJobId`, consultar estado y retomar polling/resultados; mensaje de caducidad con opción de reanalizar) hasta pasar [TS-019]
+- [x] T038 [US2] Verificar con motor real [TS-016, TS-017] (`DEVARCH_E2E=true`, `make test-e2e-browser`) con la concurrencia por defecto fijada en T014/T016
 
 **Checkpoint**: criterio de salida "dos análisis concurrentes no interfieren; recargar no pierde el job".
 
@@ -125,7 +125,7 @@ description: "Task list for 007-native-engine-runtime"
 - [x] T044 [US4] Escribir step definitions `tests/acceptance/steps/native-runtime-source.steps.ts` para [TS-034, TS-035, TS-036, TS-037, TS-038, TS-039]; ejecutar y verlas fallar
 - [x] T045 [P] [US4] Escribir primero `web/src/server/source/source-sandbox.test.ts` (catálogo de escapes: absoluta, `..`, `%2e%2e`, `\`, NUL, unidad, symlink saliente, otro job, directorio, inexistente, extensión, tamaño; respuesta 404 uniforme fuera de la raíz); verla fallar
 - [x] T046 [US4] Implementar `web/src/server/source/source-sandbox.ts` y reescribir `web/src/app/api/source/route.ts` (forma heredada `?path=` → 400) hasta pasar T045 y [TS-034, TS-035, TS-036, TS-037, TS-038] (research D10)
-- [ ] T047 [US4] Adaptar `web/src/components/code-viewer.tsx` y `web/src/components/component-details.tsx` (prop `jobId`, rutas ya relativas servidas por la API) hasta pasar [TS-039]
+- [x] T047 [US4] Adaptar `web/src/components/code-viewer.tsx` y `web/src/components/component-details.tsx` (prop `jobId`, rutas ya relativas servidas por la API) hasta pasar [TS-039]
 
 **Checkpoint**: SC-006 verificable.
 
@@ -139,7 +139,7 @@ description: "Task list for 007-native-engine-runtime"
 - [x] T048 [US5] Escribir step definitions `tests/acceptance/steps/native-runtime-import.steps.ts` para [TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046, TS-047]; ejecutar y verlas fallar
 - [x] T049 [P] [US5] Escribir primero `web/src/server/import/import-validator.test.ts` (fixtures `schema/fixtures/valid/*` aceptadas; `schema/fixtures/invalid/*` → violaciones con `document`/`pointer`/`message`; versión presente ≠ 1.0.0 → `UNSUPPORTED_SCHEMA_VERSION`; versión ausente → `SCHEMA_VIOLATION`; documento obligatorio ausente); verla fallar
 - [x] T050 [US5] Implementar `web/src/server/import/import-validator.ts` y `web/src/app/api/analyses/import/route.ts` (cuerpo por streaming con límite, job `origin: import` completado sin `source/`, `NO_SOURCES` en el visor) hasta pasar T049 y [TS-040, TS-041, TS-042, TS-043, TS-044, TS-045, TS-046]
-- [ ] T051 [US5] Crear `web/src/components/import-dialog.tsx` (dos/tres archivos JSON, errores con puntero de campo) e integrarlo en el analizador hasta pasar [TS-047]
+- [x] T051 [US5] Crear `web/src/components/import-dialog.tsx` (dos/tres archivos JSON, errores con puntero de campo) e integrarlo en el analizador hasta pasar [TS-047]
 
 **Checkpoint**: SC-010 verificable; defecto 6 cerrado.
 
@@ -158,7 +158,7 @@ description: "Task list for 007-native-engine-runtime"
 - [x] T057 [P] [US6] Escribir primero `engine/src/test/java/com/extractor/cli/CliLanguageAndWarningsTest.java` (`--language=java|dotnet|auto`; inválido → exit 1, mensaje exacto, sin archivos; `[warning]` en stderr; sin la opción, salidas byte-idénticas); verla fallar
 - [x] T058 [US6] Implementar `--language` y advertencias en stderr en `engine/src/main/java/com/extractor/MicroserviceInferenceMain.java` hasta pasar T057 y [TS-050, TS-052, TS-053]
 - [x] T059 [US6] Escribir y pasar `engine/src/test/java/com/extractor/integration/NativeRuntimeParityTest.java` (CLI vs MCP con `language` explícito y `auto`; consecutivas; cacheada vs nueva; con/sin token sobre `java-standar` y `dotnet-ecommerce`) (SC-007)
-- [ ] T060 [US6] Escribir step definitions `tests/acceptance/steps/native-runtime-warnings.steps.ts` para [TS-062, TS-063, TS-065]; verlas fallar; implementar el panel de advertencias (`data-testid="analysis-warnings"`) en `web/src/components/analysis-progress.tsx` y la copia `_meta` → `job.warnings` (con `redactText`) en `job-runner.ts` hasta pasar
+- [x] T060 [US6] Escribir step definitions `tests/acceptance/steps/native-runtime-warnings.steps.ts` para [TS-062, TS-063, TS-065]; verlas fallar; implementar el panel de advertencias (`data-testid="analysis-warnings"`) en `web/src/components/analysis-progress.tsx` y la copia `_meta` → `job.warnings` (con `redactText`) en `job-runner.ts` hasta pasar
 
 **Checkpoint**: SC-007 y SC-008 verificables; FR-023..FR-027 completos.
 
@@ -199,7 +199,7 @@ description: "Task list for 007-native-engine-runtime"
 - [x] T068 [US9] Aplicar `requireApiToken` como primera instrucción en `web/src/app/api/analyses/route.ts`, `analyses/[id]/route.ts`, `analyses/[id]/[doc]/route.ts`, `analyses/import/route.ts`, `source/route.ts` y `analyze/route.ts`, y completar la relativización (`projectRoot`, documentos, advertencias, motivos de fallo) hasta pasar [TS-078, TS-079, TS-080, TS-081, TS-082, TS-083]
 - [x] T069 [P] [US9] Escribir primero `web/src/server/security/bind-warning.test.ts` (`HOSTNAME`/`-H`/`--hostname`; sin dirección = todas las interfaces; loopback `localhost`, `127.0.0.0/8`, `::1` sin aviso; con token sin aviso); verla fallar
 - [x] T070 [US9] Implementar `web/src/server/security/bind-warning.ts` y llamarlo desde `register()` de `web/src/instrumentation.ts` hasta pasar T069 y [TS-084]
-- [ ] T071 [US9] Añadir en `web/src/lib/analyses-client.ts` la cabecera `Authorization` desde `sessionStorage['devarch.apiToken']` y en la UI el campo `data-testid="api-token-input"` mostrado ante 401, con reintento, hasta pasar [TS-085]
+- [x] T071 [US9] Añadir en `web/src/lib/analyses-client.ts` la cabecera `Authorization` desde `sessionStorage['devarch.apiToken']` y en la UI el campo `data-testid="api-token-input"` mostrado ante 401, con reintento, hasta pasar [TS-085]
 
 **Checkpoint**: SC-013 y SC-014 verificables.
 
@@ -209,7 +209,7 @@ description: "Task list for 007-native-engine-runtime"
 
 - [ ] T072 Actualizar `<monorepo>/.github/workflows/dev-arch.yml`: filtro `acceptance` + `apps/dev-arch/specs/007-*/tests/**`; job `e2e-browser` (`if` compuesto web/engine-java/engine-dotnet/acceptance, JDK 17, .NET 8, Node 20, `make build`, `npx playwright install --with-deps chromium`, `make test-e2e-browser`, `timeout-minutes: 30`); confirmar que TS-025, TS-026, TS-027, TS-028, TS-029, TS-030 de 006 siguen verdes (research D11, E13)
 - [ ] T073 [P] Documentar variables y flujo en `web/docs/ENVIRONMENT.md` (incluidos `DEVARCH_API_TOKEN`, la advertencia de exposición y `HOSTNAME`) y `web/docs/DEVELOPERS.md` (research D13, D15), `language`/progreso/`_meta`/caché en `engine/MCP.md` y `--language` en `engine/README.md`; entrada en `CHANGELOG.md` (sin bump de contrato)
-- [ ] T074 [P] Eliminar del frontend el almacenamiento de resultados en `localStorage` y código muerto de la subida síncrona en `web/src/components/software-architecture-analyzer.tsx`
+- [x] T074 [P] Eliminar del frontend el almacenamiento de resultados en `localStorage` y código muerto de la subida síncrona en `web/src/components/software-architecture-analyzer.tsx`
 - [ ] T075 Gates completos con JDK 17: `make test` (incluye `mvn -B verify`, `dotnet format --verify-no-changes`, `schema-check`, web, aceptación sin `@slow`), Checkstyle ≤ 4763 y SpotBugs 0 con los comandos de CI, `DEVARCH_E2E=true make test-acceptance`, `make test-e2e-browser`; `testify-tdd.sh verify-hash` para 001–007 [TS-076, TS-077]
 - [ ] T076 Ejecutar `specs/007-native-engine-runtime/quickstart.md` de punta a punta y regenerar el tablero iikit
 

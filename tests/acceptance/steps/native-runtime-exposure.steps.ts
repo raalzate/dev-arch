@@ -54,7 +54,9 @@ Then('every component file in the served graph is {string} or another path relat
 });
 
 Then('no response about that analysis contains the data directory or the web working directory', async function (this: DevArchWorld) {
-  assertNoSecretDirs(this, await analysisResponses(this, jobId(this)));
+  const responses = await analysisResponses(this, jobId(this));
+  assert.ok(responses.length === 4 && responses[0].status === 200, 'the status of the analysis is not served');
+  assertNoSecretDirs(this, responses);
 });
 
 Then('the {string}, {string} and {string} documents still validate against the data contract', async function (this: DevArchWorld, a: string, b: string, c: string) {

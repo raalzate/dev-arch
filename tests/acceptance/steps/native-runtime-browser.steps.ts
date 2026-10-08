@@ -225,7 +225,10 @@ When('the user imports the outputs of the contract fixture {string}', async func
 });
 
 Then('the page shows at least one component and at least one proposal', async function (this: DevArchWorld) {
-  await showsResults(first(this), 2 * 60_000);
+  const s = first(this);
+  await showsResults(s, 2 * 60_000);
+  assert.ok((await s.page.locator(byTestId('component-node')).count()) >= 1, 'no component shown');
+  assert.ok((await s.page.locator(byTestId('proposal-card')).count()) >= 1, 'no proposal shown');
 });
 
 // --- TS-063 ---------------------------------------------------------------------------------------------
