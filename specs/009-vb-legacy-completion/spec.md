@@ -176,7 +176,8 @@ Como mantenedor, quiero un corpus VB sintético y redistribuible dentro de las p
 - Nombres de tabla con esquema (`dbo.X`), delimitados (`[X]`, `"X"`) o con alias: se normalizan al nombre simple sin delimitadores.
 - Sentencias en minúsculas o mixtas y con saltos de línea: se reconocen igual.
 - Llamadas a procedimientos almacenados (`EXEC`, tipo de comando procedimiento): no producen tablas.
-- Literal que empieza por una palabra SQL dentro de un mensaje (`"Select a customer"`): no produce tablas.
+- Literal que empieza por una palabra SQL dentro de un mensaje (`"Select a customer from the list"`): no produce tablas.
+- SQL construido de forma incremental (`sql = sql & " FROM X"`) o por partes en un acumulador de texto, y expresiones de tabla comunes (`WITH`): no se reconocen (limitación documentada).
 - Definición de DataSet tipado mal formada o sin adaptadores: se ignora con advertencia de diagnóstico; el análisis continúa.
 - Archivos de configuración con distinta capitalización (`App.config`, `Web.config`) o ambos presentes: se leen ambos; en conflicto de claves gana el primero en orden ordinal de nombre de archivo.
 - Archivos de transformación de configuración (`Web.Debug.config`): no se leen.
@@ -195,7 +196,7 @@ Como mantenedor, quiero un corpus VB sintético y redistribuible dentro de las p
 - **FR-001**: El sistema DEBE extraer, para cada componente VB, los nombres de tabla de las sentencias SQL literales (`SELECT ... FROM/JOIN`, `INSERT INTO`, `UPDATE ... SET`, `DELETE FROM`, `MERGE INTO`) presentes en su código, incluidas las formadas por concatenación de literales
 - **FR-002**: Los nombres de tabla DEBEN normalizarse quitando delimitadores y el prefijo de esquema/base de datos, conservando la capitalización del literal; las tablas se deduplican sin distinguir mayúsculas (se conserva la primera aparición en orden de código)
 - **FR-003**: El sistema DEBE leer las definiciones de DataSets tipados presentes en el directorio del proyecto VB y asignar a cada componente que referencie un adaptador de tabla o una tabla tipada de esas definiciones la tabla de base de datos asociada
-- **FR-004**: Un literal DEBE considerarse SQL solo si, tras recortar espacios, empieza por una palabra clave de sentencia (`SELECT`, `INSERT`, `UPDATE`, `DELETE`, `MERGE`, `WITH`) y contiene la cláusula estructural correspondiente (`FROM`, `INTO`, `SET`); las llamadas a procedimientos almacenados no producen tablas
+- **FR-004**: Un literal DEBE considerarse SQL solo si, tras recortar espacios, empieza por una palabra clave de sentencia (`SELECT`, `INSERT`, `UPDATE`, `DELETE`, `MERGE`) y tiene la estructura de esa sentencia (`SELECT <lista> FROM <tabla>`, `INSERT INTO <tabla> (...)|VALUES|SELECT`, `UPDATE <tabla> SET`, `DELETE FROM <tabla>`, `MERGE [INTO] <tabla> ... USING`); las llamadas a procedimientos almacenados, las tablas temporales y las variables de tabla no producen tablas
 
 **Code issues VB**
 

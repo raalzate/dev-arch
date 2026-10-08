@@ -2,21 +2,13 @@
   "tdd_determination": "mandatory",
   "planview": {
     "nodeClassifications": {
-      "Browser": "client",
-      "Next.js server": "server",
-      "Upload Guard": "server",
-      "Job Store": "storage",
-      "Contract Validator": "server",
-      "Source Sandbox": "server",
-      "Job Runner": "server",
-      "Engine Client": "server",
-      "Java Engine": "server",
-      "MCP adapter": "server",
-      "CLI adapter": "client",
+      "CLI": "client",
+      "MCP analyze_project": "server",
       "AnalysisService": "server",
-      "JavaSpoonAnalyzer": "server",
       "DotNetBridgeAnalyzer": "server",
-      "dotnet-analyzer": "external"
+      "dotnet-analyzer": "server",
+      "ProjectAnalyzer": "server",
+      "VbProjectContext": "storage"
     }
   },
   "checklist_reviewed_at": "2026-10-08T16:47:46Z"
