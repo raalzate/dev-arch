@@ -55,7 +55,42 @@ export class EngineNotBuiltError extends Error {
   }
 }
 
+/** The engine process ended while analyses were running (FR-029). */
+export class EngineCrashedError extends Error {
+  constructor(message = 'The analysis engine stopped unexpectedly; it is restarted for the next analysis.') {
+    super(message);
+    this.name = 'EngineCrashedError';
+  }
+}
+
+/** The engine crashed repeatedly and is not relaunched for a while (FR-029). */
+export class EngineUnavailableError extends Error {
+  constructor(message = 'The analysis engine crashed repeatedly and is temporarily unavailable; retry in a minute.') {
+    super(message);
+    this.name = 'EngineUnavailableError';
+  }
+}
+
+/** The analysis exceeded its time limit (FR-030). */
+export class EngineTimeoutError extends Error {
+  constructor(timeoutMs: number) {
+    super(`The analysis exceeded the time limit of ${Math.round(timeoutMs / 60000) || timeoutMs / 60000} minutes (timeout).`);
+    this.name = 'EngineTimeoutError';
+  }
+}
+
+export interface EngineClientOptions {
+  /** Delays before relaunching after the 1st, 2nd, 3rd crash of the window (research D14: 1, 2, 4 s). */
+  backoffMs?: number[];
+  /** Crashes within `crashWindowMs` that make the engine unavailable for `unavailableMs`. */
+  maxCrashes?: number;
+  crashWindowMs?: number;
+  unavailableMs?: number;
+}
+
 const WARNINGS_META = 'static-inference/warnings';
+const CONNECTION_CLOSED = -32000;
+const REQUEST_TIMEOUT = -32001;
 const VERSION = '1.2.0';
 
 export class EngineClient {
@@ -67,11 +102,21 @@ export class EngineClient {
   private generation = 0;
   /** After shutdown() the client never starts the engine again (a new runtime creates a new client). */
   private closed = false;
+  /** Clients closed on purpose (recycle), whose close is not a crash. */
+  private readonly intentional = new WeakSet<Client>();
+
+  private crashes: number[] = [];
+  private unavailableUntil = 0;
+  private recycleWhenIdle = false;
+  private readonly opts: Required<EngineClientOptions>;
 
   constructor(
     private readonly launch: () => EngineLaunchSpec,
     private readonly log: (line: string) => void = (l) => console.error(l),
-  ) {}
+    opts: EngineClientOptions = {},
+  ) {
+    this.opts = { backoffMs: [1000, 2000, 4000], maxCrashes: 3, crashWindowMs: 60_000, unavailableMs: 60_000, ...opts };
+  }
 
   pid(): number | null {
     return this.transport?.pid ?? null;
@@ -82,23 +127,49 @@ export class EngineClient {
     this.inFlight.set(req.jobId, hooks);
     let last = -1;
     try {
+      return await this.call(client, req, hooks, (i) => {
+        if (i > last) {
+          last = i;
+          hooks.onPhase(PHASES[i]);
+        }
+      });
+    } finally {
+      this.inFlight.delete(req.jobId);
+      if (this.recycleWhenIdle && this.inFlight.size === 0) void this.recycle();
+    }
+  }
+
+  private async call(client: Client, req: AnalyzeRequest, hooks: AnalyzeHooks, phase: (i: number) => void): Promise<AnalyzeResult> {
+    try {
       const result = await client.callTool(
         { name: 'analyze_project', arguments: { projectPath: req.projectPath, outputDir: req.outputDir, language: req.language } },
         undefined,
         {
           timeout: hooks.timeoutMs,
-          onprogress: (p) => {
-            const i = PHASES.indexOf(p.message as Phase);
-            if (i > last) {
-              last = i;
-              hooks.onPhase(PHASES[i]);
-            }
-          },
+          onprogress: (p) => phase(PHASES.indexOf(p.message as Phase)),
         },
       );
       return this.parseResult(result);
-    } finally {
-      this.inFlight.delete(req.jobId);
+    } catch (e) {
+      const code = (e as { code?: number }).code;
+      if (code === REQUEST_TIMEOUT) {
+        this.recycleWhenIdle = true;
+        throw new EngineTimeoutError(hooks.timeoutMs);
+      }
+      if (code === CONNECTION_CLOSED && !this.closed) throw new EngineCrashedError();
+      throw e;
+    }
+  }
+
+  /** Restarts the process once no analysis is using it (after a timeout the engine may still be busy). */
+  private async recycle(): Promise<void> {
+    this.recycleWhenIdle = false;
+    const c = this.client;
+    this.client = null;
+    this.transport = null;
+    if (c) {
+      this.intentional.add(c);
+      await c.close().catch(() => undefined);
     }
   }
 
@@ -113,6 +184,16 @@ export class EngineClient {
     if (c) await c.close().catch(() => undefined);
     // A start in progress closes its own client when it notices the new generation.
     if (pending) await pending.catch(() => undefined);
+  }
+
+  private recordCrash(): void {
+    const now = Date.now();
+    this.crashes = [...this.crashes.filter((t) => now - t < this.opts.crashWindowMs), now];
+    this.log(`[engine] process exited unexpectedly (${this.crashes.length} crash(es) in the last minute)`);
+    if (this.crashes.length >= this.opts.maxCrashes) {
+      this.unavailableUntil = now + this.opts.unavailableMs;
+      this.crashes = [];
+    }
   }
 
   private parseResult(result: unknown): AnalyzeResult {
@@ -139,6 +220,8 @@ export class EngineClient {
   private async ensureStarted(): Promise<Client> {
     if (this.closed) throw new Error('The engine client is shut down');
     if (this.client) return this.client;
+    const now = Date.now();
+    if (now < this.unavailableUntil) throw new EngineUnavailableError();
     if (!this.starting) {
       this.starting = this.start().finally(() => {
         this.starting = null;
@@ -149,6 +232,11 @@ export class EngineClient {
 
   private async start(): Promise<Client> {
     const generation = this.generation;
+    const recent = this.crashes.length;
+    if (recent > 0) {
+      const delay = this.opts.backoffMs[Math.min(recent, this.opts.backoffMs.length) - 1];
+      await new Promise((r) => setTimeout(r, delay));
+    }
     const spec = this.launch();
     const transport = new StdioClientTransport({ command: spec.command, args: spec.args, env: spec.env, stderr: 'pipe' });
     this.pipeStderr(transport);
@@ -158,6 +246,7 @@ export class EngineClient {
         this.client = null;
         this.transport = null;
       }
+      if (!this.closed && !this.intentional.has(client)) this.recordCrash();
     };
     try {
       await client.connect(transport);

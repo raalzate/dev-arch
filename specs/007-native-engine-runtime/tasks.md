@@ -169,9 +169,9 @@ description: "Task list for 007-native-engine-runtime"
 **Goal**: proceso único, reinicio con backoff, indisponibilidad temporal, timeout con reciclado, stderr por job.
 **Independent Test**: TS-066, TS-067, TS-068, TS-069, TS-070, TS-071, TS-072.
 
-- [ ] T061 [US7] Escribir step definitions `tests/acceptance/steps/native-runtime-resilience.steps.ts` para [TS-066, TS-067, TS-068, TS-069, TS-070, TS-071, TS-072] (TS-072 reutiliza los Given de entorno y directorio de trabajo de 006); ejecutar y verlas fallar
-- [ ] T062 [P] [US7] Ampliar primero `web/src/server/engine/engine-client.test.ts` (un solo lanzamiento para N análisis; caída → `EngineCrashedError` < 1 s y relanzamiento; > 3 caídas en 60 s → `EngineUnavailableError`; espera durante reinicio; timeout → `EngineTimeoutError` y `recycleWhenIdle`; stderr → `[engine]` y `onStderr` por job en vuelo); verla fallar
-- [ ] T063 [US7] Implementar ciclo de vida, backoff, timeout/reciclado y stderr en `web/src/server/engine/engine-client.ts`, y en `job-runner.ts` el mapeo a `ENGINE_CRASHED`/`ENGINE_UNAVAILABLE`/`TIMEOUT` con mensaje resumido y `engine.log` del job, hasta pasar T062 y [TS-066, TS-067, TS-068, TS-069, TS-070, TS-071, TS-072] (research D14)
+- [x] T061 [US7] Escribir step definitions `tests/acceptance/steps/native-runtime-resilience.steps.ts` para [TS-066, TS-067, TS-068, TS-069, TS-070, TS-071, TS-072] (TS-072 reutiliza los Given de entorno y directorio de trabajo de 006); ejecutar y verlas fallar
+- [x] T062 [P] [US7] Ampliar primero `web/src/server/engine/engine-client.test.ts` (un solo lanzamiento para N análisis; caída → `EngineCrashedError` < 1 s y relanzamiento; > 3 caídas en 60 s → `EngineUnavailableError`; espera durante reinicio; timeout → `EngineTimeoutError` y `recycleWhenIdle`; stderr → `[engine]` y `onStderr` por job en vuelo); verla fallar
+- [x] T063 [US7] Implementar ciclo de vida, backoff, timeout/reciclado y stderr en `web/src/server/engine/engine-client.ts`, y en `job-runner.ts` el mapeo a `ENGINE_CRASHED`/`ENGINE_UNAVAILABLE`/`TIMEOUT` con mensaje resumido y `engine.log` del job, hasta pasar T062 y [TS-066, TS-067, TS-068, TS-069, TS-070, TS-071, TS-072] (research D14)
 
 **Checkpoint**: SC-009 verificable.
 
