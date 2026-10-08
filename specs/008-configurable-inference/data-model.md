@@ -29,7 +29,6 @@ All fields required in the record; the JSON form is partial (merged onto `Infere
 | `consolidation.domainMergeMaxSize` | int | 50 | ≥ 0 | `ClusterConsolidator:91` |
 | `consolidation.significantInfrastructureRatio` | double | 0.3 | [0,1] | `ClusterConsolidator:122` |
 | `consolidation.supportRatio` | double | 0.8 | [0,1] | `ClusterConsolidator:182` |
-| `consolidation.supportScope` | enum | `root` | root, group | new (opt-in, FR-025) |
 | `consolidation.maxMergedSizeWithoutSimilarity` | int | 40 | ≥ 0 | `ClusterConsolidator:153` |
 | `consolidation.highTokenSimilarity` | double | 0.75 | [0,1] | `ClusterConsolidator:153` |
 | `consolidation.separationCallDensity` | double | 0.15 | [0,1] | `ClusterConsolidator:156` |

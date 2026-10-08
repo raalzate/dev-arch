@@ -131,7 +131,7 @@ Como usuario que sube un repositorio cuyo proyecto Java o .NET no está en la ca
 
 ### User Story 7 — Correcciones opcionales de inconsistencias conocidas (Priority: P3)
 
-Como usuario avanzado, puedo activar por configuración las correcciones de las inconsistencias conocidas de la inferencia (listas de palabras clave de infraestructura alineadas, `data_jaccard` calculado, comprobación de librería de soporte sobre el grupo completo) sin que cambien los resultados de quien no las active.
+Como usuario avanzado, puedo activar por configuración las correcciones de las inconsistencias conocidas de la inferencia (listas de palabras clave de infraestructura alineadas, `data_jaccard` calculado) sin que cambien los resultados de quien no las active, y tengo la garantía documentada de que la comprobación de librería de soporte sobre el grupo raíz equivale a la del grupo completo.
 
 **Why this priority**: Corrige defectos documentados sin violar el principio I; su activación por defecto requeriría un cambio de contrato versionado (fuera de alcance).
 
@@ -139,10 +139,10 @@ Como usuario avanzado, puedo activar por configuración las correcciones de las 
 
 **Acceptance Scenarios**:
 
-1. **Given** la configuración por defecto, **When** se infiere, **Then** `data_jaccard` sigue valiendo 0,8 con tablas y 0,0 sin tablas, las tres listas de palabras clave conservan sus valores actuales y la librería de soporte se comprueba sobre el grupo raíz.
+1. **Given** la configuración por defecto, **When** se infiere, **Then** `data_jaccard` sigue valiendo 0,8 con tablas y 0,0 sin tablas y las tres listas de palabras clave conservan sus valores actuales.
 2. **Given** el modo calculado de `data_jaccard`, **When** se infiere, **Then** cada propuesta emite como `data_jaccard` la cohesión de datos usada en su puntuación de viabilidad.
 3. **Given** una configuración que declara la misma lista de palabras clave de infraestructura para la consolidación, el filtrado de propuestas y los nombres, **When** se infiere, **Then** las tres etapas usan esa lista.
-4. **Given** la comprobación de librería de soporte sobre el grupo completo, **When** se consolidan grupos, **Then** la salvaguarda de soporte evalúa todos los miembros del grupo fusionado y no solo el grupo raíz.
+4. **Given** cualquier grafo y cualquier configuración, **When** se consolidan grupos, **Then** todos los grupos de origen de cada grupo consolidado tienen el mismo estado de librería de soporte que su grupo raíz (por eso evaluar solo el grupo raíz equivale a evaluar el grupo completo).
 
 ---
 
@@ -213,7 +213,7 @@ Como usuario avanzado, puedo activar por configuración las correcciones de las 
 
 **Correcciones opcionales**
 
-- **FR-025**: La configuración MUST permitir, como opciones desactivadas por defecto, emitir `data_jaccard` como la cohesión de datos usada en la puntuación, evaluar la salvaguarda de librería de soporte sobre el grupo fusionado completo y declarar por separado cada lista de palabras clave de infraestructura (para poder alinearlas).
+- **FR-025**: La configuración MUST permitir, como opción desactivada por defecto, emitir `data_jaccard` como la cohesión de datos usada en la puntuación, y declarar por separado cada lista de palabras clave de infraestructura (para poder alinearlas). La comprobación de librería de soporte sobre el grupo raíz MUST mantenerse y documentarse como equivalente a la del grupo completo (invariante: solo se fusionan grupos con el mismo estado de soporte), verificada por pruebas.
 
 **Contrato, calidad y compatibilidad**
 
@@ -254,7 +254,7 @@ Como usuario avanzado, puedo activar por configuración las correcciones de las 
 - Q: Las aserciones bloqueadas de las features 001 y 005 exigen que el modo servidor ofrezca exactamente 5 operaciones; ¿cómo se añaden las nuevas? -> A: Las nuevas operaciones se habilitan explícitamente al arrancar el modo servidor (opción de arranque); por defecto se siguen ofreciendo exactamente las 5 actuales y la web las habilita siempre. Alternativa: re-bloquear las aserciones de 001/005 a "al menos las 5 operaciones" con aprobación explícita del usuario y exponerlas siempre. (default elegido por agente — pendiente confirmar) [FR-027, US3-AS2]
 - Q: ¿`data_jaccard` se corrige? -> A: No por defecto (cambiaría las salidas, principio I); se ofrece el modo calculado como opción desactivada por defecto. Corregirlo por defecto requiere un cambio versionado del contrato en otra feature. (default elegido por agente — pendiente confirmar) [FR-025, US7]
 - Q: ¿Se unifican las tres listas de palabras clave de infraestructura? -> A: No por defecto; cada lista es un parámetro con su valor vigente y el usuario puede alinearlas por configuración. La guía documenta la divergencia y la configuración recomendada. (default elegido por agente — pendiente confirmar) [FR-025, US7]
-- Q: ¿La salvaguarda de librería de soporte mira el grupo completo? -> A: No por defecto (se conserva "solo grupo raíz"); "grupo completo" es una opción. (default elegido por agente — pendiente confirmar) [FR-025]
+- Q: ¿La salvaguarda de librería de soporte mira el grupo completo? -> A: No hace falta: las fusiones solo ocurren entre grupos con el mismo estado de soporte, así que todos los grupos de origen de un grupo consolidado comparten el estado de su raíz y la proporción del grupo completo cae del mismo lado del umbral (media ponderada). La limitación conocida no tiene efecto observable; se documenta y se verifica con una prueba de invariante, sin añadir opción. (default elegido por agente — pendiente confirmar) [FR-025, US7-AS4]
 - Q: ¿La detección anidada está activa por defecto? -> A: No: profundidad 0 por defecto (detección actual); un proyecto sin marcadores en la raíz que hoy se analiza como Java podría pasar a .NET y cambiar su salida. Rango permitido 0..5. (default elegido por agente — pendiente confirmar) [FR-023, FR-024, US6]
 - Q: ¿De dónde se carga la configuración? -> A: Línea de comandos: archivo indicado explícitamente con una opción; modo servidor: objeto en línea o ruta de archivo en la petición. No se descubre automáticamente un archivo de configuración dentro del proyecto analizado (evita cambios silenciosos de salida). (default elegido por agente — pendiente confirmar) [FR-006, FR-007]
 - Q: ¿Cómo resuelve el motor un identificador de análisis de la web? -> A: La web comunica al motor, al arrancarlo, su área de resultados; el motor busca el grafo del análisis dentro de esa área. Sin área configurada solo se admite la ruta. (default elegido por agente — pendiente confirmar) [FR-015, FR-027]

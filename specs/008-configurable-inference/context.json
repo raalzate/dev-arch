@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "1de295458287b0d8cabafad7ec399e9cf828de12ca8a1daa8cdea9a4d29f7379",
+    "generated_at": "2026-10-08T22:01:39Z",
+    "features_dir": "specs/008-configurable-inference/tests/features",
+    "file_count": 7
+  }
+}
