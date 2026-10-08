@@ -1,5 +1,7 @@
 package com.extractor.inference;
 
+import com.extractor.inference.config.ClusteringConfig;
+import com.extractor.inference.config.InferenceConfig;
 import com.extractor.model.Component;
 import com.extractor.model.DependencyGraph;
 import java.util.*;
@@ -10,6 +12,23 @@ import java.util.stream.Collectors;
  * Uses domain information and call relationships to form clusters.
  */
 public class ClusteringAlgorithm {
+
+    /** Clustering parameters (008). */
+    private final ClusteringConfig config;
+
+    /** Algorithm with the 1.2.0 parameters. */
+    public ClusteringAlgorithm() {
+        this(InferenceConfig.defaults().clustering());
+    }
+
+    /**
+     * Algorithm with the given parameters.
+     *
+     * @param clustering clustering parameters
+     */
+    public ClusteringAlgorithm(final ClusteringConfig clustering) {
+        this.config = clustering;
+    }
 
     /**
      * Creates clusters from the dependency graph.
@@ -64,7 +83,7 @@ public class ClusteringAlgorithm {
                 .orElse(0);
 
         // If one domain has >75% of components, it's a single-domain project
-        return maxDomainSize > (totalComponents * 0.75);
+        return maxDomainSize > (totalComponents * config.singleDomainRatio());
     }
 
     /**
@@ -501,7 +520,7 @@ public class ClusteringAlgorithm {
 
         // Lowered threshold: If one cluster has more than 50% of components, consider
         // it too large
-        return (double) maxClusterSize / totalComponents > 0.5;
+        return (double) maxClusterSize / totalComponents > config.largeClusterRatio();
     }
 
     /**

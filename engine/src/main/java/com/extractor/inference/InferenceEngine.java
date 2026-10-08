@@ -1,5 +1,6 @@
 package com.extractor.inference;
 
+import com.extractor.inference.config.InferenceConfig;
 import com.extractor.inference.rules.*;
 import com.extractor.model.DependencyGraph;
 import com.extractor.model.Component;
@@ -18,7 +19,16 @@ public class InferenceEngine {
     private final ObjectMapper objectMapper;
     
     public InferenceEngine() {
-        this.clusteringAlgorithm = new ClusteringAlgorithm();
+        this(InferenceConfig.defaults());
+    }
+
+    /**
+     * Engine with the given configuration (clustering parameters).
+     *
+     * @param config the inference configuration
+     */
+    public InferenceEngine(final InferenceConfig config) {
+        this.clusteringAlgorithm = new ClusteringAlgorithm(config.clustering());
         this.metricsCalculator = new MetricsCalculator();
         this.explanationGenerator = new ExplanationGenerator();
         this.rules = initializeRules();

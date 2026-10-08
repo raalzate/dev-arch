@@ -1,0 +1,107 @@
+{
+  "detection" : {
+    "maxDepth" : 0
+  },
+  "clustering" : {
+    "singleDomainRatio" : 0.75,
+    "largeClusterRatio" : 0.5
+  },
+  "evidence" : {
+    "weights" : {
+      "table" : 0.25,
+      "call" : 0.35,
+      "token" : 0.30,
+      "event" : 0.10
+    },
+    "edgeThreshold" : 0.1,
+    "callDensitySaturation" : 0.5,
+    "strongSignals" : {
+      "table" : 0.4,
+      "call" : 0.35,
+      "token" : 0.6
+    },
+    "evidenceThreshold" : 0.65,
+    "minStrongSignals" : 2,
+    "roleKeywords" : [ "service", "controller", "repository", "repo", "usecase", "operations", "listener", "publisher", "adapter", "factory", "handler", "db" ],
+    "excludeTokens" : [ "entity", "model", "data", "dto", "event", "command", "query" ],
+    "minPackageTokenLength" : 3,
+    "eventPublisherKeywords" : [ "publisher", "event" ],
+    "eventConsumerKeywords" : [ "listener", "consumer" ]
+  },
+  "consolidation" : {
+    "genericNames" : [ "Componente de Negocio", "Componente Desconocido", "Componente de Infraestructura", "Componente de Configuración" ],
+    "domainMergeMaxSize" : 50,
+    "significantInfrastructureRatio" : 0.3,
+    "supportRatio" : 0.8,
+    "maxMergedSizeWithoutSimilarity" : 40,
+    "highTokenSimilarity" : 0.75,
+    "separationCallDensity" : 0.15,
+    "separationTableJaccard" : 0.2,
+    "strongCandidate" : {
+      "minCohesion" : 0.7,
+      "maxCoupling" : 0.3,
+      "minSize" : 3
+    },
+    "infrastructureKeywords" : [ "config", "configuration", "security", "application", "exception", "error", "filter", "interceptor", "aspect", "swagger", "openapi", "main" ]
+  },
+  "viability" : {
+    "weights" : {
+      "cohesion" : 0.5,
+      "coupling" : 0.35,
+      "data" : 0.15
+    },
+    "cohesionBlend" : {
+      "average" : 0.7,
+      "density" : 0.3
+    },
+    "noTablesDataCohesion" : 0.5,
+    "smallSize" : {
+      "below" : 3,
+      "penalty" : 0.6
+    },
+    "largeSize" : {
+      "above" : 50,
+      "minDensity" : 0.5,
+      "penalty" : 0.7
+    },
+    "thresholds" : {
+      "high" : 0.7,
+      "medium" : 0.5
+    },
+    "rationale" : {
+      "cohesionGood" : 0.7,
+      "cohesionFair" : 0.5,
+      "couplingGood" : 0.3,
+      "couplingFair" : 0.5,
+      "cboGood" : 5.0,
+      "cboFair" : 10.0,
+      "lcomGood" : 0.3,
+      "lcomFair" : 0.6,
+      "dataGood" : 0.6,
+      "dataFair" : 0.3
+    }
+  },
+  "recommendation" : {
+    "supportRatio" : 0.8,
+    "infrastructureKeywords" : [ "config", "configuration", "security", "application", "exception", "error", "filter", "interceptor", "aspect", "swagger", "openapi", "main" ],
+    "dataJaccardMode" : "legacy",
+    "legacyDataJaccard" : 0.8
+  },
+  "naming" : {
+    "infrastructureRatio" : 0.8,
+    "infrastructureLabels" : {
+      "config" : "Configuración",
+      "security" : "Seguridad",
+      "auth" : "Autenticación",
+      "swagger" : "Documentación",
+      "email" : "Notificaciones por Email",
+      "notification" : "Notificaciones",
+      "log" : "Logging",
+      "audit" : "Auditoría",
+      "application" : "Aplicación Principal"
+    },
+    "roleKeywords" : [ "service", "controller", "repository", "repo", "usecase", "operations", "listener", "publisher", "adapter", "factory", "handler", "db" ],
+    "excludeTokens" : [ "entity", "model", "data", "dto", "event", "command", "query", "impl", "repository", "service", "controller", "api", "rest", "http", "adapter", "port", "localevents", "rabbit", "jpa", "repo", "dao", "operations", "listener", "publisher", "handler", "factory", "db", "activityupdaterimpl", "usecase", "primaryports", "secondaryports", "userprofilejpa", "tweetcrud", "suggestion", "suggestions" ],
+    "minTokenLength" : 3
+  }
+}

@@ -1,5 +1,7 @@
 package com.extractor.inference;
 
+import com.extractor.inference.config.InferenceConfig;
+import com.extractor.inference.config.RecommendationConfig;
 import com.extractor.model.ApiEndpoint;
 import com.extractor.model.Component;
 import com.extractor.model.JpaTable;
@@ -14,11 +16,27 @@ import java.util.stream.Collectors;
  * Engine that analyzes microservice candidates and generates consolidated architecture proposal.
  */
 public class MicroserviceRecommendationEngine {
-    
-    private static final Set<String> INFRASTRUCTURE_KEYWORDS = Set.of(
-        "config", "configuration", "security", "application", "exception",
-        "error", "filter", "interceptor", "aspect", "swagger", "openapi", "main"
-    );
+
+    /** Whole inference configuration (008). */
+    private final InferenceConfig config;
+
+    /** Proposal assembly parameters (008). */
+    private final RecommendationConfig recommendation;
+
+    /** Engine with the 1.2.0 parameters. */
+    public MicroserviceRecommendationEngine() {
+        this(InferenceConfig.defaults());
+    }
+
+    /**
+     * Engine with the given configuration.
+     *
+     * @param inference the inference configuration
+     */
+    public MicroserviceRecommendationEngine(final InferenceConfig inference) {
+        this.config = inference;
+        this.recommendation = inference.recommendation();
+    }
 
     private static final Set<String> REST_METHODS = Set.of(
         "GET", "POST", "PUT", "DELETE", "PATCH", "SOAP", "STRUTS_ACTION"
@@ -59,12 +77,42 @@ public class MicroserviceRecommendationEngine {
                                                         Map<String, String> projectDependencies,
                                                         Path projectRoot,
                                                         List<ApiEndpoint> apiEndpoints) {
+        // FR-009: redacted secret locations. Scanner emits pointers only, never values.
+        List<SecretLocation> secretsLocations = new ArrayList<>();
+        if (projectRoot != null) {
+            try {
+                secretsLocations = new SecretLocationScanner().scan(projectRoot);
+            } catch (RuntimeException ex) {
+                secretsLocations = new ArrayList<>();
+            }
+        }
+        return assemble(candidates, allComponents, projectDependencies,
+                secretsLocations, apiEndpoints);
+    }
+
+    /**
+     * Assembles the consolidated architecture without touching the file
+     * system: the secret locations come from the extraction (008, FR-003).
+     *
+     * @param candidates          clusters of the inference engine
+     * @param allComponents       every component of the graph
+     * @param projectDependencies dependencies declared by the project
+     * @param secretsLocations    redacted secret locations
+     * @param apiEndpoints        endpoints of the graph
+     * @return the consolidated architecture
+     */
+    public ConsolidatedArchitecture assemble(
+            final MicroserviceCandidates candidates,
+            final List<Component> allComponents,
+            final Map<String, String> projectDependencies,
+            final List<SecretLocation> secretsLocations,
+            final List<ApiEndpoint> apiEndpoints) {
         List<Cluster> allClusters = candidates.getCandidates();
         
-        ClusterConsolidator consolidator = new ClusterConsolidator(allClusters, allComponents);
+        ClusterConsolidator consolidator = new ClusterConsolidator(allClusters, allComponents, config);
         List<Set<Integer>> mergedGroups = consolidator.consolidate();
         
-        ViabilityScorer scorer = new ViabilityScorer(allClusters, allComponents);
+        ViabilityScorer scorer = new ViabilityScorer(allClusters, allComponents, config.viability());
         
         List<MicroserviceProposal> proposals = new ArrayList<>();
         List<ConsolidatedArchitecture.SupportLibrary> supportLibraries = new ArrayList<>();
@@ -137,16 +185,6 @@ public class MicroserviceRecommendationEngine {
         // Identify shared domain
         String sharedDomain = identifySharedDomain(allComponents);
 
-        // FR-009: redacted secret locations. Scanner emits pointers only, never values.
-        List<SecretLocation> secretsLocations = new ArrayList<>();
-        if (projectRoot != null) {
-            try {
-                secretsLocations = new SecretLocationScanner().scan(projectRoot);
-            } catch (RuntimeException ex) {
-                secretsLocations = new ArrayList<>();
-            }
-        }
-
         ConsolidatedArchitecture.ProjectMetadata metadata = new ConsolidatedArchitecture.ProjectMetadata(
             finalDependencies,
             packageDepsMap,
@@ -179,7 +217,7 @@ public class MicroserviceRecommendationEngine {
             .mapToLong(c -> c.getMembers().size())
             .sum();
         
-        return totalCount > 0 && ((double) infraCount / totalCount) >= 0.8;
+        return totalCount > 0 && ((double) infraCount / totalCount) >= recommendation.supportRatio();
     }
     
     private MicroserviceProposal createProposal(int id, Set<Integer> clusterIds,
@@ -188,7 +226,7 @@ public class MicroserviceRecommendationEngine {
                                                 ViabilityScorer scorer,
                                                 Map<String, Component> componentsById,
                                                 List<ApiEndpoint> apiEndpoints) {
-        String name = MicroserviceNameGenerator.generateName(clusterIds, allClusters);
+        String name = MicroserviceNameGenerator.generateName(clusterIds, allClusters, config.naming());
         ViabilityScorer.ViabilityResult viabilityResult = scorer.calculateViability(clusterIds);
 
         List<Cluster> clusters = clusterIds.stream()
@@ -206,7 +244,10 @@ public class MicroserviceRecommendationEngine {
         List<JpaTable> jpaTables = buildJpaTables(name, componentNames, componentsById);
         String tablesSource = inferTablesSource(jpaTables, componentNames, componentsById);
 
-        MicroserviceProposal.ConsolidatedMetrics metrics = calculateConsolidatedMetrics(clusters, allComponents, true, tablesSource);
+        Double dataCohesion = recommendation.computedDataJaccard() && viabilityResult.getBreakdown() != null
+                ? viabilityResult.getBreakdown().dataCohesion() : null;
+        MicroserviceProposal.ConsolidatedMetrics metrics = calculateConsolidatedMetrics(clusters, allComponents, true,
+                tablesSource, dataCohesion);
         Map<String, Object> signals = calculateSignalsMap(clusters, allComponents);
         List<String> recommendedActions = generateActions(viabilityResult.getViability(), metrics);
         LegacyEntrypoint legacyEntrypoint = buildLegacyEntrypoint(componentNames, apiEndpoints, componentsById);
@@ -404,7 +445,7 @@ public class MicroserviceRecommendationEngine {
     }
 
     private ConsolidatedArchitecture.SupportLibrary createSupportLibrary(int id, Set<Integer> clusterIds, List<Cluster> allClusters) {
-        String name = MicroserviceNameGenerator.generateName(clusterIds, allClusters);
+        String name = MicroserviceNameGenerator.generateName(clusterIds, allClusters, config.naming());
         
         List<String> componentNames = clusterIds.stream()
             .flatMap(cId -> allClusters.stream()
@@ -417,7 +458,8 @@ public class MicroserviceRecommendationEngine {
         return new ConsolidatedArchitecture.SupportLibrary(id, name, new ArrayList<>(clusterIds), componentNames);
     }
     
-    private MicroserviceProposal.ConsolidatedMetrics calculateConsolidatedMetrics(List<Cluster> clusters, List<Component> allComponents, boolean filterInfrastructure, String tablesSource) {
+    private MicroserviceProposal.ConsolidatedMetrics calculateConsolidatedMetrics(List<Cluster> clusters, List<Component> allComponents, boolean filterInfrastructure, String tablesSource,
+            Double computedDataJaccard) {
         Set<String> allMembers = clusters.stream()
             .flatMap(c -> c.getMembers().stream())
             .filter(comp -> !filterInfrastructure || !isInfrastructureComponent(comp))
@@ -465,7 +507,8 @@ public class MicroserviceRecommendationEngine {
             .flatMap(c -> c.getMetrics().getTablesShared().stream())
             .collect(Collectors.toSet());
         
-        double dataJaccard = allTables.size() > 0 ? 0.8 : 0.0;
+        double dataJaccard = computedDataJaccard != null ? computedDataJaccard
+                : (allTables.size() > 0 ? recommendation.legacyDataJaccard() : 0.0);
         
         boolean sensitive = clusters.stream().anyMatch(c -> c.getMetrics().isSensitive());
         
@@ -641,6 +684,6 @@ public class MicroserviceRecommendationEngine {
             ? componentName.substring(componentName.lastIndexOf('.') + 1).toLowerCase()
             : componentName.toLowerCase();
         
-        return INFRASTRUCTURE_KEYWORDS.stream().anyMatch(simpleClassName::contains);
+        return recommendation.infrastructureKeywords().stream().anyMatch(simpleClassName::contains);
     }
 }

@@ -1,22 +1,44 @@
 package com.extractor.inference;
 
+import com.extractor.inference.config.ConsolidationConfig;
+import com.extractor.inference.config.InferenceConfig;
 import com.extractor.model.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClusterConsolidator {
-    private static final Set<String> INFRASTRUCTURE_KEYWORDS = Set.of(
-        "config", "configuration", "security", "application", "exception", 
-        "error", "filter", "interceptor", "aspect", "swagger", "openapi", "main"
-    );
-    
+    /** Infrastructure words compared with the simple class name (008). */
+    private final List<String> infrastructureKeywords;
+    /** Consolidation parameters (008). */
+    private final ConsolidationConfig consolidation;
+    /** Whole configuration (names of the merge by domain). */
+    private final InferenceConfig config;
+
     private final List<Cluster> clusters;
     private final InterClusterGraph graph;
     private final Map<Integer, Set<Integer>> mergedGroups;
 
     public ClusterConsolidator(List<Cluster> clusters, List<Component> allComponents) {
+        this(clusters, allComponents, InferenceConfig.defaults());
+    }
+
+    /**
+     * Consolidator with the given configuration.
+     *
+     * @param clusters      the clusters
+     * @param allComponents every component of the graph
+     * @param inference     the inference configuration
+     */
+    public ClusterConsolidator(final List<Cluster> clusters,
+            final List<Component> allComponents,
+            final InferenceConfig inference) {
+        this.config = inference;
+        this.consolidation = inference.consolidation();
+        this.infrastructureKeywords =
+                inference.consolidation().infrastructureKeywords();
         this.clusters = clusters;
-        this.graph = new InterClusterGraph(clusters, allComponents);
+        this.graph = new InterClusterGraph(clusters, allComponents,
+                inference.evidence());
         this.mergedGroups = new HashMap<>();
         for (Cluster c : clusters) {
             Set<Integer> group = new HashSet<>();
@@ -47,13 +69,13 @@ public class ClusterConsolidator {
     
     private void consolidateByDomainName() {
         Map<String, List<Integer>> nameToClusterIds = new HashMap<>();
-        Set<String> genericNames = Set.of("Componente de Negocio", "Componente Desconocido", 
-            "Componente de Infraestructura", "Componente de Configuración");
+        Set<String> genericNames = Set.copyOf(consolidation.genericNames());
         
         for (Cluster cluster : clusters) {
             Set<Integer> singleClusterSet = new HashSet<>();
             singleClusterSet.add(cluster.getClusterId());
-            String name = MicroserviceNameGenerator.generateName(singleClusterSet, clusters);
+            String name = MicroserviceNameGenerator.generateName(singleClusterSet, clusters,
+                    config.naming());
             
             if (!genericNames.contains(name)) {
                 nameToClusterIds.computeIfAbsent(name, k -> new ArrayList<>())
@@ -88,7 +110,9 @@ public class ClusterConsolidator {
         Set<Integer> groupB = mergedGroups.get(rootB);
         int totalSize = getTotalSize(groupA) + getTotalSize(groupB);
         
-        if (totalSize > 50) return false;
+        if (totalSize > consolidation.domainMergeMaxSize()) {
+            return false;
+        }
         
         return true;
     }
@@ -113,13 +137,14 @@ public class ClusterConsolidator {
                         String simpleClassName = member.contains(".") 
                             ? member.substring(member.lastIndexOf('.') + 1).toLowerCase()
                             : member.toLowerCase();
-                        return INFRASTRUCTURE_KEYWORDS.stream().anyMatch(simpleClassName::contains);
+                        return infrastructureKeywords.stream().anyMatch(simpleClassName::contains);
                     })
                     .count();
             }
         }
         
-        return totalCount > 0 && ((double) infraCount / totalCount) >= 0.3;
+        return totalCount > 0 && ((double) infraCount / totalCount)
+                >= consolidation.significantInfrastructureRatio();
     }
 
     private List<EdgeCandidate> findMergeCandidates() {
@@ -150,11 +175,14 @@ public class ClusterConsolidator {
         if (isSupport(rootB) && !isSupport(rootA)) return false;
         
         int totalSize = getTotalSize(groupA) + getTotalSize(groupB);
-        if (totalSize > 40 && signals.getTokenSimilarity() < 0.75) return false;
-        
-        if (bothStrongCandidates(groupA, groupB) && 
-            signals.getCallDensity() < 0.15 && 
-            signals.getTableJaccard() < 0.2) {
+        if (totalSize > consolidation.maxMergedSizeWithoutSimilarity()
+                && signals.getTokenSimilarity() < consolidation.highTokenSimilarity()) {
+            return false;
+        }
+
+        if (bothStrongCandidates(groupA, groupB)
+                && signals.getCallDensity() < consolidation.separationCallDensity()
+                && signals.getTableJaccard() < consolidation.separationTableJaccard()) {
             return false;
         }
         
@@ -174,12 +202,13 @@ public class ClusterConsolidator {
                 String simpleClassName = member.contains(".") 
                     ? member.substring(member.lastIndexOf('.') + 1).toLowerCase()
                     : member.toLowerCase();
-                return INFRASTRUCTURE_KEYWORDS.stream().anyMatch(simpleClassName::contains);
+                return infrastructureKeywords.stream().anyMatch(simpleClassName::contains);
             })
             .count();
-        
-        return cluster.getMembers().size() > 0 && 
-               ((double) infraCount / cluster.getMembers().size()) >= 0.8;
+
+        return cluster.getMembers().size() > 0
+                && ((double) infraCount / cluster.getMembers().size())
+                >= consolidation.supportRatio();
     }
 
     private int getTotalSize(Set<Integer> group) {
@@ -207,9 +236,10 @@ public class ClusterConsolidator {
         if (cluster == null) return false;
         
         ClusterMetrics metrics = cluster.getMetrics();
-        return metrics.getCohesion() >= 0.7 && 
-               metrics.getCoupling() < 0.3 && 
-               cluster.getMembers().size() >= 3;
+        ConsolidationConfig.StrongCandidate strong = consolidation.strongCandidate();
+        return metrics.getCohesion() >= strong.minCohesion()
+                && metrics.getCoupling() < strong.maxCoupling()
+                && cluster.getMembers().size() >= strong.minSize();
     }
 
     private int findRoot(int clusterId) {

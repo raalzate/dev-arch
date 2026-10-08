@@ -1,5 +1,7 @@
 package com.extractor.inference;
 
+import com.extractor.inference.config.EvidenceConfig;
+import com.extractor.inference.config.InferenceConfig;
 import com.extractor.model.Component;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -8,8 +10,27 @@ public class InterClusterGraph {
     private final List<Cluster> clusters;
     private final Map<String, Component> componentMap;
     private final Map<ClusterPair, EdgeSignals> edges;
+    /** Evidence parameters (008). */
+    private final EvidenceConfig evidence;
+    /** Tokens ignored by the token similarity. */
+    private final Set<String> excludeKeywords;
 
     public InterClusterGraph(List<Cluster> clusters, List<Component> allComponents) {
+        this(clusters, allComponents, InferenceConfig.defaults().evidence());
+    }
+
+    /**
+     * Graph built with the given evidence parameters.
+     *
+     * @param clusters      the clusters
+     * @param allComponents every component of the graph
+     * @param config        evidence parameters
+     */
+    public InterClusterGraph(final List<Cluster> clusters,
+            final List<Component> allComponents,
+            final EvidenceConfig config) {
+        this.evidence = config;
+        this.excludeKeywords = Set.copyOf(config.excludeTokens());
         this.clusters = clusters;
         this.componentMap = allComponents.stream()
             .collect(Collectors.toMap(Component::getId, c -> c));
@@ -25,7 +46,7 @@ public class InterClusterGraph {
                 ClusterPair pair = new ClusterPair(clusterA.getClusterId(), clusterB.getClusterId());
                 
                 EdgeSignals signals = calculateSignals(clusterA, clusterB);
-                if (signals.getEvidenceScore() > 0.1) {
+                if (signals.getEvidenceScore() > evidence.edgeThreshold()) {
                     edges.put(pair, signals);
                 }
             }
@@ -38,10 +59,12 @@ public class InterClusterGraph {
         double tokenSimilarity = calculateTokenSimilarity(clusterA, clusterB);
         List<String> eventLinks = detectEventCoupling(clusterA, clusterB);
         
-        double evidenceScore = 0.25 * tableJaccard + 0.35 * callDensity + 
-                              0.30 * tokenSimilarity + 0.10 * (eventLinks.isEmpty() ? 0 : 1);
-        
-        return new EdgeSignals(tableJaccard, callDensity, tokenSimilarity, eventLinks, evidenceScore);
+        EvidenceConfig.Weights w = evidence.weights();
+        double evidenceScore = w.table() * tableJaccard + w.call() * callDensity
+                + w.token() * tokenSimilarity + w.event() * (eventLinks.isEmpty() ? 0 : 1);
+
+        return new EdgeSignals(tableJaccard, callDensity, tokenSimilarity, eventLinks, evidenceScore,
+                evidence);
     }
 
     private double calculateTableJaccard(Cluster clusterA, Cluster clusterB) {
@@ -72,7 +95,8 @@ public class InterClusterGraph {
         
         if (totalInternalCalls == 0) return 0.0;
         
-        return Math.min(1.0, (double) totalCrossCalls / (totalInternalCalls * 0.5));
+        return Math.min(1.0, (double) totalCrossCalls
+                / (totalInternalCalls * evidence.callDensitySaturation()));
     }
 
     private int countCalls(List<String> fromComponents, List<String> toComponents) {
@@ -126,10 +150,9 @@ public class InterClusterGraph {
 
     private Set<String> extractDomainTokens(List<String> components) {
         Set<String> tokens = new HashSet<>();
-        Set<String> excludeKeywords = Set.of("entity", "model", "data", "dto", "event", "command", "query");
-        Set<String> roleKeywords = Set.of("service", "controller", "repository", "repo", "usecase", 
-                                         "operations", "listener", "publisher", "adapter", "factory", "handler", "db");
-        
+        // Ordered: the first matching role wins (deterministic, see research D3 of 008)
+        List<String> roleKeywords = evidence.roleKeywords();
+
         for (String comp : components) {
             String simpleName = comp.substring(comp.lastIndexOf('.') + 1).toLowerCase();
             String packageName = comp.substring(0, Math.max(0, comp.lastIndexOf('.')));
@@ -146,7 +169,8 @@ public class InterClusterGraph {
                     String[] packageParts = packageName.split("\\.");
                     if (packageParts.length > 0) {
                         String lastPackage = packageParts[packageParts.length - 1];
-                        if (!excludeKeywords.contains(lastPackage) && lastPackage.length() > 2) {
+                        if (!excludeKeywords.contains(lastPackage)
+                                && lastPackage.length() >= evidence.minPackageTokenLength()) {
                             tokens.add(lastPackage);
                         }
                     }
@@ -185,7 +209,7 @@ public class InterClusterGraph {
     private Set<String> findPublishedEvents(List<String> components) {
         Set<String> events = new HashSet<>();
         for (String comp : components) {
-            if (comp.toLowerCase().contains("publisher") || comp.toLowerCase().contains("event")) {
+            if (containsAny(comp.toLowerCase(), evidence.eventPublisherKeywords())) {
                 String simpleName = comp.substring(comp.lastIndexOf('.') + 1);
                 events.add(simpleName);
             }
@@ -196,12 +220,29 @@ public class InterClusterGraph {
     private Set<String> findConsumedEvents(List<String> components) {
         Set<String> events = new HashSet<>();
         for (String comp : components) {
-            if (comp.toLowerCase().contains("listener") || comp.toLowerCase().contains("consumer")) {
+            if (containsAny(comp.toLowerCase(), evidence.eventConsumerKeywords())) {
                 String simpleName = comp.substring(comp.lastIndexOf('.') + 1);
                 events.add(simpleName);
             }
         }
         return events;
+    }
+
+    /**
+     * Whether a text contains any of the words.
+     *
+     * @param text  lower-case text
+     * @param words the words
+     * @return true when one word occurs in the text
+     */
+    private static boolean containsAny(final String text,
+            final List<String> words) {
+        for (String word : words) {
+            if (text.contains(word)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<EdgeSignals> getSortedEdges() {
@@ -248,9 +289,29 @@ public class InterClusterGraph {
         private final double tokenSimilarity;
         private final List<String> eventLinks;
         private final double evidenceScore;
+        /** Thresholds of the strong evidence. */
+        private final EvidenceConfig config;
 
         public EdgeSignals(double tableJaccard, double callDensity, double tokenSimilarity, 
                           List<String> eventLinks, double evidenceScore) {
+            this(tableJaccard, callDensity, tokenSimilarity, eventLinks,
+                    evidenceScore, InferenceConfig.defaults().evidence());
+        }
+
+        /**
+         * Signals of an edge judged with the given thresholds.
+         *
+         * @param tableJaccard    table Jaccard
+         * @param callDensity     call density
+         * @param tokenSimilarity token similarity
+         * @param eventLinks      event links
+         * @param evidenceScore   weighted evidence score
+         * @param config          evidence parameters
+         */
+        public EdgeSignals(final double tableJaccard, final double callDensity,
+                final double tokenSimilarity, final List<String> eventLinks,
+                final double evidenceScore, final EvidenceConfig config) {
+            this.config = config;
             this.tableJaccard = tableJaccard;
             this.callDensity = callDensity;
             this.tokenSimilarity = tokenSimilarity;
@@ -266,12 +327,21 @@ public class InterClusterGraph {
 
         public boolean hasStrongEvidence() {
             int strongSignals = 0;
-            if (tableJaccard >= 0.4) strongSignals++;
-            if (callDensity >= 0.35) strongSignals++;
-            if (tokenSimilarity >= 0.6) strongSignals++;
-            if (!eventLinks.isEmpty()) strongSignals++;
-            
-            return evidenceScore >= 0.65 && strongSignals >= 2;
+            EvidenceConfig.StrongSignals strong = config.strongSignals();
+            if (tableJaccard >= strong.table()) {
+                strongSignals++;
+            }
+            if (callDensity >= strong.call()) {
+                strongSignals++;
+            }
+            if (tokenSimilarity >= strong.token()) {
+                strongSignals++;
+            }
+            if (!eventLinks.isEmpty()) {
+                strongSignals++;
+            }
+            return evidenceScore >= config.evidenceThreshold()
+                    && strongSignals >= config.minStrongSignals();
         }
     }
 }
