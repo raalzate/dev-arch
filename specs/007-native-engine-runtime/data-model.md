@@ -12,9 +12,9 @@
 | `status` | `"queued" \| "running" \| "completed" \| "failed"` | transiciones abajo |
 | `phase` | `null \| "detection" \| "extraction" \| "inference" \| "writing"` | monótona no decreciente mientras `running`; `null` en `queued` |
 | `createdAt`, `startedAt`, `finishedAt` | ISO-8601 UTC \| null | `finishedAt` fija la caducidad |
-| `error` | `null \| { code, message }` | `code` ∈ `ENGINE_NOT_BUILT`, `AMBIGUOUS_PROJECT`, `ENGINE_ERROR`, `ENGINE_CRASHED`, `ENGINE_UNAVAILABLE`, `TIMEOUT`, `INTERRUPTED`, `IO_ERROR`; `message` resumido (sin trazas) |
+| `error` | `null \| { code, message }` | `code` ∈ `ENGINE_NOT_BUILT`, `AMBIGUOUS_PROJECT`, `ENGINE_ERROR`, `ENGINE_CRASHED`, `ENGINE_UNAVAILABLE`, `TIMEOUT`, `INTERRUPTED`, `UNCOMPRESSED_TOO_LARGE`, `STORAGE_FULL`, `IO_ERROR`; `message` resumido (sin trazas, rutas relativizadas al exponerse, FR-034) |
 | `warnings` | string[] | copiadas de `_meta["static-inference/warnings"]`; `[]` si no hay |
-| `projectRoot` | string \| null | ruta absoluta pasada al motor (`source/<raíz>` o carpeta local); `null` en `import` |
+| `projectRoot` | string \| null | ruta absoluta pasada al motor (`source/<raíz>` o carpeta local); `null` en `import`. **Solo interno**: la API expone su forma relativa (FR-034) |
 | `summary` | `null \| { componentCount, edgeCount, proposalCount, endpointCount }` | de la respuesta `analyze_project` (contrato 1.0.0) |
 | `uploadBytes` | integer \| null | tamaño recibido |
 
@@ -35,7 +35,7 @@
 
 ## Política de carga (`UploadPolicy`, web)
 
-`maxUploadBytes`, `maxUncompressedBytes`, `maxZipEntries`, `maxConcurrent`, `maxQueued`, `jobTtlHours`, `cleanupIntervalMs`, `analysisTimeoutMs`, `maxSourceViewBytes`, `allowLocalPath`, `sourceExtensions` (lista blanca, research D10). Se carga una vez desde el entorno (research D13) y valida tipos/rangos.
+`apiToken` (opcional, FR-035), `maxUploadBytes`, `maxUncompressedBytes`, `maxZipEntries`, `maxConcurrent`, `maxQueued`, `jobTtlHours`, `cleanupIntervalMs`, `analysisTimeoutMs`, `maxSourceViewBytes`, `allowLocalPath`, `sourceExtensions` (lista blanca, research D10). Se carga una vez desde el entorno (research D13) y valida tipos/rangos.
 
 ## Servicio del motor (`EngineService`, web)
 

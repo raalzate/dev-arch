@@ -23,6 +23,8 @@ Comprobaciones: 202 en < 2 s (SC-004); fases `detection → extraction → infer
 
 ## 3. Seguridad
 
+Token opcional (FR-035): `DEVARCH_API_TOKEN=<secreto> make dev` y añadir `-H 'Authorization: Bearer <secreto>'` a cada `curl`; sin él → `401 UNAUTHORIZED`. Si la web escucha fuera de `127.0.0.1`/`localhost` sin token, el arranque registra un aviso `dev-arch API is NOT protected` (FR-036). Las respuestas de estado y documentos no contienen rutas absolutas del servidor (`projectRoot` relativo, `components[*].files` relativos; FR-034).
+
 ```bash
 python3 - <<'PY'
 import zipfile; z = zipfile.ZipFile('/tmp/evil.zip', 'w'); z.writestr('../../evil.txt', 'x'); z.close()

@@ -4,14 +4,14 @@
 **Created**: 2026-10-08 (`/iikit-01-specify`), extendido por `/iikit-03-checklist` el 2026-10-08
 **Feature**: [spec.md](../spec.md)
 
-> Modo no interactivo: los gaps se resolvieron con defaults conservadores registrados en spec.md *Clarifications* como "(default elegido por agente — pendiente confirmar)". La confirmación del usuario sigue pendiente y se reporta, pero no bloquea el checklist (los defaults están documentados y son reversibles).
+> Modo no interactivo: los gaps se resolvieron con defaults conservadores registrados en spec.md *Clarifications*. El usuario confirmó los 17 defaults el 2026-10-08 (ahora "(default elegido por agente — confirmado por usuario 2026-10-08)") y tomó las decisiones A1 (advertencias en metadatos, contrato 1.0.0), A2 (verificación de concurrencia del motor en la base común; concurrencia 1 hasta pasarla, luego 2) y A3 (sin rutas absolutas en la API, token compartido opcional, advertencia de exposición), además del requisito de disco lleno (hallazgo A7).
 
 ## Content Quality
 
 - [x] **CQ-001**: ¿La spec describe QUÉ y POR QUÉ sin frameworks, bibliotecas, rutas de código, protocolos de transporte ni códigos de estado? [Clarity] — sí; SDK MCP, rutas `/api/*`, Playwright, `_meta` y estructura de archivos viven en plan.md/research.md
-- [x] **CQ-002**: ¿Las 8 historias (US1–US8) tienen prioridad, prueba independiente y escenarios Given/When/Then? [Completeness]
-- [x] **CQ-003**: ¿Los criterios de éxito (SC-001..SC-012) son medibles (porcentajes, tiempos, conteos, igualdad byte a byte)? [Measurability]
-- [x] **CQ-004**: ¿Quedan marcadores `[NEEDS CLARIFICATION]`? [Ambiguity] — no; 17 defaults del agente pendientes de confirmar en Clarifications
+- [x] **CQ-002**: ¿Las 9 historias (US1–US9) tienen prioridad, prueba independiente y escenarios Given/When/Then? [Completeness]
+- [x] **CQ-003**: ¿Los criterios de éxito (SC-001..SC-015) son medibles (porcentajes, tiempos, conteos, igualdad byte a byte)? [Measurability]
+- [x] **CQ-004**: ¿Quedan marcadores `[NEEDS CLARIFICATION]`? [Ambiguity] — no; 17 defaults del agente confirmados por el usuario el 2026-10-08
 - [x] **CQ-005**: ¿Los edge cases cubren ZIP vacío, nombres no ASCII, entradas duplicadas, analizador .NET ausente, modo degradado, disco lleno, rutas codificadas, caducidad durante la vista y reinicio del motor? [Edge Case Coverage]
 
 ## Requirement Completeness
@@ -43,7 +43,7 @@
 
 ## Acceptance Criteria Quality & Scenario Coverage
 
-- [x] **CHK019**: ¿Cada FR traza a una historia? [Traceability] — FR-001..FR-007 → US1/US2; FR-008..FR-012 → US2/US3; FR-013..FR-016 → US3; FR-017..FR-019 → US4; FR-020..FR-022 → US5; FR-023..FR-028 → US6; FR-029..FR-032 → US7/US1; FR-033 → US8
+- [x] **CHK019**: ¿Cada FR traza a una historia? [Traceability] — FR-001..FR-007 → US1/US2; FR-008..FR-012 → US2/US3; FR-013..FR-016 → US3; FR-017..FR-019 → US4; FR-020..FR-022 → US5; FR-023..FR-028 → US6; FR-029..FR-032 → US7/US1; FR-033 → US8; FR-034..FR-036 → US9; FR-037 → US3
 - [x] **CHK020**: ¿Hay escenarios negativos por historia? [Scenario Coverage] — US1-AS5..AS8, US2-AS5, US3-AS1..AS5/AS8, US4-AS2..AS5, US5-AS2..AS4, US6-AS5, US7-AS2/AS3
 - [x] **CHK021**: ¿Se cubre la compatibilidad de clientes existentes? [Coverage, US8, FR-027, FR-033]
 
@@ -69,10 +69,19 @@
 
 - [x] **CHK031**: ¿Se documenta el requisito de host con procesos de larga vida (no serverless)? [Assumption, riesgo sección 5]
 - [x] **CHK032**: ¿Se acota lo que queda fuera (autenticación, cancelación, contrato 1.1.0, enmienda)? [Scope, Clarifications]
-- [x] **CHK033**: ¿Los defaults del agente están registrados con su estado de confirmación? [Assumption] — 17 defaults "pendiente confirmar"
+- [x] **CHK033**: ¿Los defaults del agente están registrados con su estado de confirmación? [Assumption] — 17 defaults "confirmado por usuario 2026-10-08"
+
+## Decisiones del usuario 2026-10-08 (A1–A3, A7)
+
+- [x] **CHK034**: ¿La exposición de advertencias mantiene el contrato 1.0.0 y está confirmada? [Consistency, FR-026, Clarification A1]
+- [x] **CHK035**: ¿La concurrencia por defecto queda condicionada a la verificación del motor concurrente vs secuencial sin romper SC-001? [Consistency, FR-011, SC-001, Clarification A2]
+- [x] **CHK036**: ¿Se exige que ninguna respuesta exponga rutas absolutas del servidor, con excepciones explícitas y medibles? [Security, Clarity, FR-034, SC-013] — excepciones: FR-032, FR-033, documentos importados
+- [x] **CHK037**: ¿El token opcional cubre todas las operaciones sobre análisis, su ausencia conserva el comportamiento y la exposición sin token se advierte? [Security, Completeness, FR-035, FR-036, SC-014, US9]
+- [x] **CHK038**: ¿FR-034 es consistente con FR-003 y SC-007 (igualdad byte a byte)? [Consistency] — sí: FR-003 admite solo la relativización y SC-007 compara tras aplicar la misma relativización al CLI
+- [x] **CHK039**: ¿El disco lleno tiene requisito y criterio medible? [Edge Case, FR-037, SC-015]
 
 ## Summary
 
-- Total: 38 ítems · Checked: 38 · Deferred: 0
+- Total: 44 ítems · Checked: 44 · Deferred: 0
 - Gaps resueltos: 5 (CHK002 → FR-005, CHK003 → FR-011, CHK004 → FR-007, CHK005 → FR-016, CHK029 → Assumption); ambigüedades resueltas: 1 (CHK013 → FR-007); conflictos resueltos: 1 (CHK018 → Assumption)
 - Completitud: 100 %

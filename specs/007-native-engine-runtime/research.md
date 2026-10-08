@@ -38,7 +38,7 @@ Fuente: worktree del monorepo `/Users/raul.alzate/Documents/maestria/maestria-de
 
 - **Decision**: `JobRunner` en la web con semáforo `MAX_CONCURRENT_ANALYSES` (2) y cola FIFO `MAX_QUEUED_ANALYSES` (10); por encima → 429 + `Retry-After: 30`. Mutex por `realpath(projectRoot)` (solo relevante para `localPath`; los ZIP tienen raíces únicas). Las ≤ 2 llamadas `analyze_project` en vuelo comparten el proceso del motor (el servidor Java descarga handlers a un scheduler elástico, E8).
 - **Rationale**: FR-010/FR-011; riesgo de memoria de la sección 5 (concurrencia 1-2); un solo JVM.
-- **Riesgo R1**: estado estático no reentrante en analizadores. Mitigación: prueba de motor "dos `analyze_project` concurrentes sobre `java-standar` y `dotnet-ecommerce` producen salidas byte-idénticas a las secuenciales" (TS de US2/US6). Si falla y no se corrige en el núcleo, `MAX_CONCURRENT_ANALYSES=1` es el fallback documentado (sin cambiar contratos).
+- **Riesgo R1**: estado estático no reentrante en analizadores. Mitigación (decisión A2 del usuario, 2026-10-08): la prueba de motor "dos `analyze_project` concurrentes sobre `java-standar` y `dotnet-ecommerce` producen salidas byte-idénticas a las secuenciales" (TS-064) se ejecuta en la fase **fundacional**, antes de cualquier historia. El valor por defecto de `MAX_CONCURRENT_ANALYSES` es **1** hasta que TS-064 pasa; cuando pasa, el valor por defecto configurado pasa a **2**. Si falla y no se corrige en el núcleo, queda en 1 (sin cambiar contratos): el segundo análisis espera en cola y SC-001 se cumple igual.
 
 ### D3. Progreso: listener en el núcleo, `notifications/progress` en el adaptador MCP
 
@@ -51,7 +51,7 @@ Fuente: worktree del monorepo `/Users/raul.alzate/Documents/maestria/maestria-de
 - **Decision**: `AnalyzeProjectTool` devuelve el mismo `content[0]` (JSON validado por `analyze_project.response.schema.json`, sin cambios) y, **solo si hay advertencias**, `CallToolResult._meta = { "static-inference/warnings": [ "<texto>", ... ] }` (orden de aparición, determinista). CLI: cada advertencia a `stderr` como `[warning] <texto>` tras escribir los archivos. Fuentes: `DotNetBridgeAnalyzer` (existente), `JavaSpoonAnalyzer` (archivos `.java` que Spoon no pudo modelar, con ruta relativa a la raíz y motivo), `AnalysisService` ("No analyzable source files found in '<rel>'" cuando hay 0 componentes). Web: el runner copia `_meta["static-inference/warnings"]` a `job.warnings`.
 - **Rationale**: FR-026 sin bump de contrato: bumpear a 1.1.0 cambiaría `meta.schema_version` de todas las salidas y rompería aserciones bloqueadas de 005/006 (E7), lo que exigiría re-testify de features cerradas. `_meta` es metadato de protocolo, fuera del contenido validado. Respuestas sin advertencias quedan byte-idénticas (FR-027).
 - **Alternatives**: contrato 1.1.0 con `warnings` opcional (correcto semánticamente; se propone para una feature de contrato futura con re-testify de 005/006); segundo `TextContent` (rompe consumidores que asumen un solo bloque); campo nuevo en 1.0.0 sin bump (viola la política de `docs/SCHEMA.md`).
-- **Pendiente de confirmar por el usuario** (Clarifications de spec.md).
+- **Confirmado por el usuario** el 2026-10-08 (decisión A1, Clarifications de spec.md).
 
 ### D5. Parámetro `language` (`java|dotnet|auto`) en el núcleo, MCP y CLI
 
@@ -68,7 +68,7 @@ Fuente: worktree del monorepo `/Users/raul.alzate/Documents/maestria/maestria-de
 
 ### D7. Jobs en disco: `.archview/jobs/<id>/`
 
-- **Decision**: Raíz `ARCHVIEW_DATA_DIR` (por defecto `<cwd de la web>/.archview`, ignorado por git). Por job: `job.json` (metadatos, escritura atómica `tmp` + `rename`), `upload.zip` (borrado tras extraer), `source/` (extracción; `projectRoot` = única carpeta de primer nivel si existe, como en 006), `out/` (`output.json`, `output_architecture.json`, `output_entrypoints.json`, escritos por el motor vía `outputDir`), `engine.log`. Id = `crypto.randomUUID()` validado con regex en cada ruta (impide traversal por id). Al arrancar (`instrumentation.ts` → `register()`): jobs `queued|running` → `failed` motivo `interrupted`; se programa la limpieza (`setInterval` cada `ARCHVIEW_CLEANUP_INTERVAL_MS`, 10 min) que borra jobs terminales con `finishedAt + TTL < now` (TTL `ARCHVIEW_JOB_TTL_HOURS`, 24) y directorios huérfanos sin `job.json` de más de 1 h. Comparación de caducidad usa `finishedAt` (nunca jobs activos; un reloj hacia atrás solo retrasa).
+- **Decision**: Raíz `ARCHVIEW_DATA_DIR` (por defecto `<cwd de la web>/.archview`, ignorado por git). Por job: `job.json` (metadatos, escritura atómica `tmp` + `rename`), `upload.zip` (borrado tras extraer), `source/` (extracción; `projectRoot` = única carpeta de primer nivel si existe, como en 006), `out/` (`output.json`, `output_architecture.json`, `output_entrypoints.json`, escritos por el motor vía `outputDir`), `engine.log`. Id = `crypto.randomUUID()` validado con regex en cada ruta (impide traversal por id). Al arrancar (`instrumentation.ts` → `register()`): jobs `queued|running` → `failed` motivo `interrupted`; se programa la limpieza (`setInterval` cada `ARCHVIEW_CLEANUP_INTERVAL_MS`, 10 min) que borra jobs terminales con `finishedAt + TTL < now` (TTL `ARCHVIEW_JOB_TTL_HOURS`, 24) y directorios huérfanos sin `job.json` de más de 1 h. Comparación de caducidad usa `finishedAt` (nunca jobs activos; un reloj hacia atrás solo retrasa). Errores de E/S al escribir (`ENOSPC`/`EDQUOT` → `STORAGE_FULL`, otros → `IO_ERROR`) terminan el envío o el job con mensaje resumido y borran los archivos parciales (FR-037).
 - **Rationale**: FR-008, FR-009, FR-012; sin base de datos (aprobado).
 - **Alternatives**: SQLite (dependencia nativa, no pedido); memoria (pierde jobs al reiniciar).
 
@@ -112,7 +112,7 @@ Fuente: worktree del monorepo `/Users/raul.alzate/Documents/maestria/maestria-de
 | `MAX_UPLOAD_BYTES` | 209715200 (200 MiB) | FR-013 |
 | `MAX_UNCOMPRESSED_BYTES` | 1073741824 (1 GiB) | FR-015 |
 | `MAX_ZIP_ENTRIES` | 100000 | FR-015 |
-| `MAX_CONCURRENT_ANALYSES` | 2 | FR-011 |
+| `MAX_CONCURRENT_ANALYSES` | 2 (1 hasta que pasa TS-064, decisión A2) | FR-011 |
 | `MAX_QUEUED_ANALYSES` | 10 | FR-011 |
 | `ARCHVIEW_JOB_TTL_HOURS` | 24 | FR-012 |
 | `ARCHVIEW_CLEANUP_INTERVAL_MS` | 600000 | FR-012 |
@@ -120,6 +120,8 @@ Fuente: worktree del monorepo `/Users/raul.alzate/Documents/maestria/maestria-de
 | `MAX_SOURCE_VIEW_BYTES` | 2097152 (2 MiB) | FR-018 |
 | `DEVARCH_ALLOW_LOCAL_PATH` | `true` solo si `NODE_ENV=development` | FR-005 |
 | Motor: `STATIC_INFERENCE_CACHE_SIZE` | 8 | FR-025 |
+| `DEVARCH_API_TOKEN` | sin definir (vacío = sin token) | FR-035, FR-036 |
+| `HOSTNAME` (Next) / `-H` | sin definir = todas las interfaces (solo para la advertencia de exposición) | FR-036 |
 
 Valores inválidos (no numéricos, ≤ 0 salvo caché) → error de arranque explícito con el nombre de la variable.
 
@@ -127,6 +129,12 @@ Valores inválidos (no numéricos, ≤ 0 salvo caché) → error de arranque exp
 
 - **Decision**: `client.callTool(..., { timeout: ANALYSIS_TIMEOUT_MS, onprogress })` (sin `resetTimeoutOnProgress`). Al vencer: job `failed` motivo `timeout`, se libera el turno; el SDK envía `notifications/cancelled`; como el handler Java no es cancelable, si el proceso sigue ocupado se marca "reciclar al quedar ocioso" (se reinicia cuando no quedan llamadas en vuelo) para no matar análisis concurrentes sanos. Caída del proceso → jobs en vuelo `failed` motivo `engine_crashed` en < 1 s (evento `close` del transporte) — SC-009 (< 10 s).
 - **Rationale**: FR-029, FR-030, FR-031.
+
+### D15. Exposición de la API: rutas relativas y token compartido opcional (decisión A3)
+
+- **Decision**: ver plan.md nota 15. Token por cabecera estándar `Authorization: Bearer` (sin cookies ni sesiones; sin dependencia nueva); comparación en tiempo constante; 401 uniforme antes de tocar el almacén o el cuerpo. Relativización textual sobre el JSON del motor (no re-serialización) para conservar el formato byte a byte y permitir la comparación determinista con el CLI. Advertencia de exposición basada en la dirección de escucha conocida al arrancar (`HOSTNAME`/`-H`); sin ella, Next escucha en todas las interfaces, por lo que la advertencia aparece salvo que se fije `127.0.0.1`/`localhost` o se configure el token.
+- **Rationale**: FR-034..FR-036 con huella mínima; los escenarios bloqueados de 006 no configuran token, por lo que no cambian.
+- **Alternatives**: re-serializar documentos con rutas relativas (rompe la igualdad byte a byte con el CLI); que el motor emita rutas relativas (cambia las salidas del CLI y el contrato observable, viola FR-027); autenticación con usuarios (fuera de alcance).
 
 ## Tessl Tiles
 

@@ -173,6 +173,25 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 
 ---
 
+### User Story 9 — API sin rutas del servidor y con token opcional (Priority: P2)
+
+Como operador que expone dev-arch más allá de su máquina, quiero que las respuestas de la web no revelen rutas absolutas del servidor y poder exigir un token compartido para usar la API; si la web queda expuesta sin token, quiero enterarme al arrancarla.
+
+**Why this priority**: Endurece la exposición de la web (decisión A3 del usuario); el flujo principal funciona sin ella en la máquina del desarrollador.
+
+**Independent Test**: Completar un análisis y buscar rutas absolutas del servidor en sus respuestas; configurar un token y llamar a cada operación con y sin él; arrancar la web escuchando en todas las interfaces sin token y revisar el registro.
+
+**Acceptance Scenarios**:
+
+1. **Given** un análisis completado, **When** se consultan su estado y sus documentos de resultados, **Then** ninguna respuesta contiene rutas absolutas del servidor, la raíz del proyecto aparece como un nombre relativo y los archivos de los componentes como rutas relativas a esa raíz.
+2. **Given** un token de acceso configurado, **When** se llama a cualquier operación sobre análisis (registro, estado, resultados, importación, visor de código o interfaz síncrona) sin token o con un token incorrecto, **Then** la petición se rechaza como no autorizada, sin procesar el envío ni revelar si el análisis existe.
+3. **Given** un token de acceso configurado, **When** se llama a esas operaciones con el token correcto, **Then** se atienden como sin token.
+4. **Given** ningún token configurado, **When** se usan las operaciones, **Then** se comportan como antes de esta historia.
+5. **Given** la web escuchando en interfaces de red distintas de la máquina local y sin token, **When** arranca, **Then** el registro del servidor muestra una advertencia destacada de que la API no está protegida y cómo configurar el token; **Given** la web escuchando solo en la máquina local o con token, **Then** no muestra esa advertencia.
+6. **Given** un token configurado y la interfaz de la web abierta, **When** la web exige el token, **Then** el usuario puede introducirlo y continuar con su análisis.
+
+---
+
 ### Edge Cases
 
 - ZIP con una única carpeta raíz frente a ZIP con varios archivos en la raíz: la raíz del proyecto se determina igual que en 006 (si hay una sola carpeta, esa es la raíz).
@@ -181,7 +200,10 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - Entradas duplicadas en el ZIP o entradas que difieren solo en mayúsculas: no deben escribir fuera del área; el resultado es determinista (regla concreta en el plan).
 - El motor no tiene el analizador .NET disponible y el proyecto es .NET: el análisis falla con un mensaje que indica cómo construir o ubicar el analizador .NET.
 - Proyecto .NET sin sistema de construcción completo disponible: el análisis termina en modo degradado con advertencia (principio V).
-- Disco lleno durante la extracción o escritura de resultados: el análisis falla con motivo claro y se limpian sus archivos parciales.
+- Disco lleno durante la carga, la extracción o la escritura de resultados: el análisis falla con un motivo claro que indica falta de espacio, sin trazas, y se limpian sus archivos parciales (FR-037).
+- Token configurado con un valor vacío o solo espacios: equivale a no tener token configurado.
+- Token presentado con un formato distinto del esperado: la petición se rechaza como no autorizada.
+- Mensajes del motor (advertencias, motivos de fallo) que mencionan rutas del área del análisis: se muestran con esas rutas relativizadas (FR-034).
 - Petición del visor con ruta codificada (por ejemplo `%2e%2e`), con separadores de Windows o con bytes nulos: se rechaza.
 - Consulta de un análisis caducado mientras la interfaz lo tenía abierto: la interfaz informa que caducó y ofrece analizar de nuevo.
 - Reloj del servidor ajustado hacia atrás: la caducidad no elimina análisis en ejecución.
@@ -196,7 +218,7 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 
 - **FR-001**: La web MUST registrar un análisis al recibir un ZIP y responder de inmediato, sin esperar a que el análisis termine, con un identificador único no adivinable.
 - **FR-002**: La web MUST permitir consultar el estado de un análisis por su identificador: estado (en cola, en ejecución, completado, fallido), fase actual (detección, extracción, inferencia, escritura), instantes de creación, inicio y fin, motivo del fallo y advertencias.
-- **FR-003**: Al completarse un análisis, la web MUST permitir consultar por separado el grafo de dependencias, la arquitectura propuesta y los contratos de API, tal como los produjo el motor y validados contra el contrato de datos vigente (1.0.0), sin alterarlos.
+- **FR-003**: Al completarse un análisis, la web MUST permitir consultar por separado el grafo de dependencias, la arquitectura propuesta y los contratos de API, tal como los produjo el motor y validados contra el contrato de datos vigente (1.0.0), sin más alteración que la relativización de rutas del servidor de FR-034.
 - **FR-004**: La consulta de resultados de un análisis no completado MUST indicar que aún no están disponibles (o el motivo del fallo), y la de un identificador inexistente o caducado MUST indicar que no existe.
 - **FR-005**: En modo desarrollo (servidor web arrancado en modo desarrollo, o habilitación explícita por configuración), la web MUST permitir analizar una carpeta local del servidor en lugar de un ZIP; en cualquier otro caso esa opción MUST rechazarse.
 - **FR-006**: El envío de un análisis MUST aceptar una elección opcional de lenguaje (java, dotnet, auto; por defecto auto); un proyecto ambiguo sin elección MUST fallar con un mensaje que pida elegir el lenguaje.
@@ -207,7 +229,7 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - **FR-008**: Cada análisis MUST tener su propia área de trabajo para la carga, las fuentes extraídas y los resultados; ningún análisis MUST leer ni escribir archivos con nombre fijo en el directorio de trabajo del servidor.
 - **FR-009**: Los análisis y sus resultados MUST persistir en el disco del servidor sin base de datos y sobrevivir a la recarga del navegador y al reinicio del servidor web; un análisis que estaba en cola o en ejecución al reiniciarse el servidor MUST quedar fallido con el motivo "interrumpido".
 - **FR-010**: Análisis concurrentes de proyectos distintos MUST producir resultados independientes; los análisis sobre la misma ruta de proyecto MUST serializarse.
-- **FR-011**: La web MUST limitar el número de análisis en ejecución simultánea (configurable, por defecto 2) y el de análisis en cola (configurable, por defecto 10); por encima de ambos, el envío MUST rechazarse indicando que se reintente más tarde, y esa verificación MUST hacerse antes de recibir el contenido del envío.
+- **FR-011**: La web MUST limitar el número de análisis en ejecución simultánea (configurable, por defecto 2) y el de análisis en cola (configurable, por defecto 10); por encima de ambos, el envío MUST rechazarse indicando que se reintente más tarde, y esa verificación MUST hacerse antes de recibir el contenido del envío. El valor por defecto 2 MUST entregarse solo después de verificar que el motor produce con análisis simultáneos resultados idénticos a los secuenciales; hasta entonces el valor por defecto es 1 y el segundo análisis queda en cola.
 - **FR-012**: Los análisis terminados (completados, fallidos o importados) y todos sus archivos MUST eliminarse al superar un periodo de retención configurable (por defecto 24 horas desde su fin) mediante una limpieza periódica; los análisis en cola o en ejecución nunca se eliminan por caducidad.
 
 **Seguridad de la carga**
@@ -249,6 +271,16 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 
 - **FR-033**: La interfaz de análisis síncrono de la feature 006 MUST seguir aceptando la misma petición y devolviendo el mismo formato y los mismos mensajes de error, usando un área de trabajo aislada por petición; MUST marcarse como obsoleta y la interfaz de la web no MUST usarla.
 
+**Exposición de la API**
+
+- **FR-034**: Las respuestas de la web sobre análisis (estado, documentos de resultados, visor de código, advertencias y motivos de fallo) MUST NOT contener rutas absolutas del servidor: la raíz del proyecto se expone como un nombre relativo a las fuentes del análisis y las rutas de archivos de los documentos se relativizan respecto de esa raíz. Quedan exceptuados, y se documentan como tales, el mensaje de motor no construido (FR-032, diagnóstico de despliegue compatible con 006), la interfaz síncrona obsoleta (FR-033, formato fijado por 006) y los documentos importados, que se sirven tal como se importaron (FR-022).
+- **FR-035**: Cuando el operador configura un token de acceso compartido, la web MUST exigirlo en todas las operaciones sobre análisis (registro, estado, resultados, importación, visor de código e interfaz síncrona) y MUST rechazar como no autorizada toda petición que no lo presente o presente uno distinto, sin procesar el envío ni revelar si el análisis existe; sin token configurado MUST comportarse como sin esta opción. La interfaz de la web MUST permitir introducir el token cuando se exige y usarlo en sus peticiones.
+- **FR-036**: Si la web escucha en interfaces de red distintas de la máquina local y no hay token configurado, MUST registrar al arrancar una advertencia destacada que indique que la API no está protegida y cómo configurar el token.
+
+**Fallos de almacenamiento**
+
+- **FR-037**: Si una escritura en disco falla durante la carga, la extracción o la escritura de resultados (por ejemplo, por falta de espacio), el análisis o el envío MUST terminar fallido con un motivo claro y resumido (sin trazas) que indique el problema de almacenamiento, y sus archivos parciales MUST eliminarse.
+
 ### Key Entities
 
 - **Análisis (job)**: unidad de trabajo identificada por un identificador único no adivinable. Atributos: origen (ZIP, carpeta local, importado), lenguaje elegido, estado (en cola, en ejecución, completado, fallido), fase actual, instantes de creación/inicio/fin, motivo de fallo, advertencias, raíz del proyecto extraído. Transiciones: en cola → en ejecución → completado | fallido; en cola → fallido (interrumpido); importado nace completado.
@@ -257,6 +289,7 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - **Resultados**: los tres documentos del contrato de datos (grafo de dependencias, arquitectura, contratos de API) con su versión de contrato.
 - **Advertencia**: mensaje del motor sobre algo omitido o degradado (qué, por qué, qué se omitió).
 - **Servicio del motor**: proceso de larga vida del motor en modo servidor que la web reutiliza; estados arrancando, listo, caído.
+- **Token de acceso**: secreto compartido opcional configurado por el operador; si existe, toda operación sobre análisis lo exige.
 - **Política de carga**: límites configurables (tamaño de carga, tamaño descomprimido, número de entradas, análisis simultáneos, cola, retención, tiempo máximo, tamaño de visualización).
 
 ## Success Criteria *(mandatory)*
@@ -269,12 +302,15 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - **SC-004**: El registro de un análisis (respuesta con identificador) tarda menos de 2 segundos para el ZIP de demostración Java en la máquina de referencia, independientemente de la duración del análisis.
 - **SC-005**: El 100 % de los ZIP del catálogo de pruebas maliciosas (salida por `..`, ruta absoluta, enlace simbólico, exceso de tamaño, exceso descomprimido, exceso de entradas, no-ZIP) se rechazan y 0 archivos quedan escritos fuera del área del análisis.
 - **SC-006**: El 100 % de los intentos del catálogo de escape del visor (ruta absoluta, `..`, codificación, enlace simbólico, otro análisis, extensión no permitida, directorio, exceso de tamaño) se rechazan sin devolver contenido.
-- **SC-007**: Para cada proyecto de demostración Java y .NET, los resultados obtenidos a través de la web son byte a byte idénticos a los de la línea de comandos sobre la misma ruta, dos ejecuciones consecutivas son byte a byte idénticas, y una respuesta reutilizada es byte a byte idéntica a una nueva.
+- **SC-007**: Para cada proyecto de demostración Java y .NET, los resultados obtenidos a través de la web son byte a byte idénticos a los de la línea de comandos sobre la misma ruta una vez aplicada a estos la misma relativización de rutas (FR-034), dos ejecuciones consecutivas son byte a byte idénticas, y una respuesta reutilizada es byte a byte idéntica a una nueva.
 - **SC-008**: Una segunda consulta del modo servidor sobre un proyecto de demostración sin cambios responde en menos del 20 % del tiempo de la primera.
 - **SC-009**: Tras una terminación forzada del servicio del motor durante un análisis, ese análisis queda fallido en menos de 10 segundos y el siguiente análisis termina con éxito sin reiniciar la web.
 - **SC-010**: El 100 % de los resultados válidos del catálogo del contrato se importan y se muestran, y el 100 % de los inválidos se rechazan nombrando al menos un campo infractor.
 - **SC-011**: Ningún análisis caducado conserva archivos en disco más allá del periodo de retención más un intervalo de limpieza.
 - **SC-012**: El 100 % de las pruebas existentes del producto (motor, analizador .NET, contrato, web y aceptación 005–006) pasan sin modificar aserciones, y los indicadores de calidad estática del motor no empeoran respecto de la línea base de la feature 006.
+- **SC-013**: Ninguna respuesta de estado, de documentos de resultados ni del visor de un análisis de los proyectos de demostración contiene el directorio de datos ni el directorio de trabajo del servidor web.
+- **SC-014**: Con un token configurado, el 100 % de las peticiones del catálogo de operaciones sobre análisis sin token o con token incorrecto se rechazan como no autorizadas sin crear ni revelar análisis, y el 100 % de las que llevan el token correcto se atienden.
+- **SC-015**: El 100 % de los fallos de escritura simulados (carga, extracción, resultados) terminan con el análisis fallido y 0 archivos parciales en su área.
 
 ## Clarifications
 
@@ -286,23 +322,27 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - Q: ¿Seguridad del visor? -> A: Restringido a las fuentes extraídas del análisis, ruta relativa, contención tras resolver enlaces y lista blanca de extensiones. (confirmado por usuario 2026-10-08) [FR-017, FR-018]
 - Q: ¿Cambios del motor? -> A: Progreso por fases, elección de lenguaje, reutilización por proyecto sin cambios y advertencias expuestas, preservando paridad y determinismo (principios I, II, IV) y las verificaciones de calidad vigentes. (confirmado por usuario 2026-10-08) [FR-023, FR-024, FR-025, FR-026, FR-027, FR-028]
 - Q: ¿Prueba extremo a extremo en navegador dentro de esta feature? -> A: Sí, "subir ZIP Java → ver propuestas" y "subir ZIP .NET → ver propuestas" son el criterio de salida (adelanta parte de la feature 011). (confirmado por usuario 2026-10-08) [SC-001, SC-002, SC-003]
-- Q: ¿Límites de descompresión (bomba ZIP)? -> A: 1 GB descomprimido y 100 000 entradas por defecto, configurables. (default elegido por agente — pendiente confirmar) [FR-015]
-- Q: ¿Cuota de concurrencia? -> A: 2 análisis en ejecución y 10 en cola por defecto, configurables (riesgo de memoria de la sección 5 del plan: concurrencia 1-2). (default elegido por agente — pendiente confirmar) [FR-011]
-- Q: ¿Periodo de retención? -> A: 24 horas desde el fin del análisis, configurable; los análisis activos nunca caducan. (default elegido por agente — pendiente confirmar) [FR-012]
-- Q: ¿Qué pasa con los análisis activos al reiniciar el servidor web? -> A: Quedan fallidos con motivo "interrumpido"; no se reanudan. (default elegido por agente — pendiente confirmar) [FR-009]
-- Q: ¿Tiempo máximo por análisis? -> A: 30 minutos por defecto, configurable. (default elegido por agente — pendiente confirmar) [FR-030]
-- Q: ¿Análisis de carpeta local? -> A: Solo en modo desarrollo; rechazado en cualquier otro modo. (default elegido por agente — pendiente confirmar) [FR-005]
-- Q: ¿Autenticación o propiedad de los análisis? -> A: Fuera de alcance (herramienta de un solo inquilino); el aislamiento entre usuarios se apoya en identificadores no adivinables. (default elegido por agente — pendiente confirmar) [FR-001]
-- Q: ¿Cómo se exponen las advertencias sin romper el contrato 1.0.0 (la respuesta del análisis completo es un objeto cerrado y hay aserciones bloqueadas de 005/006 sobre la versión 1.0.0)? -> A: Como metadatos de la respuesta del modo servidor, fuera del contenido validado por el contrato, y por la salida de error en la línea de comandos; la versión del contrato no cambia en esta feature. (default elegido por agente — pendiente confirmar) [FR-026]
-- Q: ¿La elección de lenguaje llega también a la línea de comandos? -> A: Sí, como opción adicional opcional, para mantener la paridad entre modos (principios I y II). (default elegido por agente — pendiente confirmar) [FR-024]
-- Q: ¿Qué se hace con la interfaz de análisis síncrono de 006? -> A: Se conserva por compatibilidad (escenarios bloqueados de 006), con área aislada por petición, marcada como obsoleta; la interfaz de la web pasa al flujo asíncrono. (default elegido por agente — pendiente confirmar) [FR-033]
-- Q: ¿Qué documentos exige la importación? -> A: Grafo y arquitectura obligatorios; contratos de API opcionales. (default elegido por agente — pendiente confirmar) [FR-020]
-- Q: ¿Lista permitida y tamaño máximo del visor? -> A: Archivos de código y configuración de los lenguajes soportados (Java, C#, VB.NET, descriptores de proyecto y de construcción, configuración y SQL); 2 MB por defecto. (default elegido por agente — pendiente confirmar) [FR-018]
-- Q: ¿Cancelación explícita de un análisis por el usuario? -> A: Fuera de alcance (la fase 5 trata la experiencia de usuario); cerrar o recargar el navegador no cancela. (default elegido por agente — pendiente confirmar) [FR-007]
-- Q: ¿Qué es "modo desarrollo" para el análisis de carpetas locales? -> A: El servidor web arrancado en modo desarrollo, o una habilitación explícita por configuración; nunca por defecto en producción. (default elegido por agente — pendiente confirmar) [FR-005]
-- Q: ¿Con qué rapidez debe la interfaz reflejar el progreso? -> A: Cada cambio de estado o fase visible en 3 segundos o menos. (default elegido por agente — pendiente confirmar) [FR-007]
-- Q: ¿La cuota se verifica antes de recibir el ZIP? -> A: Sí, para que envíos rechazados no consuman disco ni ancho de banda. (default elegido por agente — pendiente confirmar) [FR-011]
-- Q: ¿Alcance de la reutilización del motor? -> A: Solo en memoria durante la vida del proceso del modo servidor, acotada a 8 proyectos por defecto; la línea de comandos no reutiliza. (default elegido por agente — pendiente confirmar) [FR-025]
+- Q: ¿Límites de descompresión (bomba ZIP)? -> A: 1 GB descomprimido y 100 000 entradas por defecto, configurables. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-015]
+- Q: ¿Cuota de concurrencia? -> A: 2 análisis en ejecución y 10 en cola por defecto, configurables (riesgo de memoria de la sección 5 del plan: concurrencia 1-2). (default elegido por agente — confirmado por usuario 2026-10-08) [FR-011]
+- Q: ¿Periodo de retención? -> A: 24 horas desde el fin del análisis, configurable; los análisis activos nunca caducan. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-012]
+- Q: ¿Qué pasa con los análisis activos al reiniciar el servidor web? -> A: Quedan fallidos con motivo "interrumpido"; no se reanudan. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-009]
+- Q: ¿Tiempo máximo por análisis? -> A: 30 minutos por defecto, configurable. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-030]
+- Q: ¿Análisis de carpeta local? -> A: Solo en modo desarrollo; rechazado en cualquier otro modo. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-005]
+- Q: ¿Autenticación o propiedad de los análisis? -> A: Cuentas de usuario y propiedad de análisis fuera de alcance (herramienta de un solo inquilino); el aislamiento entre usuarios se apoya en identificadores no adivinables, complementado por el token compartido opcional de la decisión A3. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-001, FR-035]
+- Q: ¿Cómo se exponen las advertencias sin romper el contrato 1.0.0 (la respuesta del análisis completo es un objeto cerrado y hay aserciones bloqueadas de 005/006 sobre la versión 1.0.0)? -> A: Como metadatos de la respuesta del modo servidor, fuera del contenido validado por el contrato, y por la salida de error en la línea de comandos; la versión del contrato no cambia en esta feature. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-026]
+- Q: ¿La elección de lenguaje llega también a la línea de comandos? -> A: Sí, como opción adicional opcional, para mantener la paridad entre modos (principios I y II). (default elegido por agente — confirmado por usuario 2026-10-08) [FR-024]
+- Q: ¿Qué se hace con la interfaz de análisis síncrono de 006? -> A: Se conserva por compatibilidad (escenarios bloqueados de 006), con área aislada por petición, marcada como obsoleta; la interfaz de la web pasa al flujo asíncrono. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-033]
+- Q: ¿Qué documentos exige la importación? -> A: Grafo y arquitectura obligatorios; contratos de API opcionales. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-020]
+- Q: ¿Lista permitida y tamaño máximo del visor? -> A: Archivos de código y configuración de los lenguajes soportados (Java, C#, VB.NET, descriptores de proyecto y de construcción, configuración y SQL); 2 MB por defecto. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-018]
+- Q: ¿Cancelación explícita de un análisis por el usuario? -> A: Fuera de alcance (la fase 5 trata la experiencia de usuario); cerrar o recargar el navegador no cancela. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-007]
+- Q: ¿Qué es "modo desarrollo" para el análisis de carpetas locales? -> A: El servidor web arrancado en modo desarrollo, o una habilitación explícita por configuración; nunca por defecto en producción. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-005]
+- Q: ¿Con qué rapidez debe la interfaz reflejar el progreso? -> A: Cada cambio de estado o fase visible en 3 segundos o menos. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-007]
+- Q: ¿La cuota se verifica antes de recibir el ZIP? -> A: Sí, para que envíos rechazados no consuman disco ni ancho de banda. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-011]
+- Q: ¿Alcance de la reutilización del motor? -> A: Solo en memoria durante la vida del proceso del modo servidor, acotada a 8 proyectos por defecto; la línea de comandos no reutiliza. (default elegido por agente — confirmado por usuario 2026-10-08) [FR-025]
+- Q: (A1) ¿Dónde se exponen las advertencias? -> A: En los metadatos de la respuesta del modo servidor y por la salida de error de la línea de comandos; el contrato de datos sigue en 1.0.0. (confirmado por usuario 2026-10-08) [FR-026]
+- Q: (A2) ¿Cuándo se habilita la concurrencia 2 en el motor? -> A: La verificación de que análisis simultáneos del motor producen resultados idénticos a los secuenciales se adelanta a la base común de la feature; hasta que pasa, la concurrencia por defecto es 1; cuando pasa, el valor por defecto configurado es 2. Con concurrencia 1 el segundo análisis queda en cola y SC-001 se cumple igual. (confirmado por usuario 2026-10-08) [FR-011, SC-001, SC-007]
+- Q: (A3) ¿Qué exposición tiene la API de la web? -> A: Las respuestas no exponen rutas absolutas del servidor (raíz del proyecto opaca o relativa; el servidor relativiza las rutas); token compartido opcional que, si se configura, se exige en todas las operaciones sobre análisis (rechazo como no autorizada en otro caso); si la web escucha fuera de la máquina local sin token, se registra una advertencia destacada. (confirmado por usuario 2026-10-08) [FR-034, FR-035, FR-036, SC-013, SC-014]
+- Q: ¿Qué pasa si se llena el disco? -> A: El análisis o el envío falla con motivo claro de almacenamiento y se eliminan sus archivos parciales (hallazgo A7 del análisis de consistencia). (decisión del usuario 2026-10-08) [FR-037, SC-015]
 
 ### Assumptions
 
@@ -311,4 +351,4 @@ Como cliente de la interfaz de análisis síncrono entregada en la feature 006 (
 - La máquina de referencia y la integración continua disponen de un navegador automatizable para la prueba extremo a extremo.
 - El comando reservado de pruebas extremo a extremo del producto (bloqueado por la feature 006 como marcador de la feature 011) no se modifica en esta feature; la prueba en navegador de esta feature se ejecuta con su propio comando.
 - La Constitución v1.0.0 no se enmienda en esta feature.
-- El espacio en disco del host se dimensiona por el operador (cuota × límite descomprimido + resultados); la vigilancia de espacio libre y las alertas son de la Fase 6. Ante disco lleno se aplica el caso límite correspondiente (fallo claro y limpieza).
+- El espacio en disco del host se dimensiona por el operador (cuota × límite descomprimido + resultados); la vigilancia de espacio libre y las alertas son de la Fase 6. Ante disco lleno se aplica FR-037 (fallo claro y limpieza).
