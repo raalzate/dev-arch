@@ -17,11 +17,11 @@ description: "Task list for 009-vb-legacy-completion"
 
 ## Phase 1: Setup
 
-- [ ] T001 Añadir `Reqnroll.xUnit` 2.0.3 a `engine/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj`, enlazar `specs/009-vb-legacy-completion/tests/features/*.feature` (excepto `reduced-fidelity-engine.feature`) con code-behind movido a `obj/ReqnrollFeatures/`, excluir `bin/`/`obj/` de la copia de fixtures; añadir `specs/**/*.feature.cs` a `.gitignore` (research D9)
-- [ ] T002 [P] Añadir los fixtures sintéticos `Fixtures/VbLegacy/SyntheticDesktop/**` y `Fixtures/VbLegacy/SyntheticWebServices/**` (research D11)
-- [ ] T003 Capturar los archivos de oro C# **antes** de tocar código de producción (`Fixtures/Golden/SampleProject.golden.json`, `Fixtures/Golden/CodeIssuesSample.golden.json`, raíz sustituida por `<ROOT>`) y crear los steps de compatibilidad en `Bdd/CompatibilitySteps.cs` [TS-070]; ejecutar: verde (línea base)
-- [ ] T004 Crear los steps compartidos Reqnroll (`Bdd/VbAnalysisContext.cs`, `Bdd/VbProjectSteps.cs`: proyectos VB temporales, fixtures sintéticos, análisis, serialización como `Program.cs`) y los steps de todas las features .NET con aserciones reales; ejecutar: rojo
-- [ ] T005 [P] Crear el runner Cucumber-JVM `engine/src/test/java/com/extractor/vblegacybdd/RunVbLegacyCompletionFeaturesTest.java` (filtro `@engine`) y `VbWarningsSteps.java` [TS-090, TS-091, TS-092, TS-093]; ejecutar: rojo
+- [x] T001 Añadir `Reqnroll.xUnit` 2.0.3 a `engine/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj`, enlazar `specs/009-vb-legacy-completion/tests/features/*.feature` (excepto `reduced-fidelity-engine.feature`) con code-behind movido a `obj/ReqnrollFeatures/`, excluir `bin/`/`obj/` de la copia de fixtures; añadir `specs/**/*.feature.cs` a `.gitignore` (research D9)
+- [x] T002 [P] Añadir los fixtures sintéticos `Fixtures/VbLegacy/SyntheticDesktop/**` y `Fixtures/VbLegacy/SyntheticWebServices/**` (research D11)
+- [x] T003 Capturar los archivos de oro C# **antes** de tocar código de producción (`Fixtures/Golden/SampleProject.golden.json`, `Fixtures/Golden/CodeIssuesSample.golden.json`, raíz sustituida por `<ROOT>`) y crear los steps de compatibilidad en `Bdd/CompatibilitySteps.cs` [TS-070]; ejecutar: verde (línea base)
+- [x] T004 Crear los steps compartidos Reqnroll (`Bdd/VbAnalysisContext.cs`, `Bdd/VbProjectSteps.cs`: proyectos VB temporales, fixtures sintéticos, análisis, serialización como `Program.cs`) y los steps de todas las features .NET con aserciones reales; ejecutar: rojo
+- [x] T005 [P] Crear el runner Cucumber-JVM `engine/src/test/java/com/extractor/vblegacybdd/RunVbLegacyCompletionFeaturesTest.java` (filtro `@engine`) y `VbWarningsSteps.java` [TS-090, TS-091, TS-092, TS-093]; ejecutar: rojo
 
 **Checkpoint**: runners descubren todos los escenarios; TS-070 verde, el resto rojo.
 
@@ -29,7 +29,7 @@ description: "Task list for 009-vb-legacy-completion"
 
 ## Phase 2: Foundational
 
-- [ ] T006 Pruebas + implementación de `Analysis/Vb/VbTypeIndex.cs` (bloque de tipo → id de componente, bloque más interno) y `Analysis/Vb/VbProjectContext.cs` (directorio del proyecto, `app.config`/`web.config`, `*.xsd`) en `Analysis/Vb/VbTypeIndexTests.cs`, `Analysis/Vb/VbProjectContextTests.cs`
+- [x] T006 Pruebas + implementación de `Analysis/Vb/VbTypeIndex.cs` (bloque de tipo → id de componente, bloque más interno) y `Analysis/Vb/VbProjectContext.cs` (directorio del proyecto, `app.config`/`web.config`, `*.xsd`) en `Analysis/Vb/VbTypeIndexTests.cs`, `Analysis/Vb/VbProjectContextTests.cs`
 - [ ] T007 Carga VB con fidelidad reducida: en `Analysis/ProjectAnalyzer.cs` la rama `.vbproj` cae a Adhoc si la compilación no resuelve `System.Object` (FR-065), `meta.source = roslyn-fallback` cuando un proyecto VB usa Adhoc, `UserWarnings` deterministas; `VbProjectLoader.LoadAdhoc` excluye `bin/`/`obj/`; `Program.cs` imprime `[warning] <texto>` tras el JSON; despacho de pasadas VB solo para compilaciones VB [TS-060, TS-061, TS-062]
 
 **Checkpoint**: TS-060, TS-061, TS-062, TS-070 en verde.

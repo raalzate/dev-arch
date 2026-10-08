@@ -44,6 +44,7 @@
        generated next to them is moved into obj/ so nothing is written into specs/. The @engine feature runs on
        Cucumber-JVM (RunVbLegacyCompletionFeaturesTest). -->
   <PropertyGroup>
+    <Reqnroll_EnableWarnForFeatureCodeBehindFilesWithoutCorrespondingFeatureFile>false</Reqnroll_EnableWarnForFeatureCodeBehindFilesWithoutCorrespondingFeatureFile>
     <VbLegacyFeaturesDir>../../../../../specs/009-vb-legacy-completion/tests/features/</VbLegacyFeaturesDir>
   </PropertyGroup>
   <ItemGroup>
@@ -54,6 +55,10 @@
   <Target Name="MoveVbLegacyCodeBehind" AfterTargets="UpdateFeatureFilesInProject">
     <Copy SourceFiles="@(ReqnrollGeneratedFiles)" DestinationFolder="obj/ReqnrollFeatures" />
     <Delete Files="@(ReqnrollGeneratedFiles)" />
+    <ItemGroup>
+      <Compile Remove="@(ReqnrollGeneratedFiles)" />
+      <Compile Include="@(ReqnrollGeneratedFiles->'obj/ReqnrollFeatures/%(Filename)%(Extension)')" Exclude="@(Compile)" />
+    </ItemGroup>
   </Target>
 
 </Project>
