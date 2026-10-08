@@ -108,6 +108,12 @@ inside contract `1.0.0`. No existing schema changed and no produced document cha
 `1.0.0` (a bump would change every existing output and the locked assertions of 005–007). Decision pending user
 confirmation; the alternative is a `1.1.0` minor release.
 
+The TypeScript types and zod validators of `schema/generated/` are **not** extended with these definitions yet: the
+locked acceptance of 005 (TS-028) fixes the generated registry to the three documents and the five original MCP
+responses. The new schemas are verified by the Java contract tests (`SchemaRegistry`) and served by the MCP resource
+`static-inference://schema`; generating their TypeScript types is left to the web feature that consumes them (010),
+together with a re-lock of TS-028.
+
 ## Migration notes
 
 _None yet — 1.0.0 is the first formal version. It describes the v1.1.0 output plus the additive

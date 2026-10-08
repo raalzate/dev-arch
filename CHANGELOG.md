@@ -15,7 +15,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Detección de proyectos anidados opcional (`detection.maxDepth`, 0 por defecto).
 - Opción `recommendation.dataJaccardMode = data_cohesion` (opt-in).
 - Contrato: `inference-config.schema.json` y dos respuestas MCP nuevas dentro de 1.0.0 (aditivo; los documentos existentes y
-  `meta.schema_version` no cambian).
+  `meta.schema_version` no cambian); sin tipos TypeScript generados todavía).
 
 ### Cambiado (feature 008)
 - La elección de la palabra de rol en la similitud de tokens sigue el orden declarado (antes dependía del orden aleatorio

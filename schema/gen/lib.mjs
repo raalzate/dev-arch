@@ -18,7 +18,7 @@ export const BANNER =
 
 /**
  * Contract entry points: kind (as used by `check --kind`) → schema file, root type name, parse function.
- * The five MCP responses and the three documents (FR-017), plus the 008 inference responses and configuration.
+ * The five MCP responses and the three documents (FR-017).
  */
 export const ENTRIES = [
   { kind: "dependency-graph", file: "dependency-graph.schema.json", type: "DependencyGraph", fn: "parseDependencyGraph" },
@@ -29,10 +29,6 @@ export const ENTRIES = [
   { kind: "mcp/get_architecture_proposal", file: "mcp/get_architecture_proposal.response.schema.json", type: "GetArchitectureProposalResponse", fn: "parseGetArchitectureProposalResponse" },
   { kind: "mcp/get_api_contracts", file: "mcp/get_api_contracts.response.schema.json", type: "GetApiContractsResponse", fn: "parseGetApiContractsResponse" },
   { kind: "mcp/get_component_metrics", file: "mcp/get_component_metrics.response.schema.json", type: "GetComponentMetricsResponse", fn: "parseGetComponentMetricsResponse" },
-  // 008-configurable-inference: additive definitions inside contract 1.0.0 (research D8).
-  { kind: "mcp/reinfer_architecture", file: "mcp/reinfer_architecture.response.schema.json", type: "ReinferArchitectureResponse", fn: "parseReinferArchitectureResponse" },
-  { kind: "mcp/score_proposal", file: "mcp/score_proposal.response.schema.json", type: "ScoreProposalResponse", fn: "parseScoreProposalResponse" },
-  { kind: "inference-config", file: "inference-config.schema.json", type: "InferenceConfig", fn: "parseInferenceConfig" },
 ];
 
 /** All schema files of the current version, relative to VERSION_DIR, sorted. */
@@ -109,7 +105,6 @@ export function kindForFile(path) {
   const name = path.split(/[\\/]/).pop();
   const parent = path.split(/[\\/]/).slice(-2, -1)[0];
   if (parent === "mcp") return "mcp/" + name.replace(/\.json$/, "");
-  if (name.startsWith("inference-config")) return "inference-config";
   if (name.endsWith("_architecture.json") || name.startsWith("architecture-")) return "architecture";
   if (name.endsWith("_entrypoints.json") || name.startsWith("entrypoints-")) return "entrypoints";
   if (name.endsWith(".json")) return "dependency-graph";

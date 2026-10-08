@@ -84,7 +84,7 @@ description: "Task list for 008-configurable-inference"
 - [x] T017 [P] [US1] Pruebas unitarias de `GraphSource` en `engine/src/test/java/com/extractor/service/GraphSourceTest.java` (ida y vuelta del grafo de los 6 demos, arquitectura hermana, versión, jobId válido/inválido/contención) (rojo) [TS-019, TS-020, TS-021]
 - [x] T018 [US1] Deserialización de `ApiEndpoint`/`ApiSchema` (y modelos anidados necesarios) sin cambiar su serialización en `engine/src/main/java/com/extractor/model/`; `GraphSource` y `LoadedGraph` en `engine/src/main/java/com/extractor/service/` hasta pasar T017 (research D6)
 - [x] T019 [US1] `ReinferArchitectureTool` en `engine/src/main/java/com/extractor/mcp/tools/` y `ToolSchemas.reinferArchitecture()`; advertencias en `_meta`; filtro `minViability` validado [TS-014, TS-015, TS-016, TS-017, TS-019, TS-020, TS-021, TS-022]
-- [x] T020 [P] [US1] Esquema `schema/1.0.0/mcp/reinfer_architecture.response.schema.json`, entrada en `schema/gen/lib.mjs` `ENTRIES` y en el registro Java de pruebas de contrato, `schema/generated/` regenerado, fixture válido en `schema/fixtures/valid/mcp/` [TS-015]
+- [x] T020 [P] [US1] Esquema `schema/1.0.0/mcp/reinfer_architecture.response.schema.json`, entrada en `schema/gen/lib.mjs` `ENTRIES` y en el registro Java de pruebas de contrato, `schema/generated/` regenerado, fixture válido en `schema/fixtures/valid/mcp/` [TS-015] — desviación: sin `ENTRIES`/`schema/generated` ni fixtures TS (TS-028 de 005 fija 8 validadores; ver docs/SCHEMA.md)
 - [x] T021 [US1] Medir TS-018 con el grafo sintético; si supera 2 s, indexar búsquedas `clusterId → Cluster` en `ClusterConsolidator`/`ViabilityScorer`/`MicroserviceNameGenerator` sin cambiar el orden de iteración [TS-018]
 
 **Checkpoint**: US1 verde — criterio de salida de rendimiento verificado.
@@ -100,7 +100,7 @@ description: "Task list for 008-configurable-inference"
 - [x] T022 [US4] Step definitions de `score-proposal.feature` en `engine/src/test/java/com/extractor/configbdd/ScoreProposalSteps.java` (ejecutar: rojo) [TS-023, TS-024, TS-025, TS-026, TS-027, TS-028]
 - [x] T023 [US4] `ProposalScorer` y `ProposalScore` en `engine/src/main/java/com/extractor/service/` (research D10) con prueba unitaria `engine/src/test/java/com/extractor/service/ProposalScorerTest.java` [TS-023, TS-025, TS-026, TS-027]
 - [x] T024 [US4] `ScoreProposalTool` en `engine/src/main/java/com/extractor/mcp/tools/` y `ToolSchemas.scoreProposal()` [TS-024, TS-025, TS-026, TS-028]
-- [x] T025 [P] [US4] Esquema `schema/1.0.0/mcp/score_proposal.response.schema.json` + `ENTRIES` + registro Java + `schema/generated/` + fixture válido [TS-024]
+- [x] T025 [P] [US4] Esquema `schema/1.0.0/mcp/score_proposal.response.schema.json` + `ENTRIES` + registro Java + `schema/generated/` + fixture válido [TS-024] — desviación: sin `ENTRIES`/`schema/generated` ni fixtures TS (TS-028 de 005 fija 8 validadores; ver docs/SCHEMA.md)
 
 **Checkpoint**: US4 verde.
 
