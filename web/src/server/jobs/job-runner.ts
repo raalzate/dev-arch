@@ -14,6 +14,7 @@ import type { AnalyzeHooks, AnalyzeRequest, AnalyzeResult } from '../engine/engi
 import { EngineNotBuiltError, EngineToolError } from '../engine/engine-client';
 import { redactText } from '../security/path-redaction';
 import { extractZip, type ExtractIo } from '../upload/safe-extract';
+import type { StreamIo } from '../upload/stream-to-file';
 import { findProjectRoot } from '../upload/project-root';
 import type { Job, JobError, JobStore, Phase } from './job-store';
 
@@ -22,7 +23,7 @@ export interface Engine {
 }
 
 /** File-system operations of the pipeline that can fail with a full disk (injectable, FR-037). */
-export type JobRuntimeDeps = Partial<ExtractIo>;
+export type JobRuntimeDeps = Partial<ExtractIo & StreamIo>;
 
 export const DOCUMENTS = {
   graph: { file: 'output.json', schema: dependencyGraphSchema },

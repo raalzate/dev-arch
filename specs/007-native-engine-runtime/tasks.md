@@ -107,11 +107,11 @@ description: "Task list for 007-native-engine-runtime"
 **Goal**: límites, zip-slip, cuota previa a la carga, registro de rechazos, TTL, disco lleno.
 **Independent Test**: TS-023, TS-024, TS-025, TS-026, TS-027, TS-028, TS-029, TS-030, TS-031, TS-032, TS-033, TS-086, TS-087.
 
-- [ ] T039 [US3] Escribir step definitions `tests/acceptance/steps/native-runtime-upload-security.steps.ts` para [TS-023, TS-024, TS-025, TS-026, TS-027, TS-028, TS-029, TS-030, TS-031, TS-032, TS-033, TS-086, TS-087]; ejecutar y verlas fallar
-- [ ] T040 [US3] Integrar en `web/src/app/api/analyses/route.ts` la verificación de cuota **antes** de leer el cuerpo (429 + `Retry-After`), los errores de `safe-extract` (400/413 con `entry`/`limit`), `507 STORAGE_FULL` al guardar la carga, borrado del área en todo rechazo y registro de rechazos de seguridad sin contenido hasta pasar [TS-023, TS-024, TS-025, TS-027, TS-028, TS-029, TS-030, TS-031, TS-086]
-- [ ] T041 [US3] Manejar en `web/src/server/jobs/job-runner.ts` el tamaño real mayor al declarado durante la extracción (`failed/UNCOMPRESSED_TOO_LARGE`, borrado de `source/`) y los fallos de almacenamiento en extracción y resultados (`failed/STORAGE_FULL`, mensaje "disk space" sin trazas, borrado de `source/` y `out/` parciales) hasta pasar [TS-026, TS-087]
-- [ ] T042 [P] [US3] Escribir primero `web/src/server/jobs/cleaner.test.ts` (reloj inyectable; borra terminales con `finishedAt + TTL < now`, nunca activos, huérfanos > 1 h); verla fallar
-- [ ] T043 [US3] Implementar `web/src/server/jobs/cleaner.ts` y su programación en `web/src/instrumentation.ts` hasta pasar T042 y [TS-032, TS-033]
+- [x] T039 [US3] Escribir step definitions `tests/acceptance/steps/native-runtime-upload-security.steps.ts` para [TS-023, TS-024, TS-025, TS-026, TS-027, TS-028, TS-029, TS-030, TS-031, TS-032, TS-033, TS-086, TS-087]; ejecutar y verlas fallar
+- [x] T040 [US3] Integrar en `web/src/app/api/analyses/route.ts` la verificación de cuota **antes** de leer el cuerpo (429 + `Retry-After`), los errores de `safe-extract` (400/413 con `entry`/`limit`), `507 STORAGE_FULL` al guardar la carga, borrado del área en todo rechazo y registro de rechazos de seguridad sin contenido hasta pasar [TS-023, TS-024, TS-025, TS-027, TS-028, TS-029, TS-030, TS-031, TS-086]
+- [x] T041 [US3] Manejar en `web/src/server/jobs/job-runner.ts` el tamaño real mayor al declarado durante la extracción (`failed/UNCOMPRESSED_TOO_LARGE`, borrado de `source/`) y los fallos de almacenamiento en extracción y resultados (`failed/STORAGE_FULL`, mensaje "disk space" sin trazas, borrado de `source/` y `out/` parciales) hasta pasar [TS-026, TS-087]
+- [x] T042 [P] [US3] Escribir primero `web/src/server/jobs/cleaner.test.ts` (reloj inyectable; borra terminales con `finishedAt + TTL < now`, nunca activos, huérfanos > 1 h); verla fallar
+- [x] T043 [US3] Implementar `web/src/server/jobs/cleaner.ts` y su programación en `web/src/instrumentation.ts` hasta pasar T042 y [TS-032, TS-033]
 
 **Checkpoint**: SC-005, SC-011 y SC-015 verificables.
 

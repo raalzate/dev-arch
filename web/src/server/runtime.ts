@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs';
 import { loadConfig, type AppConfig } from './config';
 import { EngineClient, EngineNotBuiltError } from './engine/engine-client';
 import { locateEngine } from './engine/engine-locator';
+import { cleanupExpired } from './jobs/cleaner';
 import { JobRunner, type JobRuntimeDeps } from './jobs/job-runner';
 import { JobStore } from './jobs/job-store';
 
@@ -14,6 +15,10 @@ export interface Runtime {
   engine: EngineClient;
   runner: JobRunner;
   timers: NodeJS.Timeout[];
+  deps: JobRuntimeDeps;
+  now: () => Date;
+  /** One pass of the periodic cleanup (FR-012). */
+  runCleanup(): Promise<string[]>;
 }
 
 export interface RuntimeOverrides {
@@ -46,8 +51,13 @@ export function getRuntime(): Runtime {
     if (l.kind === 'not-built') throw new EngineNotBuiltError(l.message);
     return { command: l.command, args: l.args, env: l.env };
   }, o.log);
-  const runner = new JobRunner(store, engine, config, o.deps);
-  holder.runtime = { config, cwd, store, engine, runner, timers: [] };
+  const deps = o.deps ?? {};
+  const now = o.now ?? (() => new Date());
+  const runner = new JobRunner(store, engine, config, deps);
+  holder.runtime = {
+    config, cwd, store, engine, runner, timers: [], deps, now,
+    runCleanup: () => cleanupExpired(store, config.jobTtlHours, now()),
+  };
   return holder.runtime;
 }
 
@@ -69,5 +79,11 @@ export async function resetRuntime(): Promise<void> {
 export async function startRuntime(): Promise<Runtime> {
   const rt = getRuntime();
   await rt.runner.recoverOnStart();
+  const timer = setInterval(() => {
+    rt.runCleanup().catch((e) => console.error('[analyses] cleanup failed', e));
+  }, rt.config.cleanupIntervalMs);
+  timer.unref();
+  rt.timers.push(timer);
+  await rt.runCleanup().catch((e) => console.error('[analyses] cleanup failed', e));
   return rt;
 }

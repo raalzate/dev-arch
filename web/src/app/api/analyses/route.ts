@@ -74,7 +74,7 @@ export async function POST(request: Request): Promise<Response> {
       const length = contentLength(request);
       if (contentType.startsWith('multipart/form-data')) {
         const part = `${p.upload}.part`;
-        await streamToFile(request.body, part, rt.config.maxUploadBytes + 64 * 1024, length);
+        await streamToFile(request.body, part, rt.config.maxUploadBytes + 64 * 1024, length, rt.deps);
         const form = await new Request('http://local/', {
           method: 'POST', headers: { 'content-type': contentType }, body: await fs.readFile(part),
         }).formData();
@@ -82,9 +82,9 @@ export async function POST(request: Request): Promise<Response> {
         const file = form.get('file');
         if (!(file instanceof Blob)) throw new ApiError(400, 'INVALID_ZIP', 'No file was provided in the "file" field.');
         if (file.size > rt.config.maxUploadBytes) throw uploadTooLarge(rt.config.maxUploadBytes);
-        await streamToFile(file.stream() as ReadableStream<Uint8Array>, p.upload, rt.config.maxUploadBytes);
+        await streamToFile(file.stream() as ReadableStream<Uint8Array>, p.upload, rt.config.maxUploadBytes, undefined, rt.deps);
       } else {
-        await streamToFile(request.body, p.upload, rt.config.maxUploadBytes, length);
+        await streamToFile(request.body, p.upload, rt.config.maxUploadBytes, length, rt.deps);
       }
       inspectZip(p.upload, rt.config);
       const { size } = await fs.stat(p.upload);
