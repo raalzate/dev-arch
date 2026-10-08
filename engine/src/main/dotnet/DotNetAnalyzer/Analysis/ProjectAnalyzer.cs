@@ -25,6 +25,15 @@ public class ProjectAnalyzer
 
     private readonly List<string> _userWarnings = new();
 
+    // Subjects ("VB project 'X.vbproj'", "VB sources in 'dir'") of the VB code loaded through the Adhoc
+    // fallback during the current analysis (009, FR-060/FR-065).
+    private readonly SortedSet<string> _reducedFidelityVb = new(StringComparer.Ordinal);
+
+    private const string ReducedFidelitySuffix =
+        " analyzed with reduced fidelity (Adhoc fallback: MSBuild with Visual Studio Build Tools and the VB workload "
+        + "is unavailable). .NET Framework types are unresolved; coupling to framework types and detections that "
+        + "need them may be incomplete. See docs/VB-LEGACY.md.";
+
     /// <summary>
     /// User-facing warnings of the last analysis (009, contracts/dotnet-warnings-channel.md): ordinal order,
     /// no duplicates, no absolute paths. Printed by Program.cs as <c>[warning] &lt;text&gt;</c> lines on stderr.
@@ -35,6 +44,8 @@ public class ProjectAnalyzer
     {
         var compilations = new List<Compilation>();
         bool usedFallback = false;
+        _userWarnings.Clear();
+        _reducedFidelityVb.Clear();
 
         try
         {
@@ -49,7 +60,7 @@ public class ProjectAnalyzer
         {
             try
             {
-                var fallback = LoadCompilationsViaAdhoc(projectPath);
+                var fallback = LoadCompilationsViaAdhoc(projectPath, _reducedFidelityVb);
                 if (fallback.Count > 0)
                 {
                     compilations.AddRange(fallback);
@@ -61,6 +72,13 @@ public class ProjectAnalyzer
             {
                 Console.Error.WriteLine($"[WARN] AdhocWorkspace fallback also failed: {ex.Message}");
             }
+        }
+
+        // 009 (FR-060, FR-061): VB code loaded through Adhoc is a reduced-fidelity analysis.
+        if (_reducedFidelityVb.Count > 0)
+        {
+            usedFallback = true;
+            _userWarnings.AddRange(_reducedFidelityVb.Select(subject => subject + ReducedFidelitySuffix));
         }
 
         if (compilations.Count == 0)
@@ -81,6 +99,10 @@ public class ProjectAnalyzer
                 // Pass 1: Type analysis
                 var components = _typeAnalyzer.AnalyzeTypes(compilation);
 
+                // 009: VB passes run only for Visual Basic compilations (research D1); C# is untouched.
+                var vbIndex = compilation.Language == LanguageNames.VisualBasic ? VbTypeIndex.Build(compilation) : null;
+                var vbDirectory = vbIndex != null ? VbProjectContext.ResolveProjectDirectory(compilation) : null;
+
                 // Pass 2: Invocation analysis
                 var edges = _invocationAnalyzer.AnalyzeInvocations(compilation, components);
 
@@ -91,8 +113,16 @@ public class ProjectAnalyzer
                 // Pass 4: Endpoint extraction
                 var endpoints = _endpointExtractor.ExtractEndpoints(compilation, components);
 
+                // Pass 4b: ASMX / WCF endpoints (VB)
+                if (vbIndex != null)
+                    RunVbPass("VbEndpointExtractor", () => endpoints.AddRange(VbEndpointExtractor.Extract(vbIndex, components)));
+
                 // Pass 5: Table extraction (mutates components in-place)
                 _tableExtractor.ExtractTables(compilation, components);
+
+                // Pass 5b: literal SQL and typed DataSets (VB)
+                if (vbIndex != null)
+                    RunVbPass("VbTableExtractor", () => VbTableExtractor.Extract(vbIndex, components, vbDirectory));
 
                 // Pass 6: Build calls_in / calls_out from edges
                 BuildCallLists(components, edges);
@@ -100,8 +130,16 @@ public class ProjectAnalyzer
                 // Pass 7: Quality metrics (CBO, LCOM, LOC)
                 _metricsCalculator.Calculate(compilation, components);
 
+                // Pass 7b: CBO, LCOM, complexity (VB)
+                if (vbIndex != null)
+                    RunVbPass("VbMetricsCalculator", () => VbMetricsCalculator.Calculate(vbIndex, components));
+
                 // Pass 8: Layer classification
                 _layerClassifier.Classify(components);
+
+                // Pass 8b: desktop layers (VB)
+                if (vbIndex != null)
+                    RunVbPass("VbLayerClassifier", () => VbLayerClassifier.Classify(vbIndex, components));
 
                 // Pass 9: Messaging detection (MassTransit, Azure Service Bus)
                 _messagingDetector.Detect(compilation, components);
@@ -109,8 +147,19 @@ public class ProjectAnalyzer
                 // Pass 10: Secrets/configuration detection (IConfiguration, appsettings)
                 _secretsDetector.Detect(compilation, components);
 
+                // Pass 10b: app.config / web.config references and plaintext credentials (VB)
+                if (vbIndex != null)
+                {
+                    RunVbPass("VbSecretsDetector", () => VbSecretsDetector.Detect(
+                        vbIndex, components, vbDirectory != null ? AppConfigParser.Load(vbDirectory) : AppConfiguration.Empty));
+                }
+
                 // Pass 11: Code issue detection (bug patterns, style, security)
                 _codeAnalyzer.Analyze(compilation, components);
+
+                // Pass 11b: VB code issues (ordered as C#)
+                if (vbIndex != null)
+                    RunVbPass("VbCodeAnalyzer", () => VbCodeAnalyzer.Analyze(vbIndex, components));
 
                 allComponents.AddRange(components);
                 allEdges.AddRange(edges);
@@ -239,7 +288,20 @@ public class ProjectAnalyzer
                     try
                     {
                         var compilation = await project.GetCompilationAsync();
-                        if (compilation != null)
+                        var adhoc = compilation != null
+                                    && compilation.Language == LanguageNames.VisualBasic
+                                    && project.FilePath != null
+                                    && !ResolvesCoreLibrary(compilation)
+                            ? VbProjectLoader.LoadAdhoc(project.FilePath)
+                            : null;
+                        if (adhoc != null)
+                        {
+                            Console.Error.WriteLine(
+                                $"[WARN] Falling back to Adhoc VB compilation for '{project.FilePath}' (core library unresolved).");
+                            _reducedFidelityVb.Add(VbProjectSubject(project.FilePath!));
+                            compilations.Add(adhoc);
+                        }
+                        else if (compilation != null)
                         {
                             compilations.Add(VbProjectLoader.StripAutogenerated(compilation));
                         }
@@ -275,14 +337,22 @@ public class ProjectAnalyzer
                 // Legacy .vbproj on systems without VS Build Tools resolves but yields
                 // an empty compilation. Detect that and fall back to Adhoc per-project
                 // so we still emit a usable graph for this project.
-                if (compilation == null || !compilation.SyntaxTrees.Any())
+                // 009 (FR-065, research D13): a legacy .vbproj that imports Microsoft.VisualBasic.targets opens
+                // without the .NET Framework reference assemblies: System.Object is an error type. The Adhoc
+                // compilation (runtime BCL references) is strictly better in that case.
+                if (compilation == null || !compilation.SyntaxTrees.Any() || !ResolvesCoreLibrary(compilation))
                 {
                     var adhoc = VbProjectLoader.LoadAdhoc(resolvedPath);
                     if (adhoc != null)
                     {
                         Console.Error.WriteLine(
-                            $"[WARN] Falling back to Adhoc VB compilation for '{resolvedPath}' (MSBuild returned no syntax trees).");
+                            $"[WARN] Falling back to Adhoc VB compilation for '{resolvedPath}' (MSBuild returned no syntax trees or no core library).");
+                        _reducedFidelityVb.Add(VbProjectSubject(resolvedPath));
                         compilations.Add(adhoc);
+                    }
+                    else if (compilation != null && compilation.SyntaxTrees.Any())
+                    {
+                        compilations.Add(VbProjectLoader.StripAutogenerated(compilation));
                     }
                 }
                 else
@@ -300,7 +370,25 @@ public class ProjectAnalyzer
         return compilations;
     }
 
-    private static List<Compilation> LoadCompilationsViaAdhoc(string projectPath)
+    private static void RunVbPass(string name, Action pass)
+    {
+        try
+        {
+            pass();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[WARN] {name}: {ex.Message}");
+        }
+    }
+
+    private static bool ResolvesCoreLibrary(Compilation compilation) =>
+        compilation.GetSpecialType(SpecialType.System_Object).TypeKind != TypeKind.Error;
+
+    private static string VbProjectSubject(string vbprojPath) =>
+        $"VB project '{Path.GetFileName(vbprojPath)}'";
+
+    private static List<Compilation> LoadCompilationsViaAdhoc(string projectPath, ISet<string> reducedFidelityVb)
     {
         var compilations = new List<Compilation>();
 
@@ -318,7 +406,11 @@ public class ProjectAnalyzer
         {
             var vbCompilation = VbProjectLoader.LoadAdhoc(projectPath);
             if (vbCompilation != null)
+            {
                 compilations.Add(vbCompilation);
+                reducedFidelityVb.Add(VbProjectSubject(projectPath));
+            }
+
             return compilations;
         }
 
@@ -327,7 +419,11 @@ public class ProjectAnalyzer
             // Directory or .sln-flavored fallback: glob both languages.
             var vbCompilation = VbProjectLoader.LoadAdhoc(directory);
             if (vbCompilation != null)
+            {
                 compilations.Add(vbCompilation);
+                var name = Path.GetFileName(Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar));
+                reducedFidelityVb.Add($"VB sources in '{name}'");
+            }
         }
 
         var csCompilation = LoadCSharpAdhoc(directory);

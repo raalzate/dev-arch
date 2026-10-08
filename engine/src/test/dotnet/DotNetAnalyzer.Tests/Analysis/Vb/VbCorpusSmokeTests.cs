@@ -6,9 +6,10 @@ namespace DotNetAnalyzer.Tests.Analysis.Vb;
 
 /// <summary>
 /// Smoke tests on the real reference corpus
-/// (<c>test-for-demo/vb-demo-legacy</c>). The corpus is part of this
-/// repository checkout. If a downstream consumer wants to run the suite
-/// without the corpus, they should filter out this category:
+/// (<c>test-for-demo/vb-demo-legacy</c>). The corpus is external and not redistributable: it is not
+/// shipped with the product and must be provided locally. These tests are opt-in (category <c>Corpus</c>);
+/// continuous integration excludes them and verifies VB support with the synthetic redistributable corpus
+/// (<c>Fixtures/VbLegacy</c>, 009-vb-legacy-completion FR-070/FR-071):
 ///
 ///     dotnet test --filter "Category!=Corpus"
 /// </summary>
