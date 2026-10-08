@@ -2,6 +2,21 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versionado [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased]
+
+### Añadido (feature 007, integración runtime nativa)
+- Web: análisis asíncronos persistidos en disco (`/api/analyses*`), servicio único del motor en modo MCP con reinicio ante
+  caída, cola y cuota de concurrencia, caducidad y limpieza, carga segura (límites, zip-slip, enlaces simbólicos, bombas ZIP,
+  disco lleno), visor de código restringido al proyecto del análisis, importación de resultados validada contra el contrato,
+  interfaz asíncrona que retoma el análisis tras recargar.
+- Web: respuestas sin rutas absolutas del servidor, token compartido opcional `DEVARCH_API_TOKEN` y aviso de exposición.
+- Motor: `language` en MCP y `--language` en CLI, progreso por fases (`notifications/progress`), reutilización en memoria del
+  modo MCP, advertencias en `_meta` y en stderr del CLI. **Sin cambio de contrato (1.0.0).**
+
+### Cambiado
+- `POST /api/analyze` queda obsoleta (`Deprecation`, `Link` a `/api/analyses`); misma petición y respuesta.
+- `GET /api/source` exige `jobId` y una ruta relativa; la forma `?path=<absoluta>` responde 400.
+
 ## [1.2.0] - 2026-10-08
 
 ### Añadido

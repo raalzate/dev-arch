@@ -68,6 +68,16 @@ mvn exec:java -Dexec.args="/home/runner/workspace/spring-boot-monolith output.js
 mvn exec:java -Dexec.args="/path/to/dotnet-project output.json"
 ```
 
+#### Elección de lenguaje y advertencias (CLI)
+
+```bash
+java -jar java-dependency-extractor.jar <ruta-proyecto> <archivo-salida> [--language=java|dotnet|auto]
+```
+
+`--language` resuelve proyectos con marcadores Java y .NET a la vez; sin la opción el comportamiento no cambia. Un valor
+inválido termina con código 1 sin escribir archivos. Tras escribir las salidas, cada advertencia del análisis se imprime en
+la salida de error como `[warning] <texto>`.
+
 #### Modo MCP (Model Context Protocol)
 
 Inicia el servidor MCP para integrar el análisis con asistentes IA como Claude Code:

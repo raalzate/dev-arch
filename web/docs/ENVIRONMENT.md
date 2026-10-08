@@ -144,3 +144,40 @@ Para conocer límites actualizados: [Google AI Pricing](https://ai.google.dev/pr
 - [Google AI Studio](https://makersuite.google.com/)
 - [Gemini API Documentation](https://ai.google.dev/docs)
 - [Firebase Genkit Docs](https://firebase.google.com/docs/genkit)
+
+## Análisis asíncronos y servicio del motor (feature 007)
+
+La web mantiene un único proceso del motor en modo MCP (`java -jar engine.jar --mcp`) y guarda cada análisis en disco
+(`<ARCHVIEW_DATA_DIR>/jobs/<id>/`: `job.json`, `source/`, `out/`, `engine.log`). Valores inválidos detienen el arranque
+con un error que nombra la variable.
+
+| Variable | Defecto | Uso |
+|----------|---------|-----|
+| `ENGINE_JAR_PATH`, `JAVA_HOME` | `engine-dist/engine.jar`, `java` del PATH | motor (reglas de 006) |
+| `ENGINE_JAVA_OPTS` | vacío | opciones de la JVM del motor (ej. `-Xmx2g`) |
+| `DOTNET_ANALYZER_PATH` | sin definir | analizador .NET si no está junto al jar |
+| `ARCHVIEW_DATA_DIR` | `<cwd>/.archview` | área de los análisis (sin base de datos) |
+| `MAX_UPLOAD_BYTES` | 209715200 (200 MiB) | tamaño máximo del ZIP o de una importación |
+| `MAX_UNCOMPRESSED_BYTES` | 1073741824 (1 GiB) | tamaño descomprimido máximo |
+| `MAX_ZIP_ENTRIES` | 100000 | número máximo de entradas del ZIP |
+| `MAX_CONCURRENT_ANALYSES` | 2 | análisis simultáneos (1 sería el valor seguro si el motor no fuera reentrante; TS-064 verde) |
+| `MAX_QUEUED_ANALYSES` | 10 | análisis en cola; por encima → 429 `TOO_MANY_ANALYSES` + `Retry-After` |
+| `ARCHVIEW_JOB_TTL_HOURS` | 24 | retención de análisis terminados |
+| `ARCHVIEW_CLEANUP_INTERVAL_MS` | 600000 | periodo de la limpieza |
+| `ANALYSIS_TIMEOUT_MS` | 1800000 (30 min) | tiempo máximo por análisis (`TIMEOUT`) |
+| `MAX_SOURCE_VIEW_BYTES` | 2097152 (2 MiB) | tamaño máximo en el visor de código |
+| `DEVARCH_ALLOW_LOCAL_PATH` | `true` solo con `NODE_ENV=development` | análisis de una carpeta local del servidor |
+| `DEVARCH_API_TOKEN` | sin definir (vacío = sin token) | token compartido: si existe, toda la API exige `Authorization: Bearer <token>` (401 `UNAUTHORIZED`) |
+| `HOSTNAME` / `next start -H` | todas las interfaces | dirección de escucha; solo se usa para la advertencia de exposición |
+| `STATIC_INFERENCE_CACHE_SIZE` (motor) | 8 | proyectos reutilizados en memoria por el modo MCP (`0` desactiva) |
+
+### Exposición de la API
+
+- Las respuestas de estado, documentos, visor, advertencias y motivos de fallo **no contienen rutas absolutas del servidor**:
+  `projectRoot` es relativo y las rutas de `components[*].files` se relativizan a la raíz del proyecto. Excepciones:
+  el mensaje `ENGINE_NOT_BUILT`, la ruta obsoleta `POST /api/analyze` y los documentos importados.
+- Al arrancar, si la web escucha fuera de `localhost`/`127.0.0.0/8`/`::1` y no hay `DEVARCH_API_TOKEN`, el registro muestra un
+  bloque enmarcado con `!!!` que empieza por `dev-arch API is NOT protected`. Para silenciarlo: definir el token o escuchar en
+  `127.0.0.1` (`HOSTNAME=127.0.0.1` o `-H 127.0.0.1`). `make dev` escucha en todas las interfaces, por lo que muestra el aviso.
+- La interfaz pide el token cuando la API responde 401 y lo guarda solo durante la sesión del navegador
+  (`sessionStorage['devarch.apiToken']`).

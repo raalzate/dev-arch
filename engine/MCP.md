@@ -196,6 +196,22 @@ Retorna metricas detalladas de un componente especifico.
 
 **Manejo de errores:** Si el componente no existe, retorna la lista de componentes disponibles.
 
+## Opciones añadidas por la feature 007
+
+Aditivas: sin ellas las salidas y respuestas son byte-idénticas a 1.2.0 y el contrato sigue en 1.0.0.
+
+- **`language`** (opcional, `java` | `dotnet` | `auto`, por defecto `auto`) en las cinco herramientas. Resuelve proyectos
+  ambiguos (marcadores Java y .NET); con `auto` un proyecto ambiguo devuelve `isError` con `Ambiguous project type … (use
+  language=java|dotnet)`. Valor inválido → `Invalid language '<x>'. Allowed: java, dotnet, auto`.
+- **Progreso** (`analyze_project`): si la petición trae `_meta.progressToken`, el servidor envía cuatro
+  `notifications/progress` (`detection`, `extraction`, `inference`, `writing`; `progress` 1..4 de `total` 4) antes del resultado.
+- **Advertencias**: el resultado de `analyze_project` incluye `_meta["static-inference/warnings"]` (lista de textos) solo
+  cuando hay advertencias (archivos Java no modelables, modo degradado .NET, proyecto sin archivos analizables). `content[0]`
+  no cambia.
+- **Reutilización**: el modo MCP reutiliza en memoria el análisis de un proyecto sin cambios (misma ruta real, mismo
+  `language`, mismo árbol de archivos por ruta/tamaño/fecha). Capacidad: `-Dstatic-inference.cache.size`, si no
+  `STATIC_INFERENCE_CACHE_SIZE`, si no 8; `0` desactiva. Las respuestas reutilizadas son byte-idénticas.
+
 ## Decisiones de Diseno
 
 ### Artefacto Unico

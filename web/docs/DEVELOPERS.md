@@ -361,3 +361,27 @@ Instala la extensión de React DevTools para inspeccionar componentes y estado.
 - [D3.js Gallery](https://observablehq.com/@d3/gallery)
 - [shadcn/ui Components](https://ui.shadcn.com/docs/components)
 - [Tailwind CSS Docs](https://tailwindcss.com/docs)
+
+## API de análisis asíncronos (feature 007)
+
+Contrato completo: `specs/007-native-engine-runtime/contracts/analyses-api.md`. Resumen:
+
+| Método y ruta | Respuesta |
+|---------------|-----------|
+| `POST /api/analyses` (cuerpo `application/zip`, `multipart/form-data` campo `file`, o JSON `{localPath}` en desarrollo; `?language=java\|dotnet\|auto`) | `202 {jobId, status}` |
+| `GET /api/analyses/{id}` | estado, fase (`detection`, `extraction`, `inference`, `writing`), instantes, error, advertencias, `projectRoot` relativo |
+| `GET /api/analyses/{id}/graph\|architecture\|contracts` | documento del motor (rutas relativizadas); `409 NOT_READY` / `ANALYSIS_FAILED` |
+| `POST /api/analyses/import` (JSON `{graph, architecture, entrypoints?}`) | `201`; `422 SCHEMA_VIOLATION` con `violations[{document, pointer, message}]` |
+| `GET /api/source?jobId=&path=<relativa>` | `{path, content}`; rutas que escapan → 400/404 uniforme |
+| `POST /api/analyze` | **obsoleta** (006): misma petición/respuesta, área aislada por petición, cabeceras `Deprecation`/`Link` |
+
+El código de servidor vive en `web/src/server/` (`config`, `runtime`, `jobs/`, `upload/`, `engine/`, `source/`, `import/`,
+`security/`) y arranca en `web/src/instrumentation.ts` (recuperación de análisis interrumpidos, limpieza, aviso de exposición).
+La interfaz guarda en el navegador solo `localStorage['devarch.activeJobId']`.
+
+### Pruebas
+
+- `npm test -w web`: unitarias (`node:test` + `tsx`).
+- `make test-acceptance`: escenarios Cucumber de 006 y 007 con un motor simulado (`tests/acceptance/support/fake-mcp-server.mjs`);
+  `DEVARCH_E2E=true` añade los `@slow` con el motor real.
+- `make test-e2e-browser`: escenarios `@e2e` en Chromium con Playwright (`npx playwright install chromium` una vez).
