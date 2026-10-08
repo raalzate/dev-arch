@@ -1,0 +1,35 @@
+{
+  "name": "project",
+  "dependencies": {
+    "tessl/maven-com-fasterxml-jackson-core--jackson-core": {
+      "version": "2.19.0"
+    },
+    "tessl/maven-com-fasterxml-jackson-core--jackson-databind": {
+      "version": "2.20.0"
+    },
+    "tessl/maven-com-fasterxml-jackson-core--jackson-annotations": {
+      "version": "2.19.0"
+    },
+    "tessl/maven-org-projectlombok--lombok": {
+      "version": "1.18.1"
+    },
+    "tessl/maven-org-slf4j--slf4j-api": {
+      "version": "2.0.0"
+    },
+    "tessl/maven-org-junit-jupiter--junit-jupiter": {
+      "version": "5.12.0"
+    },
+    "tessl-labs/intent-integrity-kit": {
+      "version": "2.7.16"
+    },
+    "jabrena/cursor-rules-java": {
+      "version": "3688ee45bf3027fe3d4157a032c308c3520707b1",
+      "source": "https://github.com/jabrena/cursor-rules-java",
+      "include": {
+        "skills": [
+          "111-java-maven-dependencies"
+        ]
+      }
+    }
+  }
+}

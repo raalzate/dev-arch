@@ -1,0 +1,15 @@
+{
+  "tdd_determination": "mandatory",
+  "planview": {
+    "nodeClassifications": {
+      "Make + scripts": "client",
+      "Java engine (CLI/MCP)": "server",
+      "dotnet-analyzer": "server",
+      "Next.js web": "server",
+      "web/engine-dist/": "storage",
+      "schema/1.0.0": "storage",
+      "Contract tests": "server"
+    }
+  },
+  "checklist_reviewed_at": "2026-10-08T14:02:18Z"
+}

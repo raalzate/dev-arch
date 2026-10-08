@@ -1,0 +1,119 @@
+# dev-arch product ignore rules (006-devarch-monorepo, research D10).
+# Single ignore file for web, engine and schema. It sits below the monorepo
+# global .gitignore, which is never modified; the negations here only apply
+# inside apps/dev-arch.
+
+# ---------------------------------------------------------------- generated
+# Maven / engine build output and acceptance-test scratch dirs
+target/
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+# Locally built engine staged for the web (make build)
+web/engine-dist/
+# Node
+node_modules/
+.pnp
+.pnp.*
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+# .NET
+obj/
+bin/
+# Engine analysis outputs written to the working directory
+output.json
+output_architecture.json
+output_layers.json
+output_web.json
+output_entrypoints.json
+.si-output/
+# Contract fixtures and v1.1.0 baselines are versioned on purpose (005)
+!schema/fixtures/**/output*.json
+!engine/src/test/resources/baseline-v1.1.0/**/output*.json
+
+# ---------------------------------------------------------------- packages
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+dist/
+build/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Single dependency lock file of the product workspace (FR-012): the monorepo
+# ignores package-lock.json globally; only the product root one is versioned.
+!/package-lock.json
+
+# ---------------------------------------------------------------- iikit / agents
+# Versioned: AGENTS.md, CLAUDE.md, tessl.json, .tessl/RULES.md, .mcp.json,
+# .specify/context.json. Generated or installed:
+.tessl/tiles/
+.specify/dashboard.html
+.specify/score-history.json
+.specify/active-feature
+.claude/
+.gemini/
+.agents/
+.serena/
+
+# ---------------------------------------------------------------- web runtime
+.genkit/*
+.env*
+.vercel
+*.pem
+firebase-debug.log
+firestore-debug.log
+
+# ---------------------------------------------------------------- IDE / OS / misc
+.idea/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.vscode/
+*.code-workspace
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+.local/
+.config/
+.cache/
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+ENV/
+env/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+drafts/

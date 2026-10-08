@@ -1,0 +1,23 @@
+{
+  "name": "dev-arch",
+  "version": "1.2.0",
+  "private": true,
+  "description": "dev-arch product workspace: Next.js web and the Static Inference output contract package (006-devarch-monorepo).",
+  "type": "module",
+  "workspaces": [
+    "web",
+    "schema"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test:acceptance": "cucumber-js"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "11.3.0",
+    "picomatch": "4.0.7",
+    "tsx": "4.23.15",
+    "yaml": "2.9.1"
+  }
+}
