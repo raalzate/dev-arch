@@ -75,11 +75,11 @@ description: "Task list for 006-devarch-monorepo"
 
 **Independent Test**: `DEVARCH_E2E=true npx cucumber-js --tags @US-002`
 
-- [ ] T020 [US2] Escribir `P/tests/acceptance/steps/build-and-test.steps.ts` [TS-006, TS-007, TS-008, TS-009, TS-010, TS-011, TS-012, TS-013] (prerrequisitos simulados con `PATH`/`JAVA_HOME` temporales y binarios falsos) y verlos fallar
-- [ ] T021 [US2] Implementar `P/scripts/check-prereqs.sh` según contracts/make-targets.md (JDK major == 17; .NET SDK ≥ 8 + runtime 8; Node ≥ 20; exit 2 al primer FAIL) [TS-008, TS-009]
-- [ ] T022 [US2] Implementar `P/scripts/engine-build.sh` (`mvn -B -DskipTests package` en `engine/` con `JAVA_HOME`; `dotnet publish` framework-dependent a `engine/target/dotnet-analyzer-publish/` + lanzador `engine/target/dotnet-analyzer` con `DOTNET_ROOT`, como 005) y `P/scripts/engine-stage.sh` (copia a `web/engine-dist/engine.jar` y `web/engine-dist/dotnet-analyzer*`) [TS-006]
-- [ ] T023 [US2] Crear `P/Makefile` con `build`, `build-engine`, `test`, `test-engine`, `test-web`, `test-acceptance`, `schema-check`, `clean`, `e2e`, `doctor` (marcadores con los mensajes del contrato), `prereqs` [TS-006, TS-007, TS-010, TS-011, TS-012]
-- [ ] T024 [US2] Verificar workspace y lockfile único (sin locks en `web/` ni `schema/`) [TS-013]
+- [x] T020 [US2] Escribir `P/tests/acceptance/steps/build-and-test.steps.ts` [TS-006, TS-007, TS-008, TS-009, TS-010, TS-011, TS-012, TS-013] (prerrequisitos simulados con `PATH`/`JAVA_HOME` temporales y binarios falsos) y verlos fallar
+- [x] T021 [US2] Implementar `P/scripts/check-prereqs.sh` según contracts/make-targets.md (JDK major == 17; .NET SDK ≥ 8 + runtime 8; Node ≥ 20; exit 2 al primer FAIL) [TS-008, TS-009]
+- [x] T022 [US2] Implementar `P/scripts/engine-build.sh` (`mvn -B -DskipTests package` en `engine/` con `JAVA_HOME`; `dotnet publish` framework-dependent a `engine/target/dotnet-analyzer-publish/` + lanzador `engine/target/dotnet-analyzer` con `DOTNET_ROOT`, como 005) y `P/scripts/engine-stage.sh` (copia a `web/engine-dist/engine.jar` y `web/engine-dist/dotnet-analyzer*`) [TS-006]
+- [x] T023 [US2] Crear `P/Makefile` con `build`, `build-engine`, `test`, `test-engine`, `test-web`, `test-acceptance`, `schema-check`, `clean`, `e2e`, `doctor` (marcadores con los mensajes del contrato), `prereqs` [TS-006, TS-007, TS-010, TS-011, TS-012]
+- [x] T024 [US2] Verificar workspace y lockfile único (sin locks en `web/` ni `schema/`) [TS-013]
 - [ ] T025 [US2] Ejecutar `DEVARCH_E2E=true` [TS-006, TS-007, TS-011] en clon limpio y corregir hasta verde; `git status --porcelain` vacío tras build+test (SC-003)
 
 **Checkpoint**: criterio de salida 1/2 cumplido.
