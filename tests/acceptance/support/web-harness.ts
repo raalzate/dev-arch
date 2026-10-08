@@ -53,11 +53,11 @@ async function route(file: string, method: string): Promise<Handler> {
 // Loaded with the support code (not lazily inside a step): dynamic imports of the web server modules during a
 // scenario can stall under tsx on recent Node versions.
 import * as runtimeMod from '../../../web/src/server/runtime.ts';
+import * as instrumentation from '../../../web/src/instrumentation.ts';
 type RuntimeModule = typeof runtimeMod;
 async function runtimeModule(): Promise<RuntimeModule> {
   return runtimeMod;
 }
-type InstrumentationModule = { register: () => Promise<void> };
 
 export interface HarnessOptions {
   control?: Record<string, unknown>;
@@ -137,16 +137,10 @@ export class WebHarness implements ApiClient {
     await this.register();
   }
 
-  /** Server start: the instrumentation hook (recovery, cleaner, exposure warning) when present. */
+  /** Server start: the Next.js instrumentation hook (recovery, cleaner, exposure warning). */
   private async register(): Promise<void> {
-    try {
-      const mod = (await import(path.join(layout.webDir, 'src', 'instrumentation.ts'))) as InstrumentationModule;
-      process.env.NEXT_RUNTIME = 'nodejs';
-      await mod.register();
-    } catch (e) {
-      if ((e as { code?: string }).code !== 'ERR_MODULE_NOT_FOUND' && !String(e).includes('Cannot find module')) throw e;
-      (await runtimeModule()).getRuntime();
-    }
+    process.env.NEXT_RUNTIME = 'nodejs';
+    await instrumentation.register();
   }
 
   setControl(control: Record<string, unknown>): void {

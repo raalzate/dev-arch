@@ -61,3 +61,13 @@ export async function resetRuntime(): Promise<void> {
   await r.engine.shutdown();
   await settled;
 }
+
+/**
+ * Server start (instrumentation `register()`): creates the runtime, marks the analyses left active by a previous
+ * process as interrupted (FR-009) and schedules the cleanup of expired analyses (FR-012).
+ */
+export async function startRuntime(): Promise<Runtime> {
+  const rt = getRuntime();
+  await rt.runner.recoverOnStart();
+  return rt;
+}

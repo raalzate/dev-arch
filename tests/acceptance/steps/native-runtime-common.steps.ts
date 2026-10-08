@@ -185,3 +185,16 @@ Then('that analysis completes', async function (this: DevArchWorld) {
   const s = await waitForJob(this, jobId(this), undefined, 60_000);
   assert.equal(s.status, 'completed', JSON.stringify(s));
 });
+
+// --- shared by API (TS-017, TS-031) and browser (TS-016) scenarios --------------------------------------
+
+Then('both analyses complete', async function (this: DevArchWorld) {
+  const browser = this.data.waitBrowserSessions as (() => Promise<void>) | undefined;
+  if (browser) return browser();
+  const ids = (this.data.jobIds as string[] | undefined) ?? [];
+  assert.equal(ids.length, 2, `expected two analyses, got ${ids.length}`);
+  for (const id of ids) {
+    const s = await waitForJob(this, id, undefined, 10 * 60_000);
+    assert.equal(s.status, 'completed', JSON.stringify(s));
+  }
+});

@@ -92,9 +92,9 @@ description: "Task list for 007-native-engine-runtime"
 **Goal**: aislamiento, persistencia, recuperación al reiniciar, serialización por proyecto, reanudación en el navegador.
 **Independent Test**: TS-016, TS-017, TS-018, TS-019, TS-020, TS-021, TS-022.
 
-- [ ] T034 [US2] Escribir step definitions `tests/acceptance/steps/native-runtime-isolation.steps.ts` para [TS-016, TS-017, TS-018, TS-019, TS-020, TS-021, TS-022]; ejecutar y verlas fallar
-- [ ] T035 [P] [US2] Ampliar primero `web/src/server/jobs/job-runner.test.ts` con `recoverOnStart` (`queued|running` → `failed/INTERRUPTED`) y mutex por `realpath(projectRoot)`; verla fallar
-- [ ] T036 [US2] Implementar recuperación y mutex en `web/src/server/jobs/job-runner.ts` y crear `web/src/instrumentation.ts` (`register()` en runtime Node: recuperación + arranque del runner) hasta pasar T035 y [TS-018, TS-020, TS-021, TS-022]
+- [x] T034 [US2] Escribir step definitions `tests/acceptance/steps/native-runtime-isolation.steps.ts` para [TS-016, TS-017, TS-018, TS-019, TS-020, TS-021, TS-022]; ejecutar y verlas fallar
+- [x] T035 [P] [US2] Ampliar primero `web/src/server/jobs/job-runner.test.ts` con `recoverOnStart` (`queued|running` → `failed/INTERRUPTED`) y mutex por `realpath(projectRoot)`; verla fallar
+- [x] T036 [US2] Implementar recuperación y mutex en `web/src/server/jobs/job-runner.ts` y crear `web/src/instrumentation.ts` (`register()` en runtime Node: recuperación + arranque del runner) hasta pasar T035 y [TS-018, TS-020, TS-021, TS-022]
 - [ ] T037 [US2] Implementar reanudación en `web/src/components/software-architecture-analyzer.tsx` (al cargar, si existe `devarch.activeJobId`, consultar estado y retomar polling/resultados; mensaje de caducidad con opción de reanalizar) hasta pasar [TS-019]
 - [ ] T038 [US2] Verificar con motor real [TS-016, TS-017] (`DEVARCH_E2E=true`, `make test-e2e-browser`) con la concurrencia por defecto fijada en T014/T016
 

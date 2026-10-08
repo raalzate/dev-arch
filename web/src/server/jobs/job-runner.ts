@@ -1,7 +1,7 @@
 // Runs analyses in the background (007-native-engine-runtime, research D2, D7, D14; FR-008..FR-011, FR-029..FR-031,
 // FR-037): FIFO queue, semaphore of `maxConcurrent`, ZIP extraction, engine call, contract validation of the three
 // documents and mapping of every failure to a coded, summarized error.
-import { promises as fs } from 'node:fs';
+import { promises as fs, realpathSync } from 'node:fs';
 import path from 'node:path';
 import {
   consolidatedArchitectureSchema,
@@ -52,6 +52,8 @@ export class JobRunner {
   private reserved = 0;
   private disposed = false;
   private readonly settled = new Set<Promise<void>>();
+  /** Project folder of each queued/running job (realpath), for the per-project mutex (FR-010). */
+  private readonly keys = new Map<string, string>();
 
   constructor(
     private readonly store: JobStore,
@@ -73,8 +75,17 @@ export class JobRunner {
   }
 
   /** Queues a stored job (status queued) and returns at once whether it started or waits. */
-  submit(jobId: string): 'running' | 'queued' {
+  submit(jobId: string, projectFolder?: string): 'running' | 'queued' {
     this.release();
+    if (projectFolder) {
+      let key = projectFolder;
+      try {
+        key = realpathSync(projectFolder);
+      } catch {
+        /* the runner reports the missing folder */
+      }
+      this.keys.set(jobId, key);
+    }
     this.queue.push(jobId);
     this.pump();
     return this.running.has(jobId) ? 'running' : 'queued';
@@ -91,14 +102,37 @@ export class JobRunner {
     return this.running.size + this.queue.length;
   }
 
+  /** Marks every job left queued or running by a previous server process as interrupted (FR-009). */
+  async recoverOnStart(): Promise<number> {
+    let n = 0;
+    for (const job of await this.store.list()) {
+      if (job.status !== 'queued' && job.status !== 'running') continue;
+      if (this.running.has(job.id) || this.queue.includes(job.id)) continue;
+      await this.store.update(job.id, {
+        status: 'failed',
+        error: { code: 'INTERRUPTED', message: 'The web server restarted while the analysis was active (interrupted).' },
+      });
+      n++;
+    }
+    return n;
+  }
+
+  private nextRunnable(): number {
+    const busy = new Set([...this.running].map((id) => this.keys.get(id)).filter(Boolean));
+    return this.queue.findIndex((id) => !busy.has(this.keys.get(id)));
+  }
+
   private pump(): void {
     while (!this.disposed && this.running.size < this.config.maxConcurrent && this.queue.length > 0) {
-      const id = this.queue.shift()!;
+      const index = this.nextRunnable();
+      if (index < 0) return;
+      const id = this.queue.splice(index, 1)[0];
       this.running.add(id);
       const p: Promise<void> = this.run(id)
         .catch((e) => console.error(`[analyses] job ${id} could not be recorded:`, e))
         .finally(() => {
           this.running.delete(id);
+          this.keys.delete(id);
           this.settled.delete(p);
           if (!this.disposed) this.pump();
         });
@@ -142,6 +176,7 @@ export class JobRunner {
         },
       );
       await updates;
+      if (this.disposed) return;
       await this.validateDocuments(p.out);
       const roots = this.roots(job);
       await this.store.update(id, {
@@ -151,6 +186,8 @@ export class JobRunner {
       });
     } catch (e) {
       await updates;
+      // A server shutdown leaves the job as it is: the next start marks it INTERRUPTED (recoverOnStart).
+      if (this.disposed) return;
       const error = this.toJobError(e, job);
       if (error.code === 'STORAGE_FULL' || error.code === 'UNCOMPRESSED_TOO_LARGE') {
         await fs.rm(p.source, { recursive: true, force: true });

@@ -90,7 +90,7 @@ export async function POST(request: Request): Promise<Response> {
       const { size } = await fs.stat(p.upload);
       await rt.store.update(job.id, { uploadBytes: size });
     }
-    const status = rt.runner.submit(job.id);
+    const status = rt.runner.submit(job.id, localPath);
     return Response.json({ jobId: job.id, status }, {
       status: 202, headers: { ...NO_STORE, Location: `/api/analyses/${job.id}` },
     });

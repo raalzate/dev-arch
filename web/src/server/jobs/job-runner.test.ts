@@ -137,3 +137,44 @@ test('at most maxConcurrent analyses run; the rest wait in FIFO order and the qu
   assert.ok(s.runner.reserve());
   s.runner.release();
 });
+
+test('recoverOnStart turns queued and running jobs into failed/INTERRUPTED and keeps terminal ones', async () => {
+  const s = setup();
+  const queued = await s.store.create({ origin: 'zip', language: 'auto' });
+  const running = await s.store.create({ origin: 'zip', language: 'auto', status: 'running' });
+  const doneJob = await s.store.create({ origin: 'import', language: 'auto', status: 'completed' });
+  await s.runner.recoverOnStart();
+  for (const j of [queued, running]) {
+    const after = await s.store.get(j.id);
+    assert.equal(after?.status, 'failed');
+    assert.equal(after?.error?.code, 'INTERRUPTED');
+  }
+  assert.equal((await s.store.get(doneJob.id))?.status, 'completed');
+});
+
+test('analyses of the same project folder never overlap; different folders still run in parallel', async () => {
+  const s = setup({ delayMs: 300 });
+  const folder = mkdtempSync(path.join(os.tmpdir(), 'devarch-local-'));
+  const other = mkdtempSync(path.join(os.tmpdir(), 'devarch-local-'));
+  const jobs = [];
+  for (const root of [folder, folder, other]) {
+    const j = await s.store.create({ origin: 'localPath', language: 'auto', projectRoot: root });
+    jobs.push(j);
+    s.runner.submit(j.id, root);
+  }
+  for (const j of jobs) await until(s, j.id, done);
+  const same = s.calls.filter((c) => c.projectPath === folder).sort((a, b) => a.start - b.start);
+  assert.equal(same.length, 2);
+  assert.ok(same[1].start >= same[0].end, 'calls on the same folder overlapped');
+  assert.equal(s.maxActive(), 2, 'the other folder ran alongside');
+});
+
+test('a disposed runner does not record the failure of an interrupted job (recovery does)', async () => {
+  const s = setup({ delayMs: 2000 });
+  const job = await zipJob(s);
+  s.runner.submit(job.id);
+  await until(s, job.id, (j) => j.status === 'running');
+  await s.runner.dispose(100);
+  await new Promise((r) => setTimeout(r, 2500));
+  assert.equal((await s.store.get(job.id))?.status, 'running');
+});
