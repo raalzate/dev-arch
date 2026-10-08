@@ -1,6 +1,6 @@
 package com.extractor.bdd;
 
-import com.extractor.schema.DemoOutputs;
+import com.extractor.testsupport.ProductLayout;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -239,20 +239,20 @@ public class SchemaCheckSteps {
     }
 
     private static String version() throws IOException {
-        return Files.readString(DemoOutputs.repoRoot().resolve("schema/VERSION"), StandardCharsets.UTF_8).trim();
+        return Files.readString(ProductLayout.get().productRoot().resolve("schema/VERSION"), StandardCharsets.UTF_8).trim();
     }
 
     private void replaceIn(String relative, String target, String replacement) throws IOException {
-        Path file = workCopy.resolve(relative);
+        Path file = ProductLayout.get().findIn(workCopy, relative);
         String content = Files.readString(file, StandardCharsets.UTF_8);
         assertTrue(content.contains(target), relative + " does not contain " + target);
         Files.writeString(file, content.replace(target, replacement), StandardCharsets.UTF_8);
         modified = true;
     }
 
-    /** Copies tracked and untracked (non-ignored) files of the repository into a fresh temporary directory. */
+    /** Copies tracked and untracked (non-ignored) files of the product into a fresh temporary directory. */
     private static Path copyWorkingTree() throws IOException {
-        Path repo = DemoOutputs.repoRoot();
+        Path repo = ProductLayout.get().productRoot();
         ProcessRunner.Result files = ProcessRunner.run(List.of("git", "ls-files", "-co", "--exclude-standard"), repo);
         assertEquals(0, files.exitCode(), files.output());
         Path copy = Files.createTempDirectory("si-005-schema-check-");

@@ -22,6 +22,13 @@ public sealed class ContractSchemas
 
     public string RepoRoot => Directory.GetParent(SchemaRoot)!.FullName;
 
+    /// <summary>
+    /// Engine root (first ancestor of the test assembly with <c>pom.xml</c> and <c>src/test/dotnet</c>): test
+    /// fixtures and <c>target/</c> live here. Since 006-devarch-monorepo the contract (<see cref="RepoRoot"/>) is
+    /// the product root, one level above the engine.
+    /// </summary>
+    public string EngineRoot { get; } = LocateEngineRoot();
+
     public string Version { get; }
 
     public string BaseIri => $"https://static-inference.dev/schema/{Version}/";
@@ -84,6 +91,23 @@ public sealed class ContractSchemas
         }
 
         return errors.Distinct(StringComparer.Ordinal).OrderBy(e => e, StringComparer.Ordinal).ToList();
+    }
+
+    private static string LocateEngineRoot()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current != null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "pom.xml"))
+                && Directory.Exists(Path.Combine(current.FullName, "src", "test", "dotnet")))
+            {
+                return current.FullName;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException($"engine root (pom.xml + src/test/dotnet) not found above {AppContext.BaseDirectory}");
     }
 
     private static string LocateSchemaRoot()

@@ -43,7 +43,7 @@ public class GraphSchemaContractTests
 
     private static void WriteSample(string fixture, string json)
     {
-        var dir = Path.Combine(ContractSchemas.Shared.RepoRoot, "target", "schema-samples", "dotnet", fixture);
+        var dir = Path.Combine(ContractSchemas.Shared.EngineRoot, "target", "schema-samples", "dotnet", fixture);
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "output.json"), json);
     }

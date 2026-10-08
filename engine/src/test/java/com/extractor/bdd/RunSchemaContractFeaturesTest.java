@@ -14,7 +14,8 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PUBLISH_QUIET_P
  * Cucumber JVM runner for the hash-locked scenarios of 005-json-schema-contract (research D11).
  * <p>
  * Runs the {@code .feature} files of {@code specs/005-json-schema-contract/tests/features} (surefire
- * {@code features.dir}, relative to the Maven base directory) with the step definitions of this package.
+ * {@code features.dir}; since 006 the specifications live at the product root, one level above the Maven base
+ * directory) with the step definitions of this package.
  * Steps that need the .NET SDK, Node or the end-to-end {@code schema-check} run are skipped with an explicit
  * reason when the tool is not available (see {@link ToolAvailability}).
  * <p>
@@ -24,7 +25,7 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PUBLISH_QUIET_P
 @Suite(failIfNoTests = false)
 @SuiteDisplayName("005-json-schema-contract BDD scenarios")
 @IncludeEngines("cucumber")
-@SelectDirectories("specs/005-json-schema-contract/tests/features")
+@SelectDirectories("../specs/005-json-schema-contract/tests/features")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.extractor.bdd")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME,
         value = "summary, json:target/cucumber-reports/schema-contract.json")

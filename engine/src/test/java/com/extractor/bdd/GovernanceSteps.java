@@ -1,6 +1,7 @@
 package com.extractor.bdd;
 
 import com.extractor.schema.DemoOutputs;
+import com.extractor.testsupport.ProductLayout;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -90,7 +91,7 @@ public class GovernanceSteps {
 
     @Given("the versioning policy document")
     public void theVersioningPolicyDocument() throws Exception {
-        policy = Files.readString(repo().resolve("docs/SCHEMA.md"), StandardCharsets.UTF_8);
+        policy = Files.readString(ProductLayout.get().find("docs/SCHEMA.md"), StandardCharsets.UTF_8);
         assertTrue(policy.contains("schema/1.0.0"), "policy must point to the formal contract");
     }
 
@@ -140,7 +141,7 @@ public class GovernanceSteps {
     @Given("the reference documents of the contract")
     public void theReferenceDocumentsOfTheContract() throws Exception {
         for (String doc : REFERENCE_DOCUMENTS) {
-            Path path = repo().resolve(doc);
+            Path path = ProductLayout.get().find(doc);
             assertTrue(Files.isRegularFile(path), "missing reference document " + doc);
             referenceDocs.put(doc, Files.readString(path, StandardCharsets.UTF_8));
         }
@@ -177,7 +178,7 @@ public class GovernanceSteps {
     public void theDependencyListBeforeThisFeature() throws Exception {
         baseline = new LinkedHashMap<>();
         String section = null;
-        for (String line : Files.readAllLines(repo().resolve("specs/005-json-schema-contract/baseline-deps.txt"))) {
+        for (String line : Files.readAllLines(ProductLayout.get().find("specs/005-json-schema-contract/baseline-deps.txt"))) {
             String trimmed = line.trim();
             if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
                 section = trimmed.substring(1, trimmed.length() - 1);
@@ -233,7 +234,7 @@ public class GovernanceSteps {
                 .anyMatch(p -> p.startsWith("JsonSchema.Net:")), "JsonSchema.Net must live in the test project");
         assertFalse(packageReferences("src/main/dotnet/DotNetAnalyzer/DotNetAnalyzer.csproj").stream()
                 .anyMatch(p -> p.startsWith("JsonSchema.Net:")), "JsonSchema.Net must not reach dotnet-analyzer");
-        String packageJson = Files.readString(repo().resolve("schema/package.json"), StandardCharsets.UTF_8);
+        String packageJson = Files.readString(ProductLayout.get().find("schema/package.json"), StandardCharsets.UTF_8);
         assertTrue(packageJson.contains("\"private\": true"), "schema package must be private");
         assertFalse(packageJson.contains("\"dependencies\""), "schema package may only have devDependencies");
     }

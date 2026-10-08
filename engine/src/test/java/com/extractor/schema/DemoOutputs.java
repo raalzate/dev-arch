@@ -3,6 +3,7 @@ package com.extractor.schema;
 import com.extractor.analyzer.DotNetToolLocator;
 import com.extractor.service.AnalysisResult;
 import com.extractor.service.AnalysisService;
+import com.extractor.testsupport.ProductLayout;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -75,9 +76,12 @@ public final class DemoOutputs {
         return mapper;
     }
 
-    /** Repository root. */
+    /**
+     * Engine root (the former repository root): {@code test-for-demo/}, {@code target/}, {@code src/} and the
+     * git checkout of the engine. Since 006 the contract lives at the product root (see {@link ProductLayout}).
+     */
     public static Path repoRoot() {
-        return SchemaRegistry.get().repoRoot();
+        return ProductLayout.get().engineRoot();
     }
 
     /**

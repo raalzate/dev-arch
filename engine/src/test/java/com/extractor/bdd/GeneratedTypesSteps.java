@@ -1,6 +1,7 @@
 package com.extractor.bdd;
 
 import com.extractor.schema.DemoOutputs;
+import com.extractor.testsupport.ProductLayout;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -44,8 +45,9 @@ public class GeneratedTypesSteps {
     private ProcessRunner.Result result;
     private final List<Path> declarationFiles = new ArrayList<>();
 
+    /** Product root: holds {@code schema/} and the npm workspace (006-devarch-monorepo). */
     private static Path repo() {
-        return DemoOutputs.repoRoot();
+        return ProductLayout.get().productRoot();
     }
 
     private static Path schemaDir() {
@@ -54,8 +56,8 @@ public class GeneratedTypesSteps {
 
     private static void requireNodePackage() {
         ToolAvailability.requireNode();
-        if (!Files.isDirectory(schemaDir().resolve("node_modules"))) {
-            ProcessRunner.Result install = ProcessRunner.run(List.of("npm", "--prefix", "schema", "ci"), repo());
+        if (!Files.isDirectory(repo().resolve("node_modules"))) {
+            ProcessRunner.Result install = ProcessRunner.run(List.of("npm", "ci", "--no-audit", "--no-fund"), repo());
             assertEquals(0, install.exitCode(), "npm ci failed: " + install.output());
         }
     }
@@ -143,7 +145,7 @@ public class GeneratedTypesSteps {
     public void theContractTestsHaveWrittenSamples() throws IOException {
         requireNodePackage();
         DemoOutputs.JAVA_PROJECTS.forEach(DemoOutputs::of);
-        Path samples = repo().resolve("target").resolve("schema-samples");
+        Path samples = DemoOutputs.repoRoot().resolve("target").resolve("schema-samples");
         try (Stream<Path> files = Files.walk(samples)) {
             assertTrue(files.anyMatch(p -> p.toString().endsWith(".json")), "no samples in " + samples);
         }
@@ -191,7 +193,7 @@ public class GeneratedTypesSteps {
 
     @When("every type definition of DependencyGraph, ConsolidatedArchitecture, EntrypointsDocument and their components is located")
     public void everyTypeDefinitionIsLocated() throws IOException {
-        try (Stream<Path> files = Files.walk(repo())) {
+        try (Stream<Path> files = ProductLayout.get().walkEngineRepository()) {
             for (Path file : files.filter(GeneratedTypesSteps::isTypeScriptSource).toList()) {
                 if (TYPE_DECLARATION.matcher(Files.readString(file, StandardCharsets.UTF_8)).find()) {
                     declarationFiles.add(repo().relativize(file));

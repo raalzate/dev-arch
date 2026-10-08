@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Verifies the contract package (FR-015..FR-018). Run through tsx: npm --prefix schema run check [-- options]
 //   (no options)            generated/ up to date + VERSION/$id/const coherence + fixtures + producer samples
-//   --samples-only          only ../target/schema-samples/**
+//   --samples-only          only ../engine/target/schema-samples/** (producer samples of the engine tests)
 //   --file <path> --kind <kind>   validate one document with the generated validators
 import { mkdtempSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -10,7 +10,8 @@ import { BASE_IRI, PACKAGE_DIR, VERSION, VERSION_DIR, formatIssues, jsonFiles, k
 import { generate } from "./generate.mjs";
 import { validatorsByKind } from "../generated/validators.ts";
 
-const SAMPLES = resolve(PACKAGE_DIR, "..", "target", "schema-samples");
+// 006-devarch-monorepo: the producers (engine tests) write their samples under the engine build directory.
+const SAMPLES = resolve(PACKAGE_DIR, "..", "engine", "target", "schema-samples");
 const failures = [];
 const log = (msg) => console.log(`[schema] ${msg}`);
 const fail = (msg) => {

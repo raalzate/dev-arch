@@ -13,7 +13,8 @@ import * as generated from "../generated/index.ts";
 
 const GENERATED = join(PACKAGE_DIR, "generated");
 const FIXTURES = join(PACKAGE_DIR, "fixtures");
-const SAMPLES = join(PACKAGE_DIR, "..", "target", "schema-samples");
+// 006-devarch-monorepo: the producers (engine tests) write their samples under the engine build directory.
+const SAMPLES = join(PACKAGE_DIR, "..", "engine", "target", "schema-samples");
 
 const read = (path: string) => JSON.parse(readFileSync(path, "utf8"));
 

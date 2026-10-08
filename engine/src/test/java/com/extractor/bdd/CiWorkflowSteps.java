@@ -1,6 +1,6 @@
 package com.extractor.bdd;
 
-import com.extractor.schema.DemoOutputs;
+import com.extractor.testsupport.ProductLayout;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -26,7 +26,7 @@ public class CiWorkflowSteps {
 
     @Given("the continuous integration workflow definition")
     public void theContinuousIntegrationWorkflowDefinition() throws IOException {
-        String yaml = Files.readString(DemoOutputs.repoRoot().resolve(".github/workflows/ci.yml"), StandardCharsets.UTF_8);
+        String yaml = Files.readString(ProductLayout.get().ciWorkflow(), StandardCharsets.UTF_8);
         workflow = cast(new Load(LoadSettings.builder().build()).loadFromString(yaml));
         assertNotNull(workflow.get("jobs"), "workflow has no jobs");
     }

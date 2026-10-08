@@ -177,7 +177,7 @@ public final class SchemaRegistry {
     private static Path locateSchemaRoot() {
         String configured = System.getProperty("schema.dir");
         if (configured != null && !configured.isBlank()) {
-            return Path.of(configured).toAbsolutePath();
+            return Path.of(configured).toAbsolutePath().normalize();
         }
         Path current = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         while (current != null) {

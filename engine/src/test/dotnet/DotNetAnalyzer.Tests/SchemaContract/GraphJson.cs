@@ -21,7 +21,7 @@ public static class GraphJson
     /// <summary>Fixture name → analyzer target, relative to <c>Fixtures/</c> in the test sources.</summary>
     public static string FixtureTarget(string fixture)
     {
-        var fixtures = Path.Combine(ContractSchemas.Shared.RepoRoot, "src", "test", "dotnet",
+        var fixtures = Path.Combine(ContractSchemas.Shared.EngineRoot, "src", "test", "dotnet",
             "DotNetAnalyzer.Tests", "Fixtures");
         return fixture switch
         {
