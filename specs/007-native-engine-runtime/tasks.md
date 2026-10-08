@@ -184,7 +184,7 @@ description: "Task list for 007-native-engine-runtime"
 
 - [x] T064 [US8] Escribir step definitions `tests/acceptance/steps/native-runtime-compat.steps.ts` para [TS-073, TS-074, TS-075, TS-076] (TS-076 compara contra la etiqueta `dev-arch-006-baseline` de T007, nunca contra un hash de commit; TS-077 se cubre íntegramente con steps de 006); ejecutar y verlas fallar
 - [x] T065 [US8] Reescribir `web/src/app/api/analyze/route.ts` (job `origin: sync`, `safe-extract`, `execFile` con `cwd=<job>/out`, lectura desde `<job>/out`, cabeceras `Deprecation`/`Link`) manteniendo verdes, sin modificarlos, `web/src/server/engine/analyze-route.test.ts` y los escenarios 006 [TS-073, TS-074] (research D9)
-- [ ] T066 [US8] Verificar [TS-075] (la UI solo llama a `/api/analyses`), [TS-076] (diff contra `dev-arch-006-baseline` de `.feature`, `context.json` y aserciones de 001–006) y [TS-077] (Checkstyle 4763, SpotBugs con exclusiones, `dotnet format` sin tolerancia)
+- [x] T066 [US8] Verificar [TS-075] (la UI solo llama a `/api/analyses`), [TS-076] (diff contra `dev-arch-006-baseline` de `.feature`, `context.json` y aserciones de 001–006) y [TS-077] (Checkstyle 4763, SpotBugs con exclusiones, `dotnet format` sin tolerancia)
 
 **Checkpoint**: compatibilidad hacia atrás verificada.
 
@@ -210,8 +210,8 @@ description: "Task list for 007-native-engine-runtime"
 - [x] T072 Actualizar `<monorepo>/.github/workflows/dev-arch.yml`: filtro `acceptance` + `apps/dev-arch/specs/007-*/tests/**`; job `e2e-browser` (`if` compuesto web/engine-java/engine-dotnet/acceptance, JDK 17, .NET 8, Node 20, `make build`, `npx playwright install --with-deps chromium`, `make test-e2e-browser`, `timeout-minutes: 30`); confirmar que TS-025, TS-026, TS-027, TS-028, TS-029, TS-030 de 006 siguen verdes (research D11, E13)
 - [x] T073 [P] Documentar variables y flujo en `web/docs/ENVIRONMENT.md` (incluidos `DEVARCH_API_TOKEN`, la advertencia de exposición y `HOSTNAME`) y `web/docs/DEVELOPERS.md` (research D13, D15), `language`/progreso/`_meta`/caché en `engine/MCP.md` y `--language` en `engine/README.md`; entrada en `CHANGELOG.md` (sin bump de contrato)
 - [x] T074 [P] Eliminar del frontend el almacenamiento de resultados en `localStorage` y código muerto de la subida síncrona en `web/src/components/software-architecture-analyzer.tsx`
-- [ ] T075 Gates completos con JDK 17: `make test` (incluye `mvn -B verify`, `dotnet format --verify-no-changes`, `schema-check`, web, aceptación sin `@slow`), Checkstyle ≤ 4763 y SpotBugs 0 con los comandos de CI, `DEVARCH_E2E=true make test-acceptance`, `make test-e2e-browser`; `testify-tdd.sh verify-hash` para 001–007 [TS-076, TS-077]
-- [ ] T076 Ejecutar `specs/007-native-engine-runtime/quickstart.md` de punta a punta y regenerar el tablero iikit
+- [x] T075 Gates completos con JDK 17: `make test` (incluye `mvn -B verify`, `dotnet format --verify-no-changes`, `schema-check`, web, aceptación sin `@slow`), Checkstyle ≤ 4763 y SpotBugs 0 con los comandos de CI, `DEVARCH_E2E=true make test-acceptance`, `make test-e2e-browser`; `testify-tdd.sh verify-hash` para 001–007 [TS-076, TS-077]
+- [x] T076 Ejecutar `specs/007-native-engine-runtime/quickstart.md` de punta a punta y regenerar el tablero iikit
 
 ---
 
