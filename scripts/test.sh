@@ -3,7 +3,7 @@
 #   all         version-check, engine (Java + .NET), schema-check, web, acceptance
 #   engine      mvn -B verify in engine/ + dotnet test --filter "Category!=Corpus"
 #   web         npm test -w web (node:test + tsx)
-#   acceptance  Cucumber-JS scenarios of 006 (@slow only with DEVARCH_E2E=true)
+#   acceptance  Cucumber-JS scenarios of 006 (@slow only with DEVARCH_E2E=true; ACCEPTANCE_TAGS narrows them)
 # Prints "[test] <subset>: OK|FAIL" per subset and a final summary; exits 1 when any subset fails.
 set -u
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -52,8 +52,10 @@ run_web() {
 }
 
 run_acceptance() {
-  announce "cucumber-js (DEVARCH_E2E=${DEVARCH_E2E:-false})"
-  NODE_OPTIONS="--import tsx ${NODE_OPTIONS:-}" npx cucumber-js; record acceptance $?
+  local args=()
+  [ -n "${ACCEPTANCE_TAGS:-}" ] && args=(--tags "$ACCEPTANCE_TAGS")
+  announce "cucumber-js ${args[*]:-} (DEVARCH_E2E=${DEVARCH_E2E:-false})"
+  NODE_OPTIONS="--import tsx ${NODE_OPTIONS:-}" npx cucumber-js "${args[@]+"${args[@]}"}"; record acceptance $?
 }
 
 case "${1:-all}" in

@@ -50,7 +50,7 @@ description: "Task list for 006-devarch-monorepo"
 - [x] T014 Verificar la regla de adaptación: `git diff <commit de T003>.. -- P/engine/src/test` filtrado no muestra líneas `assert`/`Assert.`/`@Then`/`@Given`/`@When` cambiadas ni cambios en `P/specs/00[1-5]-*/tests/` ni `P/specs/*/context.json`; `testify-tdd.sh verify-hash` OK para 001–005 [TS-024]
 - [x] T015 Mover la lógica de `P/scripts/schema-check.sh` a `PRODUCT_ROOT`/`ENGINE_DIR`/`SCHEMA_DIR` (mvn y dotnet en `engine/`, `npm ci` en `P/`, `target/` del motor), conservando literal el formato de salida de 005
 - [x] T016 Añadir a `P/web/package.json` el script `"test": "node --import tsx --test \"src/**/*.test.ts\""` y crear `P/scripts/lib.sh` (rutas del producto, `java_bin` con `JAVA_HOME`, `mvn_cmd` con `mvnw`, `dotnet_root`, formato `[<etapa>] <x>: OK|FAIL — detalle`)
-- [ ] T017 Línea base: con `JAVA_HOME` = JDK 17, `mvn -B verify` en `P/engine` y `dotnet test ... --filter "Category!=Corpus"` en verde; `SCHEMA_CHECK_SKIP_BUILD=0 bash P/scripts/schema-check.sh` → `RESULT: OK`
+- [x] T017 Línea base: con `JAVA_HOME` = JDK 17, `mvn -B verify` en `P/engine` y `dotnet test ... --filter "Category!=Corpus"` en verde; `SCHEMA_CHECK_SKIP_BUILD=0 bash P/scripts/schema-check.sh` → `RESULT: OK`
 
 **Checkpoint**: el motor pasa todas sus pruebas en su nueva ubicación; soporte de aceptación listo.
 
@@ -123,9 +123,9 @@ description: "Task list for 006-devarch-monorepo"
 
 **Independent Test**: `npx cucumber-js --tags @US-005` + TS-039 de 005 (`CiWorkflowSteps`) en verde
 
-- [ ] T035 [US5] Escribir `P/tests/acceptance/steps/continuous-integration.steps.ts` (carga YAML, evalúa filtros `dorny/paths-filter` y `on.*.paths` con `picomatch`) [TS-025, TS-026, TS-027, TS-028, TS-029, TS-030] y verlos fallar
-- [ ] T036 [US5] Crear `.github/workflows/dev-arch.yml` en la raíz del monorepo según contracts/ci-workflow.md (jobs `changes`, `engine-java`, `engine-dotnet`, `web`, `schema`, `acceptance`, `release`; `working-directory: apps/dev-arch`; `timeout-minutes: 20`; Checkstyle 4763; SpotBugs exclude; `Category!=Corpus`; release framework-dependent con artefacto `dev-arch-engine-<tag>-<rid>`) [TS-025, TS-026, TS-027, TS-028, TS-029, TS-030]
-- [ ] T037 [US5] Ejecutar `mvn -B test -Dtest=RunSchemaContractFeaturesTest` en `P/engine` y confirmar TS-039 de 005 en verde contra el nuevo workflow
+- [x] T035 [US5] Escribir `P/tests/acceptance/steps/continuous-integration.steps.ts` (carga YAML, evalúa filtros `dorny/paths-filter` y `on.*.paths` con `picomatch`) [TS-025, TS-026, TS-027, TS-028, TS-029, TS-030] y verlos fallar
+- [x] T036 [US5] Crear `.github/workflows/dev-arch.yml` en la raíz del monorepo según contracts/ci-workflow.md (jobs `changes`, `engine-java`, `engine-dotnet`, `web`, `schema`, `acceptance`, `release`; `working-directory: apps/dev-arch`; `timeout-minutes: 20`; Checkstyle 4763; SpotBugs exclude; `Category!=Corpus`; release framework-dependent con artefacto `dev-arch-engine-<tag>-<rid>`) [TS-025, TS-026, TS-027, TS-028, TS-029, TS-030]
+- [x] T037 [US5] Ejecutar `mvn -B test -Dtest=RunSchemaContractFeaturesTest` en `P/engine` y confirmar TS-039 de 005 en verde contra el nuevo workflow
 
 **Checkpoint**: US5 verde.
 
@@ -176,7 +176,7 @@ description: "Task list for 006-devarch-monorepo"
 ## Phase 11: Decisiones de usuario 2026-10-08 (A2, A3, A4)
 
 - [ ] T052 [A2] Añadir en `apps/dev-arch/AGENTS.md` una nota NO normativa: "CONSTITUTION.md v1.x gobierna `engine/`; alcance producto (web) se define en la enmienda 2.0.0 de la Fase 7". No modificar CONSTITUTION.md.
-- [ ] T053 [A3] En `.github/workflows/dev-arch.yml`, ejecutar TS-006/TS-007 (clon limpio + `make build && make test`) en un job propio `acceptance-clean-clone` con `timeout-minutes: 45`, solo en push a main y tags `dev-arch-v*`; el resto del job `acceptance` respeta el límite de SC-009.
+- [x] T053 [A3] En `.github/workflows/dev-arch.yml`, ejecutar TS-006/TS-007 (clon limpio + `make build && make test`) en un job propio `acceptance-clean-clone` con `timeout-minutes: 45`, solo en push a main y tags `dev-arch-v*`; el resto del job `acceptance` respeta el límite de SC-009.
 - [ ] T054 [A4] Tras T002, congelar el repo origen `project/static-inference`: README con aviso "Movido a maestria-ia/apps/dev-arch/engine; este repo queda de solo lectura" y commit en su `main`. No borrar nada.
 
 ## Dependencies & Execution Order
