@@ -1,5 +1,19 @@
 # Static Inference — Java & .NET Dependency Extractor con Motor de Inferencia de Microservicios
 
+> **Dentro del producto dev-arch** (`maestria-ia/apps/dev-arch`, feature 006): este motor se construye y prueba
+> desde la raíz del producto, no desde esta carpeta. Con JDK 17 (`export JAVA_HOME=$(/usr/libexec/java_home -v 17)`),
+> .NET SDK ≥ 8 con runtime 8 y Node ≥ 20:
+>
+> ```bash
+> cd apps/dev-arch
+> make build        # motor Java + analizador .NET -> web/engine-dist, workspace npm y web
+> make test         # versión, motor (Java + .NET sin Corpus), schema-check, web y aceptación
+> make dev          # web en http://localhost:9002 analizando ZIPs con este motor
+> ```
+>
+> El contrato (`schema/`), las especificaciones (`specs/`), la Constitución y la Premisa viven en la raíz del
+> producto; la versión del producto se edita solo en `apps/dev-arch/VERSION` (`make version-sync`).
+
 Herramienta de análisis estático que extrae dependencias de proyectos Java multi-módulo y .NET/C#, genera clusters inteligentes de componentes, y propone arquitecturas de microservicios con nombres de negocio y clasificación de viabilidad. Detecta automáticamente el tipo de proyecto (Java o .NET) a partir de los archivos de construcción presentes.
 
 [![Ver video en YouTube](https://img.youtube.com/vi/m8U0r368jR8/maxresdefault.jpg)](https://www.youtube.com/watch?v=m8U0r368jR8)
