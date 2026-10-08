@@ -211,6 +211,58 @@ public class ClusterConsolidator {
                 >= consolidation.supportRatio();
     }
 
+    /**
+     * Consolidated groups keyed by their root cluster (after
+     * {@link #consolidate()}); used by the support-guard invariant (008).
+     *
+     * @return root id to the cluster ids of its group
+     */
+    public Map<Integer, Set<Integer>> groupsByRoot() {
+        Map<Integer, Set<Integer>> out = new TreeMap<>();
+        mergedGroups.forEach((root, group) -> {
+            if (!group.isEmpty()) {
+                out.put(root, new TreeSet<>(group));
+            }
+        });
+        return out;
+    }
+
+    /**
+     * Support status of one cluster (the 1.2.0 root-only guard).
+     *
+     * @param clusterId the cluster
+     * @return true when it is a support cluster
+     */
+    public boolean isSupportCluster(final int clusterId) {
+        return isSupport(clusterId);
+    }
+
+    /**
+     * Support status computed over every member of a group.
+     *
+     * @param group cluster ids
+     * @return true when the infrastructure share reaches the support ratio
+     */
+    public boolean isSupportGroup(final Set<Integer> group) {
+        long total = 0;
+        long infra = 0;
+        for (Cluster cluster : clusters) {
+            if (!group.contains(cluster.getClusterId())) {
+                continue;
+            }
+            for (String member : cluster.getMembers()) {
+                total++;
+                String simple = member.contains(".")
+                        ? member.substring(member.lastIndexOf('.') + 1).toLowerCase()
+                        : member.toLowerCase();
+                if (infrastructureKeywords.stream().anyMatch(simple::contains)) {
+                    infra++;
+                }
+            }
+        }
+        return total > 0 && ((double) infra / total) >= consolidation.supportRatio();
+    }
+
     private int getTotalSize(Set<Integer> group) {
         return group.stream()
             .map(id -> clusters.stream()

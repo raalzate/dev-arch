@@ -1,0 +1,442 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://static-inference.dev/schema/1.0.0/inference-config.schema.json",
+  "title": "InferenceConfig",
+  "description": "Inference configuration (008-configurable-inference): analysis-config.json, CLI --config, MCP config/configPath. Every property is optional; omitted properties keep the defaults (MCP resource static-inference://configuration/defaults). Range checks between properties (medium <= high, fair/good cuts) are enforced by the engine.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "detection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxDepth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        }
+      }
+    },
+    "clustering": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "singleDomainRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "largeClusterRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "weights": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "table": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "call": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "token": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "event": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "edgeThreshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "callDensitySaturation": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "strongSignals": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "table": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "call": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "token": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "evidenceThreshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "minStrongSignals": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "roleKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^A-Z]*$"
+          }
+        },
+        "excludeTokens": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "minPackageTokenLength": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "eventPublisherKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^A-Z]*$"
+          }
+        },
+        "eventConsumerKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^A-Z]*$"
+          }
+        }
+      }
+    },
+    "consolidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "genericNames": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "domainMergeMaxSize": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "significantInfrastructureRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "supportRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "maxMergedSizeWithoutSimilarity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "highTokenSimilarity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "separationCallDensity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "separationTableJaccard": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "strongCandidate": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minCohesion": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "maxCoupling": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "minSize": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "infrastructureKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^A-Z]*$"
+          }
+        }
+      }
+    },
+    "viability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "weights": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cohesion": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "coupling": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "data": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "cohesionBlend": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "average": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "density": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "noTablesDataCohesion": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "smallSize": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "below": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "penalty": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "largeSize": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "above": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minDensity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "penalty": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "high": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "medium": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "rationale": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cohesionGood": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "cohesionFair": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "couplingGood": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "couplingFair": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "cboGood": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cboFair": {
+              "type": "number",
+              "minimum": 0
+            },
+            "lcomGood": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "lcomFair": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "dataGood": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "dataFair": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      }
+    },
+    "recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "supportRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "infrastructureKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^A-Z]*$"
+          }
+        },
+        "dataJaccardMode": {
+          "enum": [
+            "legacy",
+            "data_cohesion"
+          ]
+        },
+        "legacyDataJaccard": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "naming": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "infrastructureRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "infrastructureLabels": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[^A-Z]+$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "roleKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^A-Z]*$"
+          }
+        },
+        "excludeTokens": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "minTokenLength": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

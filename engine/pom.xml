@@ -127,6 +127,24 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
             </resource>
+            <!-- 008 FR-021: guides and contract served as MCP resources (never filtered) -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>ALGORITHMS.md</include>
+                    <include>CONFIGURATION.md</include>
+                </includes>
+                <targetPath>static-inference/docs</targetPath>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/../schema/1.0.0</directory>
+                <includes>
+                    <include>**/*.schema.json</include>
+                </includes>
+                <targetPath>static-inference/schema/1.0.0</targetPath>
+                <filtering>false</filtering>
+            </resource>
         </resources>
         <plugins>
             <plugin>
