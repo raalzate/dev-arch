@@ -53,8 +53,8 @@ description: "Task list for 007-native-engine-runtime"
 
 ### Web
 
-- [ ] T015 [P] Escribir primero `web/src/server/config.test.ts` (defaults de research D13 — `MAX_CONCURRENT_ANALYSES` según el resultado de T014 —; valores inválidos nombran la variable; `allowLocalPath` true solo en desarrollo o por `DEVARCH_ALLOW_LOCAL_PATH`; `DEVARCH_API_TOKEN` vacío o en blanco = sin token); verla fallar
-- [ ] T016 Implementar `web/src/server/config.ts` hasta pasar T015 (depende de T014 para el valor por defecto de concurrencia)
+- [x] T015 [P] Escribir primero `web/src/server/config.test.ts` (defaults de research D13 — `MAX_CONCURRENT_ANALYSES` según el resultado de T014 —; valores inválidos nombran la variable; `allowLocalPath` true solo en desarrollo o por `DEVARCH_ALLOW_LOCAL_PATH`; `DEVARCH_API_TOKEN` vacío o en blanco = sin token); verla fallar
+- [x] T016 Implementar `web/src/server/config.ts` hasta pasar T015 (depende de T014 para el valor por defecto de concurrencia)
 - [x] T017 [P] Escribir primero `web/src/server/jobs/job-store.test.ts` (UUID, rechazo de ids inválidos incluido `../`, escritura atómica, transiciones de data-model.md, `paths(id)`, `list`, `delete`); verla fallar
 - [x] T018 Implementar `web/src/server/jobs/job-store.ts` hasta pasar T017 (data-model.md)
 - [x] T019 [P] Escribir primero `web/src/server/upload/{stream-to-file,safe-extract,project-root}.test.ts` con el catálogo de `zip-catalog.ts` (conteo y corte por límite, `Content-Length` previo, validación del directorio central: `..`, absoluta, unidad, `\`, NUL, symlink, duplicados/colisión de mayúsculas, Σ declarado, nº entradas; extracción manual con conteo real; raíz = carpeta única de primer nivel; error de escritura `ENOSPC` → `STORAGE_FULL` y sin restos); verlas fallar
