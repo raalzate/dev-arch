@@ -5,7 +5,7 @@
 SHELL := /bin/bash
 
 .PHONY: help prereqs build build-engine test test-engine test-web test-acceptance e2e schema-check \
-        schema-generate dev clean doctor version-sync version-check
+        schema-generate dev clean doctor version-sync version-check test-e2e-browser
 
 help:
 	@echo "make build | test | test-engine | test-web | test-acceptance | schema-check | dev | clean"
@@ -35,6 +35,11 @@ test-web:
 
 test-acceptance:
 	@bash scripts/test.sh acceptance
+
+## Browser end-to-end scenarios of 007 (@e2e, Playwright/Chromium; needs `make build` and
+## `npx playwright install chromium`). `make e2e` stays reserved for feature 011.
+test-e2e-browser:
+	@DEVARCH_E2E=true DEVARCH_E2E_BROWSER=true NODE_OPTIONS="--import tsx $${NODE_OPTIONS:-}" npx cucumber-js --tags @e2e
 
 ## Verify Java, .NET and generated TypeScript types against the output contract (005-json-schema-contract).
 schema-check:

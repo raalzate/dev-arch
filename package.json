@@ -11,11 +11,13 @@
     "node": ">=20"
   },
   "scripts": {
-    "test:acceptance": "NODE_OPTIONS=\"--import tsx\" cucumber-js"
+    "test:acceptance": "NODE_OPTIONS=\"--import tsx\" cucumber-js",
+    "test:e2e": "DEVARCH_E2E=true DEVARCH_E2E_BROWSER=true NODE_OPTIONS=\"--import tsx\" cucumber-js --tags @e2e"
   },
   "devDependencies": {
     "@cucumber/cucumber": "11.3.0",
     "picomatch": "4.0.7",
+    "playwright": "1.64.0",
     "tsx": "4.23.15",
     "yaml": "2.9.1"
   }

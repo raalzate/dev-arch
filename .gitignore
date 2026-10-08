@@ -74,6 +74,9 @@ buildNumber.properties
 .serena/
 
 # ---------------------------------------------------------------- web runtime
+# Analyses (jobs) persisted by the web (007-native-engine-runtime, research D7)
+.archview/
+web/.archview/
 .genkit/*
 .env*
 .vercel
