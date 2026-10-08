@@ -23,7 +23,7 @@ description: "Task list for 008-configurable-inference"
 
 **Purpose**: línea base de regresión y runner BDD antes de tocar código de producción
 
-- [ ] T001 Capturar `engine/src/test/resources/baseline-v1.2.0/<project>/{output,output_architecture,output_entrypoints}.json` de los 6 proyectos de demostración con el motor de `7bc8170` (worktree temporal, `DemoOutputs` herméticos, marcador `${REPO}`), con `README.md` que documente origen y regeneración (research D1)
+- [x] T001 Capturar `engine/src/test/resources/baseline-v1.2.0/<project>/{output,output_architecture,output_entrypoints}.json` de los 6 proyectos de demostración con el motor de `7bc8170` (worktree temporal, `DemoOutputs` herméticos, marcador `${REPO}`), con `README.md` que documente origen y regeneración (research D1)
 - [ ] T002 [P] Crear runner JVM `engine/src/test/java/com/extractor/configbdd/RunConfigurableInferenceFeaturesTest.java` (`@SelectDirectories("../specs/008-configurable-inference/tests/features")`, glue `com.extractor.configbdd`) con `World.java`, `Hooks.java` y soporte compartido (`Demo.java`: copias herméticas, almacenes de análisis sin fuentes; `Mcp.java`: llamadas en proceso a tools y recursos, cliente stdio); ejecutar: escenarios indefinidos (rojo)
 - [ ] T003 [P] Generador determinista de grafo sintético de 500 componentes en `engine/src/test/java/com/extractor/testsupport/SyntheticGraph.java` (25 dominios × 20 clases, llamadas intra/inter dominio, tablas) con prueba de determinismo `SyntheticGraphTest.java` (research D13)
 
