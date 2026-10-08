@@ -35,6 +35,8 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
 
     private static final Logger logger = LoggerFactory.getLogger(DotNetBridgeAnalyzer.class);
     private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
+    /** Prefix of a user warning line on the analyzer's stderr (009). */
+    private static final String WARNING_PREFIX = "[warning] ";
 
     private final DotNetToolLocator locator;
     private final Duration timeout;
@@ -111,7 +113,31 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
             logger.debug("dotnet-analyzer stderr: {}", stderr);
         }
 
-        return parseOutput(stdout);
+        DependencyGraph graph = parseOutput(stdout);
+        collectUserWarnings(stderr);
+        return graph;
+    }
+
+    /**
+     * Adds the user warnings of the .NET analyzer to {@link #getWarnings()}:
+     * each stderr line starting with exactly {@value #WARNING_PREFIX}, in
+     * order, without duplicates (009-vb-legacy-completion,
+     * contracts/dotnet-warnings-channel.md). Diagnostic lines are ignored.
+     *
+     * @param stderr the standard error of a successful run
+     */
+    void collectUserWarnings(final String stderr) {
+        for (String line : stderr.split("\n", -1)) {
+            String text = line.endsWith("\r")
+                    ? line.substring(0, line.length() - 1) : line;
+            if (!text.startsWith(WARNING_PREFIX)) {
+                continue;
+            }
+            String warning = text.substring(WARNING_PREFIX.length());
+            if (!warning.isEmpty() && !warnings.contains(warning)) {
+                warnings.add(warning);
+            }
+        }
     }
 
     private static CompletableFuture<String> drain(InputStream stream) {

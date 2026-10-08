@@ -76,8 +76,8 @@ description: "Task list for 009-vb-legacy-completion"
 
 ## Phase 9: User Story 7 — Advertencias de fidelidad reducida (P2)
 
-- [ ] T016 [US7] Prueba JUnit `engine/src/test/java/com/extractor/analyzer/DotNetBridgeWarningsTest.java` (rojo) y lectura de líneas `[warning] ` de stderr en `engine/src/main/java/com/extractor/analyzer/DotNetBridgeAnalyzer.java` (contracts/dotnet-warnings-channel.md) [TS-090, TS-091, TS-092]
-- [ ] T017 [P] [US7] Documentar limitaciones y reglas VB en `docs/VB-LEGACY.md` [TS-093]
+- [x] T016 [US7] Prueba JUnit `engine/src/test/java/com/extractor/analyzer/DotNetBridgeWarningsTest.java` (rojo) y lectura de líneas `[warning] ` de stderr en `engine/src/main/java/com/extractor/analyzer/DotNetBridgeAnalyzer.java` (contracts/dotnet-warnings-channel.md) [TS-090, TS-091, TS-092]
+- [x] T017 [P] [US7] Documentar limitaciones y reglas VB en `docs/VB-LEGACY.md` [TS-093]
 
 ---
 
