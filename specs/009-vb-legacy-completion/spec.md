@@ -184,6 +184,7 @@ Como mantenedor, quiero un corpus VB sintético y redistribuible dentro de las p
 - `Option Strict Off` en un archivo sin tipos declarados: no genera issues.
 - Enlace tardío en varias expresiones de la misma línea: un único issue por línea.
 - `On Error GoTo 0` / `On Error GoTo etiqueta`: no generan `ON_ERROR_RESUME_NEXT` ni `GOTO_STATEMENT`.
+- `.vbproj` legacy que la carga completa abre fuera de Windows pero sin ensamblados de referencia de .NET Framework (ni siquiera el tipo base de objetos): se trata como fidelidad reducida (FR-065); verificado en macOS con el corpus sintético.
 - Proyecto mixto C# + VB: las reglas VB se aplican solo a los componentes VB; los componentes C# conservan su salida.
 - Archivos `.vb` autogenerados (diseñador, DataSet tipado, referencias de servicio): siguen excluidos (FR-010 de 004), pero la definición del DataSet tipado sí se lee para resolver tablas.
 
@@ -239,6 +240,7 @@ Como mantenedor, quiero un corpus VB sintético y redistribuible dentro de las p
 **Fidelidad reducida y advertencias**
 
 - **FR-060**: Cuando algún proyecto VB se carga con fidelidad reducida, `meta.source` DEBE ser `roslyn-fallback`
+- **FR-065**: Cuando la carga completa de un proyecto VB produce una compilación que no resuelve la biblioteca base del framework (fuera de Windows: faltan los ensamblados de referencia de .NET Framework), el sistema DEBE usar la carga de fidelidad reducida para ese proyecto, igual que con una compilación vacía (FR-005 de 004); los archivos de `bin/` y `obj/` del proyecto NO DEBEN formar parte de esa carga
 - **FR-061**: En ese caso el analizador .NET DEBE comunicar al motor una advertencia de usuario por proyecto VB afectado, con texto determinista que nombra el archivo de proyecto (sin ruta absoluta), indica fidelidad reducida y remite a la documentación
 - **FR-062**: El motor DEBE exponer esas advertencias por el canal de advertencias de 007 (metadatos del resultado MCP y salida de error del CLI) sin alterar los documentos JSON
 - **FR-063**: Los análisis C# y Java NO DEBEN producir advertencias nuevas
@@ -292,6 +294,7 @@ Como mantenedor, quiero un corpus VB sintético y redistribuible dentro de las p
 - Q: ¿Qué tipos de servicio web VB se soportan? → A: ASMX (métodos web) y WCF (contratos de servicio, `WebGet`/`WebInvoke`); páginas WebForms no son endpoints de API. (default elegido por agente — pendiente confirmar)
 - Q: ¿`Option Strict Off` a nivel de proyecto (`.vbproj`) o por omisión del compilador genera issue? → A: No; solo la declaración explícita en archivo. El nivel de proyecto queda fuera de alcance. (default elegido por agente — pendiente confirmar)
 - Q: ¿Se cuentan `And`/`Or` (no cortocircuito) en la complejidad? → A: No; solo `AndAlso`/`OrElse`, en paralelo a `&&`/`||` de C#. (default elegido por agente — pendiente confirmar)
+- Q: ¿Qué hacer si la carga completa abre el `.vbproj` pero sin la biblioteca base (caso macOS/Linux con `Microsoft.VisualBasic.targets` importado)? → A: tratarlo como compilación inutilizable y usar la carga reducida (FR-065), porque la carga reducida resuelve al menos los tipos base del runtime del analizador y permite detectar enlace tardío; afecta solo a VB. (default elegido por agente — pendiente confirmar)
 - Q: ¿Por qué canal se informa la fidelidad reducida? → A: El de 007 (metadatos del resultado MCP y salida de error del CLI); el contrato JSON se mantiene en 1.0.0 sin `meta.warnings`. Solo se emite para proyectos VB, para no añadir advertencias a análisis C# existentes (FR-063). (default elegido por agente — pendiente confirmar)
 
 ## Assumptions

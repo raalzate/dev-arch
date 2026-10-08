@@ -71,3 +71,11 @@
 ## D12 — Prueba de compatibilidad C#
 
 - **Decision**: capturar **antes** de cualquier cambio la salida serializada del analizador (mismas opciones que `Program.cs`) para las fixtures C# `SampleProject` y `CodeIssuesSample`, con la raíz de la fixture sustituida por un marcador, como archivos de oro; una prueba xUnit las compara byte a byte. Se complementa con `BaselineParityTest` (dotnet-ecommerce, Java) y un diff manual antes/después de los demos `dotnet-ecommerce`, `dotnet-legacy-clinic`, `dotnet-unstructured`.
+
+## D13 — `.vbproj` legacy abierto por MSBuild sin biblioteca base
+
+- **Hallazgo** (prototipo 2026-10-08, macOS, SDK .NET 10 + MSBuildLocator): un `.vbproj` legacy que importa `Microsoft.VisualBasic.targets` (caso real, y el del corpus sintético) se abre con `MSBuildWorkspace` con 13 árboles pero solo 2 referencias y `System.Object` como tipo de error (faltan los ensamblados de referencia de .NET Framework 4.8). La rama de 004 solo cae a Adhoc si la compilación está vacía (el fixture mínimo de 004 no importa los targets y por eso sí cae). Además, la evaluación de diseño escribe `obj/Debug/.NETFramework,Version=v4.8.AssemblyAttributes.vb` dentro del proyecto.
+- **Decision**: en la rama `.vbproj`, si la compilación MSBuild no resuelve `System.Object`, usar `VbProjectLoader.LoadAdhoc` (que referencia la BCL del runtime del analizador) y registrar fidelidad reducida; `LoadAdhoc` ignora `bin/` y `obj/`. En Windows con Build Tools la biblioteca base se resuelve y la ruta MSBuild no cambia.
+- **Rationale**: sin biblioteca base no hay `Object`, `String` ni `Exception` resueltos: el enlace tardío (D6) no se puede detectar y el acoplamiento pierde precisión; la carga Adhoc es estrictamente mejor. Solo afecta a VB (la rama `.csproj` no cambia).
+- **Alternatives**: añadir referencias de .NET Framework desde paquetes de referencia (`Microsoft.NETFramework.ReferenceAssemblies`) — dependencia nueva y descarga en tiempo de análisis (principio VI); mantener la compilación MSBuild — degrada D6.
+- **Estado**: default elegido por agente — pendiente confirmar.

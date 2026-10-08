@@ -17,7 +17,7 @@ El analizador .NET (Roslyn) gana un conjunto de **pasadas VB** que se ejecutan s
 **Project Type**: motor de análisis (CLI/MCP) dentro del producto `apps/dev-arch`
 **Performance Goals**: el análisis del corpus sintético no añade más de 2 s respecto de 004; las pasadas VB son lineales en nodos de sintaxis
 **Constraints**: salidas C#/Java byte-idénticas (FR-080); contrato 1.0.0 (FR-081); determinismo (FR-082); Checkstyle ≤ 4763 (ratchet), SpotBugs 0, `dotnet format --verify-no-changes`; `.feature`/hashes/aserciones de 001–008 intactos; Constitución sin enmiendas
-**Scale/Scope**: 8 historias, 41 FR, 9 SC; ~12 clases .NET nuevas en `Analysis/Vb/`, 2 archivos .NET tocados (`ProjectAnalyzer`, `Program`), 1 clase Java tocada, 2 proyectos VB sintéticos de fixture, 1 documento nuevo (`docs/VB-LEGACY.md`)
+**Scale/Scope**: 8 historias, 42 FR, 9 SC; ~12 clases .NET nuevas en `Analysis/Vb/`, 2 archivos .NET tocados (`ProjectAnalyzer`, `Program`), 1 clase Java tocada, 2 proyectos VB sintéticos de fixture, 1 documento nuevo (`docs/VB-LEGACY.md`)
 
 ## Constitution Check
 
@@ -80,7 +80,7 @@ CONSTITUTION GATE ACTIVE — CONSTITUTION.md v1.0.0 (6 principios + Quality Stan
 7. **Code issues** (`VbCodeAnalyzer`): walker por bloque de tipo; enlace tardío por `SemanticModel.GetOperation` (`DynamicMemberReference`, `DynamicInvocation`, `DynamicIndexerAccess`, `DynamicObjectCreation`) + invocaciones `CreateObject`/`GetObject`; un issue por línea. Ordenación final con el mismo comparador que `RoslynCodeAnalyzer`. Marca `sensitive_data` si hay `HARDCODED_SECRET_IN_CODE`. Research D6.
 8. **Capas** (`VbLayerClassifier`): se ejecuta después del clasificador general y solo sobrescribe según FR-040; interfaces intactas. Research D7.
 9. **Endpoints** (`VbEndpointExtractor`): sintáctico (funciona sin resolver `System.Web.Services`/`System.ServiceModel`), con símbolos de la compilación para enlazar contrato↔implementación. data-model §Endpoints. Research D8.
-10. **Fidelidad reducida**: `ProjectAnalyzer` registra los proyectos VB cargados por Adhoc (fallback por proyecto y fallback global con fuentes VB); `meta.source = roslyn-fallback`; expone `UserWarnings` (ordenadas, sin duplicados); `Program.cs` las imprime tras el JSON como `[warning] <texto>`. `DotNetBridgeAnalyzer` añade a `getWarnings()` cada línea de `stderr` que empieza por `[warning] ` (contrato en [contracts/dotnet-warnings-channel.md](./contracts/dotnet-warnings-channel.md)). Research D10.
+10. **Fidelidad reducida**: en la rama `.vbproj` de `ProjectAnalyzer`, una compilación MSBuild vacía **o sin biblioteca base resuelta** (`GetSpecialType(System_Object).TypeKind == Error`) pasa a la carga Adhoc (FR-065, research D13); `VbProjectLoader.LoadAdhoc` excluye `bin/` y `obj/`. `ProjectAnalyzer` registra los proyectos VB cargados por Adhoc (fallback por proyecto y fallback global con fuentes VB); `meta.source = roslyn-fallback`; expone `UserWarnings` (ordenadas, sin duplicados); `Program.cs` las imprime tras el JSON como `[warning] <texto>`. `DotNetBridgeAnalyzer` añade a `getWarnings()` cada línea de `stderr` que empieza por `[warning] ` (contrato en [contracts/dotnet-warnings-channel.md](./contracts/dotnet-warnings-channel.md)). Research D10.
 11. **BDD**: Reqnroll enlaza los `.feature` .NET de `specs/009-vb-legacy-completion/tests/features/` desde `DotNetAnalyzer.Tests` (code-behind movido a `obj/`; patrón `specs/**/*.feature.cs` en `.gitignore`); el `.feature` del canal de advertencias (`@engine`) corre en Cucumber-JVM con un runner nuevo. Research D9.
 
 ## Project Structure
@@ -119,6 +119,7 @@ engine/src/main/dotnet/DotNetAnalyzer/
   Analysis/Vb/VbCodeAnalyzer.cs
   Analysis/Vb/VbLayerClassifier.cs
   Analysis/Vb/VbEndpointExtractor.cs
+  Analysis/Vb/VbProjectLoader.cs              # (existing) LoadAdhoc skips bin/ and obj/
 engine/src/test/dotnet/DotNetAnalyzer.Tests/
   DotNetAnalyzer.Tests.csproj                 # + Reqnroll.xUnit, linked .feature files, fixtures copy
   Analysis/Vb/*Tests.cs                       # unit tests per class
