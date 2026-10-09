@@ -25,9 +25,17 @@ test("TS-028: types exist for the three documents, AnalyzeProjectResponse and Co
   }
 });
 
-test("TS-028: a runtime validator exists for each document and each MCP response", () => {
+test("TS-028: types exist for the inference configuration and the 008 MCP responses", () => {
+  const types = readFileSync(join(GENERATED, "types.ts"), "utf8");
+  for (const name of ["InferenceConfig", "ReinferArchitectureResponse", "ScoreProposalResponse"]) {
+    assert.match(types, new RegExp(`export (interface|type) ${name}\\b`), `missing type ${name}`);
+  }
+});
+
+test("TS-028: a runtime validator exists for each document, the inference configuration and each MCP response", () => {
   const kinds = ENTRIES.map((e: { kind: string }) => e.kind);
-  assert.equal(kinds.length, 8);
+  assert.equal(kinds.length, 11);
+  for (const k of ["inference-config", "mcp/reinfer_architecture", "mcp/score_proposal"]) assert.ok(kinds.includes(k), `missing kind ${k}`);
   for (const kind of kinds) assert.ok(validatorsByKind[kind], `no validator for ${kind}`);
   for (const fn of ["parseDependencyGraph", "parseConsolidatedArchitecture", "parseEntrypointsDocument", "parseAnalyzeProjectResponse", "parseComponent"]) {
     assert.equal(typeof (generated as Record<string, unknown>)[fn], "function", `missing ${fn}`);

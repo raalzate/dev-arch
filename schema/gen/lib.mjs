@@ -18,7 +18,8 @@ export const BANNER =
 
 /**
  * Contract entry points: kind (as used by `check --kind`) → schema file, root type name, parse function.
- * The five MCP responses and the three documents (FR-017).
+ * The three documents, the five MCP responses of 001 and, since 010-modernization-ux (005 TS-028 re-testified),
+ * the inference configuration and the two MCP responses added by 008 (FR-017).
  */
 export const ENTRIES = [
   { kind: "dependency-graph", file: "dependency-graph.schema.json", type: "DependencyGraph", fn: "parseDependencyGraph" },
@@ -29,6 +30,9 @@ export const ENTRIES = [
   { kind: "mcp/get_architecture_proposal", file: "mcp/get_architecture_proposal.response.schema.json", type: "GetArchitectureProposalResponse", fn: "parseGetArchitectureProposalResponse" },
   { kind: "mcp/get_api_contracts", file: "mcp/get_api_contracts.response.schema.json", type: "GetApiContractsResponse", fn: "parseGetApiContractsResponse" },
   { kind: "mcp/get_component_metrics", file: "mcp/get_component_metrics.response.schema.json", type: "GetComponentMetricsResponse", fn: "parseGetComponentMetricsResponse" },
+  { kind: "inference-config", file: "inference-config.schema.json", type: "InferenceConfig", fn: "parseInferenceConfig" },
+  { kind: "mcp/reinfer_architecture", file: "mcp/reinfer_architecture.response.schema.json", type: "ReinferArchitectureResponse", fn: "parseReinferArchitectureResponse" },
+  { kind: "mcp/score_proposal", file: "mcp/score_proposal.response.schema.json", type: "ScoreProposalResponse", fn: "parseScoreProposalResponse" },
 ];
 
 /** All schema files of the current version, relative to VERSION_DIR, sorted. */

@@ -27,8 +27,8 @@ description: "Task list for 010-modernization-ux"
 
 ## Phase 2: Foundational — tipos generados (US10)
 
-- [ ] T004 [US10] Actualizar `schema/test/validators.test.ts` y `engine/src/test/java/com/extractor/bdd/GeneratedTypesSteps.java` (KINDS + paso de tres tipos) para 005 TS-028 re-testificado; ejecutar: rojo [005 TS-028, TS-051]
-- [ ] T005 [US10] Añadir `inference-config`, `mcp/reinfer_architecture`, `mcp/score_proposal` a `ENTRIES` de `schema/gen/lib.mjs`; `npm --prefix schema run generate`; `make schema-check`; verde [005 TS-028, TS-051]
+- [x] T004 [US10] Actualizar `schema/test/validators.test.ts` y `engine/src/test/java/com/extractor/bdd/GeneratedTypesSteps.java` (KINDS + paso de tres tipos) para 005 TS-028 re-testificado; ejecutar: rojo [005 TS-028, TS-051]
+- [x] T005 [US10] Añadir `inference-config`, `mcp/reinfer_architecture`, `mcp/score_proposal` a `ENTRIES` de `schema/gen/lib.mjs`; `npm --prefix schema run generate`; `make schema-check`; verde [005 TS-028, TS-051]
 - [ ] T006 [US10] Sustituir `web/src/lib/types.ts` por tipos de `@static-inference/schema` en toda la web; prueba que recorre `web/src` sin declaraciones de tipos del contrato [TS-052]
 
 **Checkpoint**: 005 completo en verde; la web compila con tipos generados.
