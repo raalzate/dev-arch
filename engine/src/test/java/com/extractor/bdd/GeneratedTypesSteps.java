@@ -30,8 +30,7 @@ public class GeneratedTypesSteps {
 
     private static final List<String> KINDS = List.of("dependency-graph", "architecture", "entrypoints",
             "mcp/analyze_project", "mcp/get_dependency_graph", "mcp/get_architecture_proposal",
-            "mcp/get_api_contracts", "mcp/get_component_metrics", "inference-config", "mcp/reinfer_architecture",
-            "mcp/score_proposal");
+            "mcp/get_api_contracts", "mcp/get_component_metrics");
     private static final List<String> GENERATED_FILES = List.of("index.ts", "types.ts", "validators.ts");
     private static final String BANNER_LINE = "// GENERATED FILE — DO NOT EDIT.";
     /** Type names of the three documents and their components (schema titles). */
@@ -93,17 +92,7 @@ public class GeneratedTypesSteps {
         }
     }
 
-    @Then("type definitions exist for {string}, {string} and {string}")
-    public void typeDefinitionsExistFor(String a, String b, String c) throws IOException {
-        String types = Files.readString(generatedDir.resolve("types.ts"), StandardCharsets.UTF_8);
-        for (String name : List.of(a, b, c)) {
-            assertTrue(Pattern.compile("export (interface|type) " + name + "\\b").matcher(types).find(),
-                    "types.ts declares no " + name);
-        }
-    }
-
-    @Then("a runtime validator exists for each of the three artifacts, the inference configuration and each of the seven MCP"
-            + " responses")
+    @Then("a runtime validator exists for each of the three artifacts and each of the five MCP responses")
     public void aRuntimeValidatorExistsForEachArtifactAndResponse() throws IOException {
         String validators = Files.readString(generatedDir.resolve("validators.ts"), StandardCharsets.UTF_8);
         assertTrue(validators.contains("export const validatorsByKind"), "no validatorsByKind export");

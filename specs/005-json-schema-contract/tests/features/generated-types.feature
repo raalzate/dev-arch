@@ -12,14 +12,11 @@ Feature: Generated types and runtime validators for typed consumers
   So that I never maintain hand-written types that drift from the engine output
 
   @TS-028 @FR-017 @P2 @acceptance
-  # Re-testified in 010-modernization-ux (user-approved 2026-10-09): the registry also covers the inference
-  # configuration and the two MCP responses added by 008-configurable-inference (11 kinds).
-  Scenario: Generation covers the three artifacts, the inference configuration and the seven MCP responses
+  Scenario: Generation covers the three artifacts and the five MCP responses
     Given the contract at its current version
     When the type generation is executed
     Then type definitions exist for "DependencyGraph", "ConsolidatedArchitecture", "EntrypointsDocument", "AnalyzeProjectResponse" and "Component"
-    And type definitions exist for "InferenceConfig", "ReinferArchitectureResponse" and "ScoreProposalResponse"
-    And a runtime validator exists for each of the three artifacts, the inference configuration and each of the seven MCP responses
+    And a runtime validator exists for each of the three artifacts and each of the five MCP responses
 
   @TS-029 @FR-017 @P2 @acceptance
   Scenario Outline: Generated validators accept real outputs

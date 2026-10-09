@@ -176,7 +176,7 @@ Como mantenedor o consumidor, quiero una política de versionado escrita y una d
 
 **Consumidores tipados**
 
-- **FR-017**: El proyecto MUST generar automáticamente, desde el contrato, definiciones de tipos y validadores en tiempo de ejecución para los tres artefactos y las 5 respuestas MCP (ampliado en 010: también la configuración de inferencia y las respuestas `reinfer_architecture` y `score_proposal` de 008), destinados al consumidor web; los tipos MUST NOT editarse a mano.
+- **FR-017**: El proyecto MUST generar automáticamente, desde el contrato, definiciones de tipos y validadores en tiempo de ejecución para los tres artefactos y las 5 respuestas MCP, destinados al consumidor web; los tipos MUST NOT editarse a mano.
 - **FR-018**: La generación MUST ser determinista: regenerar sin cambios en el contrato MUST producir artefactos idénticos.
 
 **Documentación y gobernanza**
@@ -223,8 +223,3 @@ Como mantenedor o consumidor, quiero una política de versionado escrita y una d
 - Q: ¿Qué hace el motor si el analizador .NET declara otra versión del contrato? -> A: Advierte con ambas versiones y emite la del motor (la salida final la firma el motor principal). (default elegido por agente — confirmado por usuario 2026-10-07) [FR-022]
 - Q: ¿Se valida integridad referencial entre ids? -> A: No en esta feature; contrato estructural. (default elegido por agente — confirmado por usuario 2026-10-07) [Edge Cases]
 - Q: ¿`schema-check` sin SDK .NET disponible puede reportar éxito parcial? -> A: No; falla indicando el frente no verificado, para que el criterio de salida no se cumpla por omisión. (default elegido por agente — confirmado por usuario 2026-10-07) [FR-015]
-
-
-### Session 2026-10-09 (010-modernization-ux)
-
-- Q: ¿Ampliar el registro de tipos generados (TS-028 fijaba 8 tipos) con los esquemas añadidos en 008 (`inference-config`, `mcp/reinfer_architecture`, `mcp/score_proposal`)? -> A: Sí, aprobado por el usuario como parte de 010; TS-028 re-testificado (11 tipos), sin cambio del contrato 1.0.0. [FR-017, TS-028]
