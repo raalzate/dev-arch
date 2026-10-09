@@ -173,7 +173,8 @@ export class JobRunner {
         {
           timeoutMs: this.config.analysisTimeoutMs,
           onPhase: (phase: Phase) => void enqueue(() => this.store.update(id, { phase })),
-          onStderr: (line: string) => void fs.appendFile(p.log, `${line}\n`).catch(() => undefined),
+          // Queued with the status updates so the log is complete before the final status is stored.
+          onStderr: (line: string) => void enqueue(() => fs.appendFile(p.log, `${line}\n`)),
         },
       );
       await updates;

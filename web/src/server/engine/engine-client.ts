@@ -134,6 +134,9 @@ export class EngineClient {
         }
       });
     } finally {
+      // stdout (the response) and stderr are separate pipes: lines written just before the answer can arrive after
+      // it. Keep the hooks attached until stderr has been quiet briefly so they reach the analysis log (007 FR-031).
+      await this.stderrQuiet();
       this.inFlight.delete(req.jobId);
       if (this.recycleWhenIdle && this.inFlight.size === 0) void this.recycle();
     }
@@ -295,11 +298,23 @@ export class EngineClient {
     return client;
   }
 
+  private lastStderrAt = 0;
+
+  /** Resolves once no stderr data arrived for 50 ms (at most 300 ms after the call ends). */
+  private async stderrQuiet(): Promise<void> {
+    const pause = () => new Promise((r) => setTimeout(r, 25));
+    const deadline = Date.now() + 300;
+    await pause();
+    await pause();
+    while (Date.now() - this.lastStderrAt < 50 && Date.now() < deadline) await pause();
+  }
+
   private pipeStderr(transport: StdioClientTransport): void {
     const stream = transport.stderr;
     if (!stream) return;
     let buffer = '';
     stream.on('data', (chunk: Buffer) => {
+      this.lastStderrAt = Date.now();
       buffer += chunk.toString('utf8');
       let nl: number;
       while ((nl = buffer.indexOf('\n')) >= 0) {
