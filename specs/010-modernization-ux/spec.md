@@ -248,11 +248,12 @@ Como desarrollador del producto, quiero que la interfaz use exclusivamente tipos
 - **FR-019**: El grosor de cada dependencia MUST crecer con su peso.
 - **FR-020**: El usuario MUST poder agrupar los componentes por capa o por propuesta.
 - **FR-021**: El usuario MUST poder elegir una severidad mínima de hallazgos; solo los componentes con al menos un hallazgo de esa severidad o superior MUST resaltarse.
+- **FR-021a**: El mapa MUST ofrecer una alternativa textual accesible: una tabla de las dependencias visibles con origen, destino, tipos y peso, que respeta los mismos filtros.
 
 **Parámetros de inferencia (US5)**
 
 - **FR-022**: El paso Propuestas MUST incluir un panel "Parámetros de inferencia" con: umbral de viabilidad alta, umbral de viabilidad media, pesos de cohesión, acoplamiento y datos de la puntuación, umbral de evidencia, proporción de clúster grande y viabilidad mínima; con valores por defecto obtenidos del motor y rangos del contrato.
-- **FR-023**: Un cambio de parámetros MUST recalcular las propuestas a partir del análisis almacenado, sin re-analizar el código, en menos de 3 segundos para los proyectos de ejemplo, e indicar que se muestran propuestas recalculadas.
+- **FR-023**: Un cambio de parámetros MUST recalcular las propuestas a partir del análisis almacenado, sin re-analizar el código, en menos de 3 segundos para los proyectos de ejemplo, e indicar que se muestran propuestas recalculadas; ante cambios sucesivos rápidos solo se muestra el resultado del último cambio.
 - **FR-024**: Los errores de configuración del motor MUST mostrarse con su mensaje y MUST conservar las propuestas anteriores.
 - **FR-025**: El usuario MUST poder restablecer los valores por defecto, volviendo a las propuestas originales del análisis.
 - **FR-026**: El usuario MUST poder editar una propuesta (mover componentes entre propuestas) y re-evaluarla con el motor; la propuesta editada MUST mostrar viabilidad, puntuación, métricas y justificación devueltas por el motor.
