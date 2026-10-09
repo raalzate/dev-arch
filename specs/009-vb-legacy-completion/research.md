@@ -42,14 +42,14 @@
 - **Decision**: formularios y reportes → `Web` (capa de presentación del catálogo cerrado); servicios web → `Controlador`; acceso a datos → `Datos`; módulos sin otra evidencia → `Compartida`; orden FR-040; solo componentes VB; interfaces intactas.
 - **Rationale**: el contrato 1.0.0 cierra la enumeración `layer` (`Controlador`, `Negocio`, `Datos`, `Persistencia`, `Dominio`, `Transferencia`, `Web`, `Compartida`); añadir "Presentación"/"Reportes" sería un cambio de contrato (prohibido sin versionado). El motor Java no usa `layer` en la inferencia (verificado: sin consumidores de `getLayer()` fuera del modelo).
 - **Alternatives**: `Controlador` para formularios (contradice FR-020 de 004: solo con evidencia HTTP); nuevo valor de enumeración (cambio de contrato).
-- **Estado**: default elegido por agente — pendiente confirmar.
+- **Estado**: default elegido por agente — confirmado por usuario 2026-10-09.
 
 ## D8 — Endpoints ASMX/WCF
 
 - **Decision**: detección sintáctica (atributos `WebService`/`WebMethod`/`ServiceContract`/`OperationContract`/`WebGet`/`WebInvoke` por nombre simple con o sin sufijo `Attribute` y calificación; `Inherits WebService` por nombre simple) + símbolos de la compilación para enlazar implementaciones (`AllInterfaces`), con respaldo por nombre en `Implements`. Rutas `/<Clase>.asmx/<Método>` y `/<Clase>.svc/<Operación|plantilla>`.
 - **Rationale**: fuera de Windows `System.Web.Services` y `System.ServiceModel` no se resuelven; los atributos siguen siendo sintaxis. La ruta pública de ASMX/WCF depende del archivo `.asmx`/`.svc`, que por convención se llama como la clase.
 - **Alternatives**: leer `.asmx`/`.svc` para el nombre exacto — mejora marginal; queda como mejora futura.
-- **Estado**: tipos soportados (ASMX + WCF; no páginas WebForms) — default elegido por agente — pendiente confirmar.
+- **Estado**: tipos soportados (ASMX + WCF; no páginas WebForms) — default elegido por agente — confirmado por usuario 2026-10-09.
 
 ## D9 — Runner BDD .NET
 
@@ -78,4 +78,4 @@
 - **Decision**: en la rama `.vbproj`, si la compilación MSBuild no resuelve `System.Object`, usar `VbProjectLoader.LoadAdhoc` (que referencia la BCL del runtime del analizador) y registrar fidelidad reducida; `LoadAdhoc` ignora `bin/` y `obj/`. En Windows con Build Tools la biblioteca base se resuelve y la ruta MSBuild no cambia.
 - **Rationale**: sin biblioteca base no hay `Object`, `String` ni `Exception` resueltos: el enlace tardío (D6) no se puede detectar y el acoplamiento pierde precisión; la carga Adhoc es estrictamente mejor. Solo afecta a VB (la rama `.csproj` no cambia).
 - **Alternatives**: añadir referencias de .NET Framework desde paquetes de referencia (`Microsoft.NETFramework.ReferenceAssemblies`) — dependencia nueva y descarga en tiempo de análisis (principio VI); mantener la compilación MSBuild — degrada D6.
-- **Estado**: default elegido por agente — pendiente confirmar.
+- **Estado**: default elegido por agente — confirmado por usuario 2026-10-09.

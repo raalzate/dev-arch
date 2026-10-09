@@ -4,7 +4,7 @@
 **Created**: 2026-10-08 (`/iikit-01-specify`), extendido por `/iikit-03-checklist` el 2026-10-08
 **Feature**: [spec.md](../spec.md)
 
-> Modo no interactivo: los huecos se resolvieron con defaults conservadores registrados en spec.md *Clarifications* como "(default elegido por agente — pendiente confirmar)". La decisión de corpus es del usuario (2026-10-08).
+> Modo no interactivo: los huecos se resolvieron con defaults conservadores registrados en spec.md *Clarifications* como "(default elegido por agente — confirmado por usuario 2026-10-09)". La decisión de corpus es del usuario (2026-10-08).
 
 ## Content Quality
 
