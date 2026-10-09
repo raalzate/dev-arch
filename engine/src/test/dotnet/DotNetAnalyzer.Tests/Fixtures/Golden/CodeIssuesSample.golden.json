@@ -1,0 +1,429 @@
+{
+  "components": [
+    {
+      "id": "CodeIssuesSample.CleanService",
+      "files": [
+        "<ROOT>/CleanCode.cs"
+      ],
+      "loc": 9,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "CodeIssuesSample.ConsoleLoggingService",
+      "files": [
+        "<ROOT>/ConsoleLogging.cs"
+      ],
+      "loc": 8,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CONSOLE_LOGGING",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+          "line": 7
+        },
+        {
+          "pattern": "CONSOLE_LOGGING",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+          "line": 8
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "CodeIssuesSample.DeprecatedThreadService",
+      "files": [
+        "<ROOT>/DeprecatedThread.cs"
+      ],
+      "loc": 11,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "DEPRECATED_THREAD_USAGE",
+          "type": "BUG_PATTERN",
+          "severity": "ERROR",
+          "message": "Usage of Thread.Abort() which is deprecated and throws PlatformNotSupportedException in .NET 6\u002B.",
+          "line": 7
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "CodeIssuesSample.EmptyCatchService",
+      "files": [
+        "<ROOT>/EmptyCatch.cs"
+      ],
+      "loc": 13,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CATCH_GENERIC_EXCEPTION",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+          "line": 11
+        },
+        {
+          "pattern": "EMPTY_CATCH_BLOCK",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Empty catch block detected. Exceptions should not be swallowed.",
+          "line": 11
+        },
+        {
+          "pattern": "UNUSED_ASSIGNED_VARIABLE",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Variable \u0027x\u0027 is assigned but never used.",
+          "line": 9
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 2,
+      "complexity_avg": 2
+    },
+    {
+      "id": "CodeIssuesSample.GenericExceptionService",
+      "files": [
+        "<ROOT>/GenericException.cs"
+      ],
+      "loc": 14,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CATCH_GENERIC_EXCEPTION",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+          "line": 11
+        },
+        {
+          "pattern": "UNUSED_ASSIGNED_VARIABLE",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Variable \u0027x\u0027 is assigned but never used.",
+          "line": 9
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 2,
+      "complexity_avg": 2
+    },
+    {
+      "id": "CodeIssuesSample.HardcodedSecretService",
+      "files": [
+        "<ROOT>/HardcodedSecret.cs"
+      ],
+      "loc": 9,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "HARDCODED_SECRET_IN_CODE",
+          "type": "BUG_PATTERN",
+          "severity": "CRITICAL",
+          "message": "Hardcoded secret detected in variable \u0027password\u0027. Use configuration or secret management instead.",
+          "line": 7
+        },
+        {
+          "pattern": "UNUSED_ASSIGNED_VARIABLE",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Variable \u0027password\u0027 is assigned but never used.",
+          "line": 7
+        },
+        {
+          "pattern": "HARDCODED_SECRET_IN_CODE",
+          "type": "BUG_PATTERN",
+          "severity": "CRITICAL",
+          "message": "Hardcoded secret detected in variable \u0027apiKey\u0027. Use configuration or secret management instead.",
+          "line": 8
+        },
+        {
+          "pattern": "UNUSED_ASSIGNED_VARIABLE",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Variable \u0027apiKey\u0027 is assigned but never used.",
+          "line": 8
+        },
+        {
+          "pattern": "UNUSED_ASSIGNED_VARIABLE",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Variable \u0027name\u0027 is assigned but never used.",
+          "line": 9
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "CodeIssuesSample.MissingSwitchDefaultService",
+      "files": [
+        "<ROOT>/MissingSwitchDefault.cs"
+      ],
+      "loc": 20,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "MISSING_SWITCH_DEFAULT",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Switch statement is missing a \u0027default\u0027 case.",
+          "line": 7
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 3,
+      "complexity_avg": 2.5
+    },
+    {
+      "id": "CodeIssuesSample.NotificationService",
+      "files": [
+        "<ROOT>/AsyncVoidMethod.cs"
+      ],
+      "loc": 11,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "ASYNC_VOID_METHOD",
+          "type": "BUG_PATTERN",
+          "severity": "ERROR",
+          "message": "Method \u0027SendNotification\u0027 is declared as \u0027async void\u0027. Use \u0027async Task\u0027 instead to allow proper exception handling and awaiting.",
+          "line": 5
+        }
+      ],
+      "implements": [],
+      "cbo": 1,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "CodeIssuesSample.OrderProcessingService",
+      "files": [
+        "<ROOT>/UnusedVariable.cs"
+      ],
+      "loc": 10,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [
+        "config:orderId",
+        "config:topic"
+      ],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CONSOLE_LOGGING",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+          "line": 11
+        },
+        {
+          "pattern": "UNUSED_ASSIGNED_VARIABLE",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Variable \u0027ordersTopic\u0027 is assigned but never used.",
+          "line": 9
+        }
+      ],
+      "implements": [],
+      "cbo": 2,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "CodeIssuesSample.ProductModel",
+      "files": [
+        "<ROOT>/NullForgivingOperator.cs"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "NULL_FORGIVING_OPERATOR",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Property \u0027Name\u0027 uses null-forgiving operator (= null!). Consider using \u0027required\u0027 modifier, a default value, or making the property nullable.",
+          "line": 5
+        },
+        {
+          "pattern": "NULL_FORGIVING_OPERATOR",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Property \u0027Description\u0027 uses null-forgiving operator (= null!). Consider using \u0027required\u0027 modifier, a default value, or making the property nullable.",
+          "line": 6
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0
+    },
+    {
+      "id": "CodeIssuesSample.StringEqualityService",
+      "files": [
+        "<ROOT>/StringEquality.cs"
+      ],
+      "loc": 11,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "STRING_EQUALITY_OPERATOR",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Use of ReferenceEquals for string comparison. Use string.Equals() or == operator instead.",
+          "line": 7
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    }
+  ],
+  "edges": [],
+  "api_contracts": {
+    "endpoints": [],
+    "schemas": {}
+  },
+  "meta": {
+    "source": "roslyn-fallback",
+    "schema_version": "1.0.0",
+    "microservice_candidates": {}
+  }
+}

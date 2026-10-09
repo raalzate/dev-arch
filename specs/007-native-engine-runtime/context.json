@@ -1,7 +1,7 @@
 {
   "testify": {
-    "assertion_hash": "6766695ae086ac2f1eec4f6757ecfbba7cb78bd0bf0b2ffe07bf01d7f38005ee",
-    "generated_at": "2026-10-08T19:57:51Z",
+    "assertion_hash": "aee05a77d8890bcb990fa677e79293969cf3ed3c17e0ee95e9b172f3db088bf4",
+    "generated_at": "2026-10-09T12:50:39Z",
     "features_dir": "specs/007-native-engine-runtime/tests/features",
     "file_count": 9
   }

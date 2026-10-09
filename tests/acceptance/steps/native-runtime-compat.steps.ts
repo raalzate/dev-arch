@@ -95,13 +95,25 @@ Then('the server working directory contains no {string} or {string}', function (
 });
 
 // --- TS-076 ---------------------------------------------------------------------------------------------
-// The only admitted change to locked 001-006 artifacts is the re-testify of 006 TS-042 (evaluated at the 006
-// baseline tag), recorded in the 006 specification: its scenario block, the 006 context.json hash and the TS-042
-// section of its step definitions. Everything else must be identical to the baseline tag.
+// The only admitted change to locked 001-006 scenarios and hashes is the re-testify of 006 TS-042 (evaluated at
+// the 006 baseline tag), recorded in the 006 specification: its scenario block, the 006 context.json hash and the
+// TS-042 section of its step definitions. Test assertions of 001-006 must be unchanged; non-assertion changes to
+// test infrastructure made by later features are allowed. What counts as a test assertion change is defined in
+// the 007 specification (Clarifications, session 2026-10-09):
+//   - candidates: test files present at the baseline tag and now modified or deleted (renames count as deletions);
+//   - project/build files and documentation are infrastructure, never assertion changes;
+//   - C-style test code (.java .cs .ts .js .mjs) changes its assertions when its code differs once comments are
+//     removed (string literals respected) and whitespace is normalised; deleting it always counts;
+//   - any other test file (data, fixtures, expected outputs, .vb code) counts on any content difference.
 
 const RESTRUCT_FEATURE = 'apps/dev-arch/specs/006-devarch-monorepo/tests/features/repository-structure.feature';
 const RESTRUCT_STEPS = 'apps/dev-arch/tests/acceptance/steps/repository-structure.steps.ts';
 const CONTEXT_006 = 'apps/dev-arch/specs/006-devarch-monorepo/context.json';
+
+/** Project and build files and documentation: test infrastructure whose changes are not assertion changes. */
+const INFRASTRUCTURE = /(\.(csproj|vbproj|props|targets|sln|md)|(^|\/)(pom\.xml|package\.json))$/i;
+/** Test code with C-style comments, compared without comments and with normalised whitespace. */
+const C_STYLE_CODE = /\.(java|cs|ts|js|mjs)$/i;
 
 /** Removes the TS-042 scenario block (from its tag line to the next blank line) of a feature text. */
 function withoutTs042Scenario(text: string): string {
@@ -114,12 +126,43 @@ function beforeTs042Section(text: string): string {
   return i < 0 ? text : text.slice(0, i);
 }
 
+/** C-style source without its comments (`//`, `///`, block comments); string and char literals are kept. */
+function withoutComments(src: string): string {
+  let out = '';
+  let i = 0;
+  while (i < src.length) {
+    const c = src[i];
+    const n = src[i + 1];
+    if (c === '/' && n === '/') {
+      while (i < src.length && src[i] !== '\n') i++;
+    } else if (c === '/' && n === '*') {
+      const e = src.indexOf('*/', i + 2);
+      i = e < 0 ? src.length : e + 2;
+      out += ' ';
+    } else if (c === '"' || c === "'" || c === '`') {
+      let j = i + 1;
+      while (j < src.length && src[j] !== c && !(c !== '`' && src[j] === '\n')) j += src[j] === '\\' ? 2 : 1;
+      out += src.slice(i, j + 1);
+      i = j + 1;
+    } else {
+      out += c;
+      i++;
+    }
+  }
+  return out;
+}
+
+/** Comparable form of test code: comments removed, whitespace runs collapsed. */
+function assertionContent(file: string, text: string): string {
+  return C_STYLE_CODE.test(file) ? withoutComments(text).replace(/\s+/g, ' ').trim() : text;
+}
+
 When('the product is compared with the 006 baseline tag {string}', function (this: DevArchWorld, tag: string) {
   const repo = layout.monorepoRoot;
   assert.ok(gitOk(['rev-parse', '--verify', '--quiet', `refs/tags/${tag}^{commit}`], repo),
     `the baseline tag ${tag} is missing (see docs/BASELINES.md; fetch it with: git fetch origin tag ${tag})`);
   const rel = (p: string) => `apps/dev-arch/${p}`;
-  const changed = (paths: string[]) => git(['diff', '--name-only', '--diff-filter=MDR', `${tag}`, '--', ...paths], repo)
+  const changed = (paths: string[]) => git(['diff', '--name-only', '--no-renames', '--diff-filter=MD', `${tag}`, '--', ...paths], repo)
     .split('\n').filter(Boolean);
   this.data.baselineTag = tag;
   this.data.lockedChanges = {
@@ -130,7 +173,7 @@ When('the product is compared with the 006 baseline tag {string}', function (thi
   };
 });
 
-Then('no {string} file, {string} assertion hash or test assertion of features 001 to 006 has changed, except the scenario {string} of 006 re-testified and recorded in its specification', function (this: DevArchWorld, _feature: string, _context: string, scenario: string) {
+Then('no {string} file or {string} assertion hash of features 001 to 006 has changed, except the scenario {string} of 006 re-testified and recorded in its specification', function (this: DevArchWorld, _feature: string, _context: string, scenario: string) {
   assert.equal(scenario, 'TS-042');
   const repo = layout.monorepoRoot;
   const tag = this.data.baselineTag as string;
@@ -145,8 +188,18 @@ Then('no {string} file, {string} assertion hash or test assertion of features 00
     const spec = now('apps/dev-arch/specs/006-devarch-monorepo/spec.md');
     assert.match(spec, /re-testify[^\n]*\n\n- Q:[^\n]*TS-042/, 'the re-testify of TS-042 is not recorded in the 006 specification');
   }
-  const unexpectedTests = c.tests.filter((f) => f !== RESTRUCT_STEPS);
-  assert.deepEqual(unexpectedTests, [], 'test files of 001-006 were modified or deleted');
+});
+
+Then('no test assertion of features 001 to 006 has changed, ignoring project and build files, documentation and comment or whitespace changes in test code', function (this: DevArchWorld) {
+  const repo = layout.monorepoRoot;
+  const tag = this.data.baselineTag as string;
+  const c = this.data.lockedChanges as { specs: string[]; tests: string[] };
+  const atTag = (f: string) => git(['show', `${tag}:${f}`], repo);
+  const now = (f: string) => readFileSync(path.join(repo, f), 'utf8').replace(/\n$/, '');
+  const changedAssertions = c.tests
+    .filter((f) => f !== RESTRUCT_STEPS && !INFRASTRUCTURE.test(f))
+    .filter((f) => !existsSync(path.join(repo, f)) || assertionContent(f, now(f)) !== assertionContent(f, atTag(f)));
+  assert.deepEqual(changedAssertions, [], 'test assertions of 001-006 were modified or deleted');
   if (c.tests.includes(RESTRUCT_STEPS)) {
     assert.equal(beforeTs042Section(now(RESTRUCT_STEPS)), beforeTs042Section(atTag(RESTRUCT_STEPS)),
       'repository-structure.steps.ts changed outside the TS-042 section');

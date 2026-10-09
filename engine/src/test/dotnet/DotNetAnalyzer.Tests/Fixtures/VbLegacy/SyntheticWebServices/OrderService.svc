@@ -1,0 +1,1 @@
+<%@ ServiceHost Language="VB" Debug="true" Service="LegacyShop.Services.OrderService" CodeBehind="Services/OrderService.svc.vb" %>

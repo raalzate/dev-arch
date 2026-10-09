@@ -22,6 +22,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
   por proceso de `Set.of`); sin cambios en los proyectos de demostración.
 - SpotBugs: eliminadas las exclusiones heredadas marcadas para 008 con limpieza sin cambio de comportamiento.
 
+### Añadido (feature 009, cierre de VB.NET legacy)
+- Analizador .NET: pasadas solo para compilaciones Visual Basic (las de C# no cambian): tablas desde SQL literal plegado
+  (`&`/`+`, continuaciones de línea) y DataSets tipados `.xsd`; CBO, LCOM y complejidad ciclomática con
+  `HIGH_CYCLOMATIC_COMPLEXITY`; referencias de configuración (`ConfigurationManager`, `ConfigurationSettings`,
+  `My.Settings`) y credenciales en texto plano de `app.config`/`web.config` (`PLAINTEXT_SECRET_IN_CONFIG`, sin valores en la
+  salida); issues VB (`ON_ERROR_RESUME_NEXT`, `OPTION_STRICT_OFF`, `GOTO_STATEMENT`, `LATE_BINDING`) y los patrones generales;
+  capas de escritorio (formularios y reportes, controladores, acceso a datos, módulos, servicios web); endpoints ASMX y WCF.
+- Fidelidad reducida declarada: un `.vbproj` sin biblioteca base resuelta por MSBuild cae a la carga Adhoc (sin `bin/`/`obj/`),
+  `meta.source = roslyn-fallback` y una advertencia de usuario por proyecto VB (`[warning] …` en stderr del analizador, recogida
+  por el motor en `_meta["static-inference/warnings"]` y en el CLI). Los análisis C# no producen advertencias nuevas.
+- Corpus VB sintético redistribuible en las pruebas .NET; el corpus real sigue siendo opcional (categoría `Corpus`).
+  Escenarios BDD con Reqnroll (.NET) y Cucumber-JVM (`@engine`). Documentación en `docs/VB-LEGACY.md`.
+  **Sin cambio de contrato (1.0.0); salidas C# y Java byte-idénticas.**
 
 ### Añadido (feature 007, integración runtime nativa)
 - Web: análisis asíncronos persistidos en disco (`/api/analyses*`), servicio único del motor en modo MCP con reinicio ante

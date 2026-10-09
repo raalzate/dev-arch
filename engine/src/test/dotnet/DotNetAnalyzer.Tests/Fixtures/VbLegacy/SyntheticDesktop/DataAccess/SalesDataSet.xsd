@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="SalesDataSet" targetNamespace="http://tempuri.org/SalesDataSet.xsd" xmlns:mstns="http://tempuri.org/SalesDataSet.xsd" xmlns="http://tempuri.org/SalesDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections>
+          <Connection AppSettingsObjectName="MySettings" AppSettingsPropertyName="ShopDb" IsAppSettingsProperty="true" Modifier="Assembly" Name="ShopDb (MySettings)" ParameterPrefix="@" Provider="System.Data.SqlClient" />
+        </Connections>
+        <Tables>
+          <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="InvoicesTableAdapter" GeneratorDataComponentClassName="InvoicesTableAdapter" Name="Invoices" UserDataComponentName="InvoicesTableAdapter">
+            <MainSource>
+              <DbSource ConnectionRef="ShopDb (MySettings)" DbObjectName="dbo.Invoices" DbObjectType="Table" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="true" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" UseOptimisticConcurrency="false" UserGetMethodName="GetData" UserSourceName="Fill">
+                <SelectCommand>
+                  <DbCommand CommandType="Text" ModifiedByUser="false">
+                    <CommandText>SELECT InvoiceId, CustomerId, Total FROM dbo.Invoices</CommandText>
+                  </DbCommand>
+                </SelectCommand>
+              </DbSource>
+            </MainSource>
+          </TableAdapter>
+          <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="InvoiceLinesTableAdapter" GeneratorDataComponentClassName="InvoiceLinesTableAdapter" Name="InvoiceLines" UserDataComponentName="InvoiceLinesTableAdapter">
+            <MainSource>
+              <DbSource ConnectionRef="ShopDb (MySettings)" DbObjectType="Unknown" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" UseOptimisticConcurrency="false" UserGetMethodName="GetData" UserSourceName="Fill">
+                <SelectCommand>
+                  <DbCommand CommandType="Text" ModifiedByUser="true">
+                    <CommandText>SELECT l.LineId, l.InvoiceId, l.Amount FROM dbo.InvoiceLines l</CommandText>
+                  </DbCommand>
+                </SelectCommand>
+              </DbSource>
+            </MainSource>
+          </TableAdapter>
+        </Tables>
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="SalesDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_DataSetName="SalesDataSet" msprop:Generator_UserDSName="SalesDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Invoices" msprop:Generator_TableClassName="InvoicesDataTable" msprop:Generator_TableVarName="tableInvoices" msprop:Generator_RowClassName="InvoicesRow" msprop:Generator_UserTableName="Invoices">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="InvoiceId" type="xs:int" />
+              <xs:element name="CustomerId" type="xs:int" />
+              <xs:element name="Total" type="xs:decimal" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="InvoiceLines" msprop:Generator_TableClassName="InvoiceLinesDataTable" msprop:Generator_TableVarName="tableInvoiceLines" msprop:Generator_RowClassName="InvoiceLinesRow" msprop:Generator_UserTableName="InvoiceLines">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="LineId" type="xs:int" />
+              <xs:element name="InvoiceId" type="xs:int" />
+              <xs:element name="Amount" type="xs:decimal" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -1,0 +1,336 @@
+{
+  "components": [
+    {
+      "id": "Program",
+      "files": [
+        "<ROOT>/Program.cs"
+      ],
+      "loc": 13,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": []
+    },
+    {
+      "id": "SampleProject.Controllers.OrdersController",
+      "files": [
+        "<ROOT>/Controllers/OrdersController.cs"
+      ],
+      "loc": 29,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Controlador",
+      "calls_out": [
+        "SampleProject.Services.IOrderService"
+      ],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "ApiController",
+        "Route"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "extends": "ControllerBase",
+      "implements": [],
+      "cbo": 5,
+      "lcom": 0,
+      "complexity_max": 2,
+      "complexity_avg": 1.3333333333333333
+    },
+    {
+      "id": "SampleProject.Data.AppDbContext",
+      "files": [
+        "<ROOT>/Data/AppDbContext.cs"
+      ],
+      "loc": 5,
+      "tables_used": [
+        "orders"
+      ],
+      "sensitive_data": false,
+      "layer": "Datos",
+      "calls_out": [],
+      "calls_in": [
+        "SampleProject.Repositories.OrderRepository"
+      ],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "NULL_FORGIVING_OPERATOR",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Property \u0027Orders\u0027 uses null-forgiving operator (= null!). Consider using \u0027required\u0027 modifier, a default value, or making the property nullable.",
+          "line": 10
+        }
+      ],
+      "extends": "DbContext",
+      "implements": [],
+      "cbo": 3,
+      "lcom": 0
+    },
+    {
+      "id": "SampleProject.Models.Order",
+      "files": [
+        "<ROOT>/Models/Order.cs"
+      ],
+      "loc": 8,
+      "tables_used": [
+        "orders"
+      ],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Table"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 1,
+      "lcom": 0
+    },
+    {
+      "id": "SampleProject.Repositories.IOrderRepository",
+      "files": [
+        "<ROOT>/Repositories/IOrderRepository.cs"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Datos",
+      "calls_out": [],
+      "calls_in": [
+        "SampleProject.Repositories.OrderRepository",
+        "SampleProject.Services.OrderService"
+      ],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": true,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 2,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "SampleProject.Repositories.OrderRepository",
+      "files": [
+        "<ROOT>/Repositories/OrderRepository.cs"
+      ],
+      "loc": 21,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Datos",
+      "calls_out": [
+        "SampleProject.Data.AppDbContext",
+        "SampleProject.Repositories.IOrderRepository"
+      ],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [
+        "SampleProject.Repositories.IOrderRepository"
+      ],
+      "cbo": 4,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "SampleProject.Services.IOrderService",
+      "files": [
+        "<ROOT>/Services/IOrderService.cs"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [
+        "SampleProject.Controllers.OrdersController",
+        "SampleProject.Services.OrderService"
+      ],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": true,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 2,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "SampleProject.Services.OrderService",
+      "files": [
+        "<ROOT>/Services/OrderService.cs"
+      ],
+      "loc": 21,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [
+        "SampleProject.Repositories.IOrderRepository",
+        "SampleProject.Services.IOrderService"
+      ],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [
+        "SampleProject.Services.IOrderService"
+      ],
+      "cbo": 4,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    }
+  ],
+  "edges": [
+    {
+      "from": "SampleProject.Controllers.OrdersController",
+      "to": "SampleProject.Services.IOrderService",
+      "weight": 3,
+      "type": "call"
+    },
+    {
+      "from": "SampleProject.Controllers.OrdersController",
+      "to": "SampleProject.Services.IOrderService",
+      "weight": 1,
+      "type": "injection"
+    },
+    {
+      "from": "SampleProject.Controllers.OrdersController",
+      "to": "SampleProject.Services.IOrderService",
+      "weight": 1,
+      "type": "injection"
+    },
+    {
+      "from": "SampleProject.Repositories.OrderRepository",
+      "to": "SampleProject.Data.AppDbContext",
+      "weight": 1,
+      "type": "injection"
+    },
+    {
+      "from": "SampleProject.Repositories.OrderRepository",
+      "to": "SampleProject.Repositories.IOrderRepository",
+      "weight": 1,
+      "type": "implements"
+    },
+    {
+      "from": "SampleProject.Repositories.OrderRepository",
+      "to": "SampleProject.Repositories.IOrderRepository",
+      "weight": 1,
+      "type": "registration"
+    },
+    {
+      "from": "SampleProject.Services.OrderService",
+      "to": "SampleProject.Repositories.IOrderRepository",
+      "weight": 3,
+      "type": "call"
+    },
+    {
+      "from": "SampleProject.Services.OrderService",
+      "to": "SampleProject.Repositories.IOrderRepository",
+      "weight": 1,
+      "type": "injection"
+    },
+    {
+      "from": "SampleProject.Services.OrderService",
+      "to": "SampleProject.Repositories.IOrderRepository",
+      "weight": 1,
+      "type": "injection"
+    },
+    {
+      "from": "SampleProject.Services.OrderService",
+      "to": "SampleProject.Services.IOrderService",
+      "weight": 1,
+      "type": "implements"
+    },
+    {
+      "from": "SampleProject.Services.OrderService",
+      "to": "SampleProject.Services.IOrderService",
+      "weight": 1,
+      "type": "registration"
+    }
+  ],
+  "api_contracts": {
+    "endpoints": [
+      {
+        "id": "GET /api/orders",
+        "path": "/api/orders",
+        "method": "GET",
+        "parameters": [],
+        "response_schema": "Task\u003CActionResult\u003CIEnumerable\u003COrder\u003E\u003E\u003E",
+        "component_id": "SampleProject.Controllers.OrdersController"
+      },
+      {
+        "id": "GET /api/orders/{id}",
+        "path": "/api/orders/{id}",
+        "method": "GET",
+        "parameters": [],
+        "response_schema": "Task\u003CActionResult\u003COrder\u003E\u003E",
+        "component_id": "SampleProject.Controllers.OrdersController"
+      },
+      {
+        "id": "POST /api/orders",
+        "path": "/api/orders",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "order",
+            "in": "body",
+            "type": "Order",
+            "required": true
+          }
+        ],
+        "response_schema": "Task\u003CActionResult\u003COrder\u003E\u003E",
+        "component_id": "SampleProject.Controllers.OrdersController"
+      }
+    ],
+    "schemas": {}
+  },
+  "meta": {
+    "source": "roslyn",
+    "schema_version": "1.0.0",
+    "microservice_candidates": {}
+  }
+}

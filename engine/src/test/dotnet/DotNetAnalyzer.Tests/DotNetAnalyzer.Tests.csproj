@@ -21,6 +21,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
     <!-- 005-json-schema-contract: contract validation, test project only (Constitution VI) -->
     <PackageReference Include="JsonSchema.Net" Version="7.4.0" />
+    <!-- 009-vb-legacy-completion: BDD runner for the .feature files of the feature (test project only,
+         Constitution VI; 2.0.3 keeps xUnit 2.7.0, research D9) -->
+    <PackageReference Include="Reqnroll.xUnit" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,9 +35,30 @@
     <None Include="Fixtures\SampleProject\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Fixtures\VbLegacy\**\*">
+    <None Include="Fixtures\VbLegacy\**\*" Exclude="Fixtures\VbLegacy\**\bin\**;Fixtures\VbLegacy\**\obj\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <!-- 009-vb-legacy-completion (research D9): the hash-locked .feature files live in specs/; the code-behind
+       generated next to them is moved into obj/ so nothing is written into specs/. The @engine feature runs on
+       Cucumber-JVM (RunVbLegacyCompletionFeaturesTest). -->
+  <PropertyGroup>
+    <Reqnroll_EnableWarnForFeatureCodeBehindFilesWithoutCorrespondingFeatureFile>false</Reqnroll_EnableWarnForFeatureCodeBehindFilesWithoutCorrespondingFeatureFile>
+    <VbLegacyFeaturesDir>../../../../../specs/009-vb-legacy-completion/tests/features/</VbLegacyFeaturesDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <ReqnrollFeatureFiles Include="$(VbLegacyFeaturesDir)*.feature"
+                          Exclude="$(VbLegacyFeaturesDir)reduced-fidelity-engine.feature"
+                          CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
+  </ItemGroup>
+  <Target Name="MoveVbLegacyCodeBehind" AfterTargets="UpdateFeatureFilesInProject">
+    <Copy SourceFiles="@(ReqnrollGeneratedFiles)" DestinationFolder="obj/ReqnrollFeatures" />
+    <Delete Files="@(ReqnrollGeneratedFiles)" />
+    <ItemGroup>
+      <Compile Remove="@(ReqnrollGeneratedFiles)" />
+      <Compile Include="@(ReqnrollGeneratedFiles->'obj/ReqnrollFeatures/%(Filename)%(Extension)')" Exclude="@(Compile)" />
+    </ItemGroup>
+  </Target>
 
 </Project>

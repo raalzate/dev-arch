@@ -35,6 +35,13 @@ try
 
     var json = JsonSerializer.Serialize(graph, options);
     Console.Write(json);
+    Console.Out.Flush();
+
+    // 009 (contracts/dotnet-warnings-channel.md): user warnings after the JSON, one [warning] line each.
+    foreach (var warning in analyzer.UserWarnings)
+    {
+        Console.Error.WriteLine($"[warning] {warning}");
+    }
 
     return 0;
 }
