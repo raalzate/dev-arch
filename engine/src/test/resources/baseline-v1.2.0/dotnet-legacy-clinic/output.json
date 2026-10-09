@@ -1,0 +1,1900 @@
+{
+  "components" : [ {
+    "interface" : false,
+    "id" : "LegacyClinic.Controllers.AppointmentsController",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Controllers/AppointmentsController.cs" ],
+    "loc" : 68,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Controlador",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext", "LegacyClinic.Services.AppointmentService" ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ "ApiController", "Route" ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 33,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 36,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 38,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'correlationId' is assigned but never used.",
+      "line" : 50,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 58,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 61,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 61,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 73,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 87,
+      "pattern" : "CONSOLE_LOGGING"
+    } ],
+    "extends" : "ControllerBase",
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 8,
+    "lcom" : 0.6666666666666666,
+    "complexity_max" : 2,
+    "complexity_avg" : 1.75
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Controllers.BillingController",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Controllers/BillingController.cs" ],
+    "loc" : 57,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Controlador",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext", "LegacyClinic.Services.BillingService" ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ "ApiController", "Route" ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_apiKey'. Use configuration or secret management instead.",
+      "line" : 17,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 32,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 39,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 41,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'auditTrail' is assigned but never used.",
+      "line" : 50,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 55,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 72,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 75,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 75,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    } ],
+    "extends" : "ControllerBase",
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 6,
+    "lcom" : 1.0,
+    "complexity_max" : 2,
+    "complexity_avg" : 2.0
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Controllers.MedicalRecordsController",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Controllers/MedicalRecordsController.cs" ],
+    "loc" : 52,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Controlador",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext", "LegacyClinic.Services.MedicalRecordService" ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ "ApiController", "Route" ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 23,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 36,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 39,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 39,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'searchId' is assigned but never used.",
+      "line" : 52,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 57,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 68,
+      "pattern" : "CONSOLE_LOGGING"
+    } ],
+    "extends" : "ControllerBase",
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 8,
+    "lcom" : 0.0,
+    "complexity_max" : 2,
+    "complexity_avg" : 1.5
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Controllers.PatientsController",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Controllers/PatientsController.cs" ],
+    "loc" : 74,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Controlador",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext", "LegacyClinic.Services.PatientService" ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ "ApiController", "Route" ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 29,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 32,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 34,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'requestTime' is assigned but never used.",
+      "line" : 43,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 48,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 65,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 72,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 72,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 90,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 93,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 95,
+      "pattern" : "CONSOLE_LOGGING"
+    } ],
+    "extends" : "ControllerBase",
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 6,
+    "lcom" : 0.5,
+    "complexity_max" : 3,
+    "complexity_avg" : 2.25
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Data.ClinicDbContext",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Data/ClinicDbContext.cs" ],
+    "loc" : 9,
+    "tables_used" : [ "Appointments", "Doctors", "Invoices", "MedicalRecords", "Patients" ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Datos",
+    "calls_out" : [ ],
+    "calls_in" : [ "LegacyClinic.Controllers.AppointmentsController", "LegacyClinic.Controllers.BillingController", "LegacyClinic.Controllers.MedicalRecordsController", "LegacyClinic.Controllers.PatientsController", "LegacyClinic.Jobs.DataMigrationJob", "LegacyClinic.Jobs.ReportGeneratorJob", "LegacyClinic.Services.AppointmentService", "LegacyClinic.Services.BillingService", "LegacyClinic.Services.MedicalRecordService", "LegacyClinic.Services.PatientService" ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Patients' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 10,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Doctors' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 11,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Appointments' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 12,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'MedicalRecords' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 13,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Invoices' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 14,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    } ],
+    "extends" : "DbContext",
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 3,
+    "lcom" : 0.0,
+    "complexity_max" : null,
+    "complexity_avg" : null
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Jobs.DataMigrationJob",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Jobs/DataMigrationJob.cs" ],
+    "loc" : 66,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Compartida",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext" ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_api_key'. Use configuration or secret management instead.",
+      "line" : 11,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_passwd'. Use configuration or secret management instead.",
+      "line" : 12,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 22,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'migratedCount' is assigned but never used.",
+      "line" : 25,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'errorCount' is assigned but never used.",
+      "line" : 26,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 39,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 41,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 41,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 50,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 52,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 54,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 61,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Usage of Thread.Abort() which is deprecated and throws PlatformNotSupportedException in .NET 6+.",
+      "line" : 62,
+      "pattern" : "DEPRECATED_THREAD_USAGE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Method 'BackupBeforeMigrationAsync' is declared as 'async void'. Use 'async Task' instead to allow proper exception handling and awaiting.",
+      "line" : 66,
+      "pattern" : "ASYNC_VOID_METHOD"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 68,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 70,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Switch statement is missing a 'default' case.",
+      "line" : 76,
+      "pattern" : "MISSING_SWITCH_DEFAULT"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 3,
+    "lcom" : 1.0,
+    "complexity_max" : 5,
+    "complexity_avg" : 3.0
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Jobs.ReportGeneratorJob",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Jobs/ReportGeneratorJob.cs" ],
+    "loc" : 53,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Compartida",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext" ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_token'. Use configuration or secret management instead.",
+      "line" : 12,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 22,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 23,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 32,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Switch statement is missing a 'default' case.",
+      "line" : 37,
+      "pattern" : "MISSING_SWITCH_DEFAULT"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 40,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 43,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 46,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'reportId' is assigned but never used.",
+      "line" : 52,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 54,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 56,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 58,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 65,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Usage of Thread.Abort() which is deprecated and throws PlatformNotSupportedException in .NET 6+.",
+      "line" : 66,
+      "pattern" : "DEPRECATED_THREAD_USAGE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Method 'SendReportByEmailAsync' is declared as 'async void'. Use 'async Task' instead to allow proper exception handling and awaiting.",
+      "line" : 70,
+      "pattern" : "ASYNC_VOID_METHOD"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 72,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 74,
+      "pattern" : "CONSOLE_LOGGING"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 3,
+    "lcom" : 1.0,
+    "complexity_max" : 6,
+    "complexity_avg" : 2.6666666666666665
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Models.Appointment",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Models/Appointment.cs" ],
+    "loc" : 15,
+    "tables_used" : [ "Appointments" ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Compartida",
+    "calls_out" : [ ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Patient' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 17,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Doctor' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 19,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Notes' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 23,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Diagnosis' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 24,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 4,
+    "lcom" : 0.0,
+    "complexity_max" : null,
+    "complexity_avg" : null
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Models.Doctor",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Models/Doctor.cs" ],
+    "loc" : 13,
+    "tables_used" : [ "Doctors" ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Compartida",
+    "calls_out" : [ ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Email' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 10,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Phone' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 11,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Appointments' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 15,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'FirstName' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 6,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'LastName' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 7,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'LicenseNumber' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 8,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Specialty' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 9,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 1,
+    "lcom" : 0.0,
+    "complexity_max" : null,
+    "complexity_avg" : null
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Models.Invoice",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Models/Invoice.cs" ],
+    "loc" : 15,
+    "tables_used" : [ "Invoices" ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Compartida",
+    "calls_out" : [ ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'PaymentMethod' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 13,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Appointment' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 7,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Patient' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 9,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 3,
+    "lcom" : 0.0,
+    "complexity_max" : null,
+    "complexity_avg" : null
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Models.MedicalRecord",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Models/MedicalRecord.cs" ],
+    "loc" : 15,
+    "tables_used" : [ "MedicalRecords" ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Compartida",
+    "calls_out" : [ ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Symptoms' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 11,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Diagnosis' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 12,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Treatment' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 13,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Prescriptions' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 14,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'LabResults' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 15,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'InternalNotes' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 16,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Patient' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 7,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Doctor' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 9,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 3,
+    "lcom" : 0.0,
+    "complexity_max" : null,
+    "complexity_avg" : null
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Models.Patient",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Models/Patient.cs" ],
+    "loc" : 19,
+    "tables_used" : [ "Patients" ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Compartida",
+    "calls_out" : [ ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Email' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 10,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Phone' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 11,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Gender' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 13,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Address' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 14,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'InsuranceProvider' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 15,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'InsurancePolicyNumber' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 16,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'Appointments' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 21,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'MedicalRecords' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 22,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'FirstName' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 7,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'LastName' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 8,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Property 'DocumentId' uses null-forgiving operator (= null!). Consider using 'required' modifier, a default value, or making the property nullable.",
+      "line" : 9,
+      "pattern" : "NULL_FORGIVING_OPERATOR"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 2,
+    "lcom" : 0.0,
+    "complexity_max" : null,
+    "complexity_avg" : null
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Services.AppointmentService",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Services/AppointmentService.cs" ],
+    "loc" : 92,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Negocio",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext" ],
+    "calls_in" : [ "LegacyClinic.Controllers.AppointmentsController" ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'cacheKey' is assigned but never used.",
+      "line" : 106,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 117,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 119,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_accessToken'. Use configuration or secret management instead.",
+      "line" : 12,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'validationResult' is assigned but never used.",
+      "line" : 22,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 31,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 48,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 65,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 65,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Switch statement is missing a 'default' case.",
+      "line" : 74,
+      "pattern" : "MISSING_SWITCH_DEFAULT"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Method 'NotifyPatientAsync' is declared as 'async void'. Use 'async Task' instead to allow proper exception handling and awaiting.",
+      "line" : 91,
+      "pattern" : "ASYNC_VOID_METHOD"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 99,
+      "pattern" : "CONSOLE_LOGGING"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 8,
+    "lcom" : 0.75,
+    "complexity_max" : 6,
+    "complexity_avg" : 3.4
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Services.BillingService",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Services/BillingService.cs" ],
+    "loc" : 77,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Negocio",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext" ],
+    "calls_in" : [ "LegacyClinic.Controllers.BillingController" ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Use of ReferenceEquals for string comparison. Use string.Equals() or == operator instead.",
+      "line" : 107,
+      "pattern" : "STRING_EQUALITY_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_password'. Use configuration or secret management instead.",
+      "line" : 12,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_secret'. Use configuration or secret management instead.",
+      "line" : 13,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 30,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'discountApplied' is assigned but never used.",
+      "line" : 35,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 50,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 64,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 72,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 75,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 75,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Method 'SendInvoiceByEmailAsync' is declared as 'async void'. Use 'async Task' instead to allow proper exception handling and awaiting.",
+      "line" : 83,
+      "pattern" : "ASYNC_VOID_METHOD"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 85,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Switch statement is missing a 'default' case.",
+      "line" : 92,
+      "pattern" : "MISSING_SWITCH_DEFAULT"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 5,
+    "lcom" : 1.0,
+    "complexity_max" : 4,
+    "complexity_avg" : 2.2
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Services.MedicalRecordService",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Services/MedicalRecordService.cs" ],
+    "loc" : 88,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Negocio",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext" ],
+    "calls_in" : [ "LegacyClinic.Controllers.MedicalRecordsController" ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Switch statement is missing a 'default' case.",
+      "line" : 109,
+      "pattern" : "MISSING_SWITCH_DEFAULT"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_connectionString'. Use configuration or secret management instead.",
+      "line" : 12,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 29,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 31,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 33,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 51,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 51,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'searchStarted' is assigned but never used.",
+      "line" : 60,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Use of ReferenceEquals for string comparison. Use string.Equals() or == operator instead.",
+      "line" : 69,
+      "pattern" : "STRING_EQUALITY_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Method 'ArchiveOldRecordsAsync' is declared as 'async void'. Use 'async Task' instead to allow proper exception handling and awaiting.",
+      "line" : 79,
+      "pattern" : "ASYNC_VOID_METHOD"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 86,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 94,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 96,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 96,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 5,
+    "lcom" : 0.75,
+    "complexity_max" : 5,
+    "complexity_avg" : 3.0
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Services.PatientService",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Services/PatientService.cs" ],
+    "loc" : 77,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Negocio",
+    "calls_out" : [ "LegacyClinic.Data.ClinicDbContext" ],
+    "calls_in" : [ "LegacyClinic.Controllers.PatientsController" ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_apiKey'. Use configuration or secret management instead.",
+      "line" : 12,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 26,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 26,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'timestamp' is assigned but never used.",
+      "line" : 35,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 44,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 53,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 62,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 64,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Use of ReferenceEquals for string comparison. Use string.Equals() or == operator instead.",
+      "line" : 77,
+      "pattern" : "STRING_EQUALITY_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Use of ReferenceEquals for string comparison. Use string.Equals() or == operator instead.",
+      "line" : 78,
+      "pattern" : "STRING_EQUALITY_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Method 'SendWelcomeEmailAsync' is declared as 'async void'. Use 'async Task' instead to allow proper exception handling and awaiting.",
+      "line" : 87,
+      "pattern" : "ASYNC_VOID_METHOD"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 89,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Switch statement is missing a 'default' case.",
+      "line" : 97,
+      "pattern" : "MISSING_SWITCH_DEFAULT"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 5,
+    "lcom" : 0.8,
+    "complexity_max" : 4,
+    "complexity_avg" : 2.5
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Utils.CacheManager",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Utils/CacheManager.cs" ],
+    "loc" : 43,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Negocio",
+    "calls_out" : [ ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 16,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 18,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 18,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'hitCount' is assigned but never used.",
+      "line" : 26,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 30,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 34,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 42,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 48,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Usage of Thread.Abort() which is deprecated and throws PlatformNotSupportedException in .NET 6+.",
+      "line" : 49,
+      "pattern" : "DEPRECATED_THREAD_USAGE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "ERROR",
+      "message" : "Method 'WarmUpCacheAsync' is declared as 'async void'. Use 'async Task' instead to allow proper exception handling and awaiting.",
+      "line" : 53,
+      "pattern" : "ASYNC_VOID_METHOD"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 55,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 57,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "CRITICAL",
+      "message" : "Hardcoded secret detected in variable '_token'. Use configuration or secret management instead.",
+      "line" : 8,
+      "pattern" : "HARDCODED_SECRET_IN_CODE"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 2,
+    "lcom" : 0.875,
+    "complexity_max" : 2,
+    "complexity_avg" : 1.4
+  }, {
+    "interface" : false,
+    "id" : "LegacyClinic.Utils.StringHelper",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Utils/StringHelper.cs" ],
+    "loc" : 48,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Compartida",
+    "calls_out" : [ ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Use of ReferenceEquals for string comparison. Use string.Equals() or == operator instead.",
+      "line" : 10,
+      "pattern" : "STRING_EQUALITY_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Use of ReferenceEquals for string comparison. Use string.Equals() or == operator instead.",
+      "line" : 15,
+      "pattern" : "STRING_EQUALITY_OPERATOR"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Variable 'originalLength' is assigned but never used.",
+      "line" : 21,
+      "pattern" : "UNUSED_ASSIGNED_VARIABLE"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+      "line" : 28,
+      "pattern" : "CATCH_GENERIC_EXCEPTION"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "WARNING",
+      "message" : "Empty catch block detected. Exceptions should not be swallowed.",
+      "line" : 28,
+      "pattern" : "EMPTY_CATCH_BLOCK"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Switch statement is missing a 'default' case.",
+      "line" : 37,
+      "pattern" : "MISSING_SWITCH_DEFAULT"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 54,
+      "pattern" : "CONSOLE_LOGGING"
+    }, {
+      "type" : "BUG_PATTERN",
+      "severity" : "INFO",
+      "message" : "Direct use of Console.Write/WriteLine. Use a logger (ILogger) instead.",
+      "line" : 59,
+      "pattern" : "CONSOLE_LOGGING"
+    } ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : 1,
+    "lcom" : 0.0,
+    "complexity_max" : 5,
+    "complexity_avg" : 2.5
+  }, {
+    "interface" : false,
+    "id" : "Program",
+    "files" : [ "${REPO}/test-for-demo/dotnet-legacy-clinic/src/LegacyClinic/Program.cs" ],
+    "loc" : 18,
+    "tables_used" : [ ],
+    "sensitive_data" : false,
+    "domain" : null,
+    "layer" : "Compartida",
+    "calls_out" : [ ],
+    "calls_in" : [ ],
+    "ejb_type" : null,
+    "uses_jndi" : false,
+    "annotations" : [ ],
+    "is_interface" : false,
+    "secrets_references" : [ ],
+    "external_dependencies" : [ ],
+    "package_dependencies" : [ ],
+    "code_issues" : [ ],
+    "extends" : null,
+    "implements" : [ ],
+    "messaging_type" : null,
+    "messaging_role" : null,
+    "web_type" : null,
+    "web_role" : null,
+    "cbo" : null,
+    "lcom" : null,
+    "complexity_max" : null,
+    "complexity_avg" : null
+  } ],
+  "edges" : [ {
+    "from" : "LegacyClinic.Controllers.AppointmentsController",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  }, {
+    "from" : "LegacyClinic.Controllers.AppointmentsController",
+    "to" : "LegacyClinic.Services.AppointmentService",
+    "weight" : 4,
+    "type" : "call"
+  }, {
+    "from" : "LegacyClinic.Controllers.BillingController",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  }, {
+    "from" : "LegacyClinic.Controllers.BillingController",
+    "to" : "LegacyClinic.Services.BillingService",
+    "weight" : 3,
+    "type" : "call"
+  }, {
+    "from" : "LegacyClinic.Controllers.MedicalRecordsController",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  }, {
+    "from" : "LegacyClinic.Controllers.MedicalRecordsController",
+    "to" : "LegacyClinic.Services.MedicalRecordService",
+    "weight" : 4,
+    "type" : "call"
+  }, {
+    "from" : "LegacyClinic.Controllers.PatientsController",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  }, {
+    "from" : "LegacyClinic.Controllers.PatientsController",
+    "to" : "LegacyClinic.Services.PatientService",
+    "weight" : 1,
+    "type" : "call"
+  }, {
+    "from" : "LegacyClinic.Jobs.DataMigrationJob",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  }, {
+    "from" : "LegacyClinic.Jobs.ReportGeneratorJob",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  }, {
+    "from" : "LegacyClinic.Services.AppointmentService",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  }, {
+    "from" : "LegacyClinic.Services.BillingService",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  }, {
+    "from" : "LegacyClinic.Services.MedicalRecordService",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  }, {
+    "from" : "LegacyClinic.Services.PatientService",
+    "to" : "LegacyClinic.Data.ClinicDbContext",
+    "weight" : 1,
+    "type" : "injection"
+  } ],
+  "api_contracts" : {
+    "meta" : {
+      "schema_version" : "1.0.0"
+    },
+    "endpoints" : [ {
+      "id" : "DELETE /api/patients/{id}",
+      "path" : "/api/patients/{id}",
+      "method" : "DELETE",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<IActionResult>",
+      "component_id" : "LegacyClinic.Controllers.PatientsController"
+    }, {
+      "id" : "GET /api/appointments",
+      "path" : "/api/appointments",
+      "method" : "GET",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<ActionResult<List<Appointment>>>",
+      "component_id" : "LegacyClinic.Controllers.AppointmentsController"
+    }, {
+      "id" : "GET /api/appointments/today",
+      "path" : "/api/appointments/today",
+      "method" : "GET",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "ActionResult<List<Appointment>>",
+      "component_id" : "LegacyClinic.Controllers.AppointmentsController"
+    }, {
+      "id" : "GET /api/billing/invoices",
+      "path" : "/api/billing/invoices",
+      "method" : "GET",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<ActionResult<List<Invoice>>>",
+      "component_id" : "LegacyClinic.Controllers.BillingController"
+    }, {
+      "id" : "GET /api/medicalrecords/patient/{patientId}",
+      "path" : "/api/medicalrecords/patient/{patientId}",
+      "method" : "GET",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<ActionResult<List<MedicalRecord>>>",
+      "component_id" : "LegacyClinic.Controllers.MedicalRecordsController"
+    }, {
+      "id" : "GET /api/medicalrecords/search",
+      "path" : "/api/medicalrecords/search",
+      "method" : "GET",
+      "description" : null,
+      "parameters" : [ {
+        "name" : "patientId",
+        "in" : "query",
+        "type" : "int",
+        "required" : true
+      }, {
+        "name" : "diagnosis",
+        "in" : "query",
+        "type" : "string",
+        "required" : true
+      } ],
+      "request_body_schema" : null,
+      "response_schema" : "ActionResult<MedicalRecord?>",
+      "component_id" : "LegacyClinic.Controllers.MedicalRecordsController"
+    }, {
+      "id" : "GET /api/patients",
+      "path" : "/api/patients",
+      "method" : "GET",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<ActionResult<List<Patient>>>",
+      "component_id" : "LegacyClinic.Controllers.PatientsController"
+    }, {
+      "id" : "GET /api/patients/{id}",
+      "path" : "/api/patients/{id}",
+      "method" : "GET",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<ActionResult<Patient>>",
+      "component_id" : "LegacyClinic.Controllers.PatientsController"
+    }, {
+      "id" : "POST /api/appointments",
+      "path" : "/api/appointments",
+      "method" : "POST",
+      "description" : null,
+      "parameters" : [ {
+        "name" : "patientId",
+        "in" : "query",
+        "type" : "int",
+        "required" : true
+      }, {
+        "name" : "doctorId",
+        "in" : "query",
+        "type" : "int",
+        "required" : true
+      }, {
+        "name" : "date",
+        "in" : "query",
+        "type" : "DateTime",
+        "required" : true
+      } ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<ActionResult<Appointment>>",
+      "component_id" : "LegacyClinic.Controllers.AppointmentsController"
+    }, {
+      "id" : "POST /api/billing/invoice/{appointmentId}",
+      "path" : "/api/billing/invoice/{appointmentId}",
+      "method" : "POST",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<ActionResult<Invoice>>",
+      "component_id" : "LegacyClinic.Controllers.BillingController"
+    }, {
+      "id" : "POST /api/billing/pay/{invoiceId}",
+      "path" : "/api/billing/pay/{invoiceId}",
+      "method" : "POST",
+      "description" : null,
+      "parameters" : [ {
+        "name" : "method",
+        "in" : "query",
+        "type" : "string",
+        "required" : true
+      } ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<IActionResult>",
+      "component_id" : "LegacyClinic.Controllers.BillingController"
+    }, {
+      "id" : "POST /api/medicalrecords",
+      "path" : "/api/medicalrecords",
+      "method" : "POST",
+      "description" : null,
+      "parameters" : [ {
+        "name" : "record",
+        "in" : "body",
+        "type" : "MedicalRecord",
+        "required" : true
+      } ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<ActionResult<MedicalRecord>>",
+      "component_id" : "LegacyClinic.Controllers.MedicalRecordsController"
+    }, {
+      "id" : "POST /api/medicalrecords/archive",
+      "path" : "/api/medicalrecords/archive",
+      "method" : "POST",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "IActionResult",
+      "component_id" : "LegacyClinic.Controllers.MedicalRecordsController"
+    }, {
+      "id" : "POST /api/patients",
+      "path" : "/api/patients",
+      "method" : "POST",
+      "description" : null,
+      "parameters" : [ {
+        "name" : "patient",
+        "in" : "body",
+        "type" : "Patient",
+        "required" : true
+      } ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<ActionResult<Patient>>",
+      "component_id" : "LegacyClinic.Controllers.PatientsController"
+    }, {
+      "id" : "PUT /api/appointments/{id}/cancel",
+      "path" : "/api/appointments/{id}/cancel",
+      "method" : "PUT",
+      "description" : null,
+      "parameters" : [ ],
+      "request_body_schema" : null,
+      "response_schema" : "Task<IActionResult>",
+      "component_id" : "LegacyClinic.Controllers.AppointmentsController"
+    } ],
+    "schemas" : { }
+  },
+  "meta" : {
+    "source" : "roslyn",
+    "schema_version" : "1.0.0",
+    "microservice_candidates" : { },
+    "dependency_accuracy" : null,
+    "decomposition_accuracy" : null
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "components" : [ ],
+  "edges" : [ ],
+  "api_contracts" : {
+    "meta" : {
+      "schema_version" : "1.0.0"
+    },
+    "endpoints" : [ ],
+    "schemas" : { }
+  },
+  "meta" : {
+    "source" : "spoon",
+    "schema_version" : "1.0.0",
+    "microservice_candidates" : { },
+    "dependency_accuracy" : null,
+    "decomposition_accuracy" : null
+  }
+}

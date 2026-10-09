@@ -1,0 +1,182 @@
+{
+  "meta" : {
+    "schema_version" : "1.0.0"
+  },
+  "endpoints" : [ {
+    "id" : "DELETE /api/patients/{id}",
+    "path" : "/api/patients/{id}",
+    "method" : "DELETE",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<IActionResult>",
+    "component_id" : "LegacyClinic.Controllers.PatientsController"
+  }, {
+    "id" : "GET /api/appointments",
+    "path" : "/api/appointments",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<ActionResult<List<Appointment>>>",
+    "component_id" : "LegacyClinic.Controllers.AppointmentsController"
+  }, {
+    "id" : "GET /api/appointments/today",
+    "path" : "/api/appointments/today",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "ActionResult<List<Appointment>>",
+    "component_id" : "LegacyClinic.Controllers.AppointmentsController"
+  }, {
+    "id" : "GET /api/billing/invoices",
+    "path" : "/api/billing/invoices",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<ActionResult<List<Invoice>>>",
+    "component_id" : "LegacyClinic.Controllers.BillingController"
+  }, {
+    "id" : "GET /api/medicalrecords/patient/{patientId}",
+    "path" : "/api/medicalrecords/patient/{patientId}",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<ActionResult<List<MedicalRecord>>>",
+    "component_id" : "LegacyClinic.Controllers.MedicalRecordsController"
+  }, {
+    "id" : "GET /api/medicalrecords/search",
+    "path" : "/api/medicalrecords/search",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "patientId",
+      "in" : "query",
+      "type" : "int",
+      "required" : true
+    }, {
+      "name" : "diagnosis",
+      "in" : "query",
+      "type" : "string",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "ActionResult<MedicalRecord?>",
+    "component_id" : "LegacyClinic.Controllers.MedicalRecordsController"
+  }, {
+    "id" : "GET /api/patients",
+    "path" : "/api/patients",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<ActionResult<List<Patient>>>",
+    "component_id" : "LegacyClinic.Controllers.PatientsController"
+  }, {
+    "id" : "GET /api/patients/{id}",
+    "path" : "/api/patients/{id}",
+    "method" : "GET",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<ActionResult<Patient>>",
+    "component_id" : "LegacyClinic.Controllers.PatientsController"
+  }, {
+    "id" : "POST /api/appointments",
+    "path" : "/api/appointments",
+    "method" : "POST",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "patientId",
+      "in" : "query",
+      "type" : "int",
+      "required" : true
+    }, {
+      "name" : "doctorId",
+      "in" : "query",
+      "type" : "int",
+      "required" : true
+    }, {
+      "name" : "date",
+      "in" : "query",
+      "type" : "DateTime",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<ActionResult<Appointment>>",
+    "component_id" : "LegacyClinic.Controllers.AppointmentsController"
+  }, {
+    "id" : "POST /api/billing/invoice/{appointmentId}",
+    "path" : "/api/billing/invoice/{appointmentId}",
+    "method" : "POST",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<ActionResult<Invoice>>",
+    "component_id" : "LegacyClinic.Controllers.BillingController"
+  }, {
+    "id" : "POST /api/billing/pay/{invoiceId}",
+    "path" : "/api/billing/pay/{invoiceId}",
+    "method" : "POST",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "method",
+      "in" : "query",
+      "type" : "string",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<IActionResult>",
+    "component_id" : "LegacyClinic.Controllers.BillingController"
+  }, {
+    "id" : "POST /api/medicalrecords",
+    "path" : "/api/medicalrecords",
+    "method" : "POST",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "record",
+      "in" : "body",
+      "type" : "MedicalRecord",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<ActionResult<MedicalRecord>>",
+    "component_id" : "LegacyClinic.Controllers.MedicalRecordsController"
+  }, {
+    "id" : "POST /api/medicalrecords/archive",
+    "path" : "/api/medicalrecords/archive",
+    "method" : "POST",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "IActionResult",
+    "component_id" : "LegacyClinic.Controllers.MedicalRecordsController"
+  }, {
+    "id" : "POST /api/patients",
+    "path" : "/api/patients",
+    "method" : "POST",
+    "description" : null,
+    "parameters" : [ {
+      "name" : "patient",
+      "in" : "body",
+      "type" : "Patient",
+      "required" : true
+    } ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<ActionResult<Patient>>",
+    "component_id" : "LegacyClinic.Controllers.PatientsController"
+  }, {
+    "id" : "PUT /api/appointments/{id}/cancel",
+    "path" : "/api/appointments/{id}/cancel",
+    "method" : "PUT",
+    "description" : null,
+    "parameters" : [ ],
+    "request_body_schema" : null,
+    "response_schema" : "Task<IActionResult>",
+    "component_id" : "LegacyClinic.Controllers.AppointmentsController"
+  } ],
+  "schemas" : { }
+}

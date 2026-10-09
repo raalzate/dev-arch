@@ -1,0 +1,17 @@
+{
+  "meta" : {
+    "schema_version" : "1.0.0"
+  },
+  "project_metadata" : {
+    "external_dependencies" : { },
+    "package_dependencies" : { },
+    "total_components" : 0,
+    "total_loc" : 0,
+    "components_with_secrets" : 0,
+    "shared_domain" : "unknown",
+    "secrets_locations" : [ ]
+  },
+  "proposals" : [ ],
+  "support_libraries" : [ ],
+  "summary" : "ANÁLISIS DE ARQUITECTURA - COMPONENTES AGRUPADOS\n═════════════════════════════════════════════════\n\n📌 Análisis de Cohesión:\n────────────────────────\n✅ Alta cohesión: 0 módulo(s) - Componentes fuertemente relacionados\n⚠️ Media cohesión: 0 módulo(s) - Cohesión moderada\n❌ Baja cohesión: 0 módulo(s) - Componentes débilmente relacionados\n"
+}
