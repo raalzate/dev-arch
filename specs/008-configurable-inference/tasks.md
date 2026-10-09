@@ -151,8 +151,8 @@ description: "Task list for 008-configurable-inference"
 - [x] T033 [P] Web: `STATIC_INFERENCE_INFERENCE_TOOLS=true` y `STATIC_INFERENCE_JOBS_DIR=<dataDir>/jobs` en el entorno del proceso del motor (`web/src/server/engine/`) con prueba `node:test` (FR-027)
 - [x] T034 Step definitions de TS-049 en `engine/src/test/java/com/extractor/configbdd/RegressionSteps.java` (rojo) y eliminar las 3 entradas "feature 008" de `engine/spotbugs-exclude.xml` corrigiendo `DLS_DEAD_LOCAL_STORE` (`ProjectAnalyzer.analyzeSpringEvents`), `DLS_DEAD_LOCAL_STORE`/`UC_USELESS_CONDITION`/`WMI_WRONG_MAP_ITERATOR` (`ClusteringAlgorithm`) y `WMI_WRONG_MAP_ITERATOR` (`MicroserviceRecommendationEngine.aggregatePackageDependencies`) sin cambio de comportamiento (FR-028) [TS-001, TS-002, TS-049]
 - [x] T035 [P] Actualizar `engine/ALGORITHMS.md` (parámetros por nombre, invariante de soporte), `engine/MCP.md` (tools nuevas, variables, recursos), `CHANGELOG.md` y `docs/SCHEMA.md` (definiciones nuevas aditivas en 1.0.0) (FR-022, FR-026)
-- [ ] T036 Verificar gates: `make build`, `make test`, Checkstyle ≤ 4655, SpotBugs 0, `dotnet format`, determinismo y paridad; `git diff` sin cambios en `.feature`/`context.json`/aserciones de 001–007 (SC-009)
-- [ ] T037 Validación final: clon limpio de la rama → `make build && make test`; evidencia de tiempos de `reinfer_architecture` (quickstart.md)
+- [x] T036 Verificar gates: `make build`, `make test`, Checkstyle ≤ 4655, SpotBugs 0, `dotnet format`, determinismo y paridad; `git diff` sin cambios en `.feature`/`context.json`/aserciones de 001–007 (SC-009)
+- [x] T037 Validación final: clon limpio de la rama → `make build && make test`; evidencia de tiempos de `reinfer_architecture` (quickstart.md)
 
 ---
 
