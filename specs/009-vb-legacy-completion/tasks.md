@@ -89,7 +89,7 @@ description: "Task list for 009-vb-legacy-completion"
 
 ## Phase 11: Polish & Cross-Cutting
 
-- [ ] T019 `CHANGELOG.md` ([Unreleased] — feature 009), diff antes/después de los demos `dotnet-ecommerce`, `dotnet-legacy-clinic`, `dotnet-unstructured` (byte-idénticos), quickstart ejecutado
+- [x] T019 `CHANGELOG.md` ([Unreleased] — feature 009), diff antes/después de los demos `dotnet-ecommerce`, `dotnet-legacy-clinic`, `dotnet-unstructured` (byte-idénticos), quickstart ejecutado
 - [ ] T020 Gates: `make test` verde, `dotnet format --verify-no-changes`, Checkstyle ≤ 4763, SpotBugs 0, `verify-steps`/`verify-step-quality`; clon limpio `make build && make test`
 
 ---

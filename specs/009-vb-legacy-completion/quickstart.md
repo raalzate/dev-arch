@@ -5,14 +5,14 @@ Desde `apps/dev-arch`, con JDK 17 y .NET 8 (`DOTNET_ROOT`):
 ```bash
 make build
 # Analizador .NET directo sobre el corpus sintético
-engine/target/dotnet-analyzer/dotnet-analyzer \
+engine/target/dotnet-analyzer \
   engine/src/test/dotnet/DotNetAnalyzer.Tests/Fixtures/VbLegacy/SyntheticDesktop/SyntheticDesktop.vbproj > /tmp/vb.json
 jq '[.components[] | select(.tables_used|length>0) | {id, tables_used}]' /tmp/vb.json
 jq '[.components[] | {id, layer, cbo, lcom, complexity_max, issues: [.code_issues[].pattern]}]' /tmp/vb.json
 # Advertencia de fidelidad reducida (macOS/Linux): última línea de stderr "[warning] VB project 'SyntheticDesktop.vbproj' …"
 
 # Endpoints ASMX/WCF
-engine/target/dotnet-analyzer/dotnet-analyzer \
+engine/target/dotnet-analyzer \
   engine/src/test/dotnet/DotNetAnalyzer.Tests/Fixtures/VbLegacy/SyntheticWebServices/SyntheticWebServices.vbproj \
   | jq '.api_contracts.endpoints[] | .id'
 
