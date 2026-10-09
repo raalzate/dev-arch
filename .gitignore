@@ -37,6 +37,8 @@ output_entrypoints.json
 # Contract fixtures and v1.1.0 baselines are versioned on purpose (005)
 !schema/fixtures/**/output*.json
 !engine/src/test/resources/baseline-v1.1.0/**/output*.json
+# Engine output of the VB synthetic desktop project used by the 010 acceptance scenarios
+!tests/acceptance/fixtures/vb-synthetic/output*.json
 
 # ---------------------------------------------------------------- packages
 *.class
