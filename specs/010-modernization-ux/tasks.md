@@ -84,10 +84,10 @@ description: "Task list for 010-modernization-ux"
 
 ## Phase 11: Polish & gates
 
-- [ ] T028 `npm test -w web`, `npx tsc --noEmit` (0 errores nuevos en producción), `make test` completo verde
+- [x] T028 `npm test -w web`, `npx tsc --noEmit` (0 errores nuevos en producción), `make test` completo verde (2026-10-09: version, engine-java 628 tests 0 fallos, engine-dotnet, schema-check, web 113, aceptación 195/195)
 - [x] T029 `make test-e2e-browser` (007 + 010) verde
 - [x] T030 Capturas Playwright de cada paso (Java y .NET C#, claro/oscuro) en `specs/010-modernization-ux/screenshots/`; README breve de la web (sección UX); CHANGELOG
-- [ ] T031 Clon limpio: `make build && make test` + `make test-e2e-browser`; borrar el clon
+- [x] T031 Clon limpio: `make build && make test` + `make test-e2e-browser`; borrar el clon (2026-10-09, HEAD 5365d54: build OK; make test OK — aceptación 194 + 1 omitido por diseño, 006 dashboard iikit sin tiles instalados en el clon; e2e 26/27 y el restante — fallo transitorio `ERR_NETWORK_IO_SUSPENDED` al abrir el navegador — verde al re-ejecutarlo; clon borrado)
 
 ## Dependencies
 
