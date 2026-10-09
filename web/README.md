@@ -68,33 +68,31 @@ Esto generará dos archivos JSON:
 - `output.json` - Detalles de componentes individuales
 - `output_architecture.json` - Análisis de arquitectura y propuestas
 
-### 2. Análisis en la Aplicación
+### 2. Análisis en la aplicación
 
-1. Comprime tu proyecto en un archivo ZIP (incluyendo el código fuente Java)
-2. Sube el archivo ZIP usando el botón "Analizar Proyecto (.zip)"
-3. La aplicación procesará automáticamente tu proyecto y generará el análisis
+1. Comprime el proyecto (Java, .NET C# o VB.NET) en un ZIP con su código fuente.
+2. Elige el ZIP en la pantalla inicial y pulsa **Analizar proyecto** (o importa los JSON que ya generó el motor).
+3. Mientras el motor trabaja se ve la fase real (detección, extracción, inferencia, escritura) y el tiempo transcurrido.
 
-### 3. Exploración de Resultados
+### 3. Recorrido de modernización (feature 010)
 
-La aplicación ofrece tres vistas principales:
+Los resultados se recorren en cinco pasos numerados (rail lateral, navegable con teclado):
 
-#### **Análisis General**
-- Métricas clave del proyecto (componentes totales, LOC, tablas BD)
-- Tipos de componentes (EJB, interfaces, obsoletos)
-- Dependencias externas
-- Propuestas de microservicios con métricas de viabilidad
+1. **Resumen**: tecnología detectada (Java, .NET · C#, VB.NET), tamaño, salud del legacy por severidad, las tres
+   candidatas a extracción, los ocho componentes de mayor riesgo y las advertencias del análisis (fidelidad reducida
+   cuando el motor usó el análisis sintáctico).
+2. **Mapa del sistema**: grafo d3 con color y grosor por tipo y peso de dependencia, leyenda conmutable, agrupación por
+   capa o por propuesta, resaltado por severidad y tablas textuales de dependencias y componentes.
+3. **Propuestas**: panel *Parámetros de inferencia* que recalcula las propuestas con el motor sin volver a analizar
+   (umbrales, pesos, viabilidad mínima, restablecer) y edición de propuestas (mover componentes, re-puntuación del motor).
+4. **Hallazgos**: inventario por tecnología (EJB/JNDI solo en Java; DI de C#; formularios, módulos y riesgos de VB) y
+   pestañas con contenido: problemas de código, secretos, contratos (endpoints) y puntos de entrada legacy.
+5. **Plan**: etapas por viabilidad, exportación Markdown/JSON, vista imprimible para PDF y documentación con IA según la
+   tecnología (`LLM_PROVIDER=gemini|anthropic`).
 
-#### **Grafo de Componentes**
-- Visualización interactiva de dependencias
-- Componentes coloreados por cluster propuesto
-- Zoom, arrastre e inspección de nodos
-- Tooltips con información detallada
-
-#### **Documentación IA**
-- Documentación técnica generada automáticamente
-- Análisis forense del stack tecnológico Java
-- Evaluación de arquitectura y patrones
-- Recomendaciones de modernización
+Las secciones que no aplican a la tecnología no se muestran y las vacías se resumen en una línea "Sin hallazgos". El
+**Historial** (barra superior) reabre análisis del servidor y compara dos. El tema claro/oscuro sigue al sistema
+operativo hasta que se elige uno. El navegador solo guarda el identificador del análisis activo y el tema.
 
 ## 🏗️ Arquitectura del Proyecto
 

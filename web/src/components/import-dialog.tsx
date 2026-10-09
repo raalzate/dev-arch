@@ -7,7 +7,6 @@ import React, { useRef, useState } from 'react';
 import { FileJson, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ApiRequestError, importResults, type ImportViolation } from '@/lib/analyses-client';
 
@@ -68,12 +67,12 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ onImported, onError }) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center text-base"><FileJson className="mr-2 h-4 w-4" />Importar resultados existentes</CardTitle>
-        <CardDescription>Explora resultados generados antes por el motor (línea de comandos o agente) sin volver a analizar.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <div className="space-y-3">
+      <div>
+        <h2 className="flex items-center text-base font-semibold"><FileJson className="mr-2 h-4 w-4 text-muted-foreground" />Importar resultados existentes</h2>
+        <p className="text-sm text-muted-foreground">Abre los JSON que ya generó el motor (línea de comandos o agente) sin volver a analizar.</p>
+      </div>
+      <div className="space-y-3">
         <Input data-testid="import-input" type="file" accept=".json,application/json" multiple ref={inputRef} />
         <Button data-testid="import-submit" variant="outline" onClick={handleImport} disabled={busy}>
           {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileJson className="mr-2 h-4 w-4" />}
@@ -92,8 +91,8 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ onImported, onError }) => {
             </AlertDescription>
           </Alert>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

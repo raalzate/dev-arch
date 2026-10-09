@@ -4,6 +4,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Unreleased]
 
+### Añadido (feature 010, experiencia de modernización)
+- Web: recorrido de cinco pasos (Resumen, Mapa del sistema, Propuestas, Hallazgos, Plan) con perfil tecnológico
+  (Java / .NET · C# / VB.NET) que decide qué secciones se muestran; las secciones vacías no se muestran.
+- Web: mapa d3 reescrito (tipos y pesos de dependencias, agrupación por capa o propuesta, severidad, tabla alternativa).
+- Web: panel de parámetros de inferencia (`reinfer_architecture`) y re-puntuación de propuestas editadas
+  (`score_proposal`); rutas `GET /api/analyses`, `GET /api/inference/defaults`, `POST /api/analyses/{id}/reinfer|score`.
+- Web: hallazgos con contratos (endpoints) y puntos de entrada legacy; plan exportable a Markdown, JSON y PDF (impresión).
+- Web: historial y comparación de dos análisis; tema claro/oscuro; documentación IA por tecnología con proveedor
+  `gemini` o `anthropic`.
+- Contrato: tipos TypeScript y validadores generados para `inference-config`, `mcp/reinfer_architecture` y
+  `mcp/score_proposal` (re-testify aprobado de 005 TS-028); la web ya no declara tipos del contrato a mano.
+
 ### Añadido (feature 008, extracción e inferencia configurables)
 - Motor: la extracción (`ExtractionService`) y la inferencia (`InferenceService`, pura) son etapas separadas;
   `AnalysisService` queda como fachada.

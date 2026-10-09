@@ -1,91 +1,124 @@
 "use client";
 
+// Details of one component (010 FR-031): only attributes that have a value, incoming and outgoing calls, domain and
+// the layer named for the technology. Rendered as a side panel of the map and findings steps.
 import React from 'react';
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Code, GitBranch, Package, Network, FileCode } from 'lucide-react';
-import type { Component } from '@/lib/types';
-import CodeViewer from './code-viewer';
+import { FileCode, X } from 'lucide-react';
+import type { Component } from '@static-inference/schema';
+import { layerLabel } from '@/lib/modernization/layers';
+import type { TechnologyProfile } from '@/lib/modernization/technology';
+import { SeverityBadge } from './badges';
 
-interface ComponentDetailsProps {
-  component: Component;
-  showDetails: (title: string, content: React.ReactNode) => void;
-  inferLayer: (componentId: string, component?: Component) => string;
-  /** Analysis the component belongs to; without it (or without sources) the code viewer is not offered. */
-  jobId?: string | null;
-  hasSources?: boolean;
+type Attr = { key: string; label: string; value: React.ReactNode };
+
+function has(v: unknown): boolean {
+  if (v === null || v === undefined) return false;
+  if (typeof v === 'string') return v.trim().length > 0;
+  if (Array.isArray(v)) return v.length > 0;
+  return true;
 }
 
-const ComponentDetails: React.FC<ComponentDetailsProps> = ({ component, showDetails, inferLayer, jobId, hasSources = true }) => {
-  const DetailSection: React.FC<{title: string; icon: React.ReactNode; children: React.ReactNode;}> = ({ title, icon, children }) => (
-    <div>
-      <h4 className="font-semibold mb-2 flex items-center text-primary/90">
-        {icon}
-        {title}
-      </h4>
-      <div className="space-y-2 text-sm text-muted-foreground pl-6">{children}</div>
-    </div>
-  );
+export function componentAttributes(c: Component, profile: TechnologyProfile): Attr[] {
+  const list: [string, string, unknown, ((v: never) => React.ReactNode)?][] = [
+    ['layer', 'Capa', layerLabel(c.layer, profile)],
+    ['domain', 'Dominio', c.domain],
+    ['loc', 'Líneas de código', c.loc, (v: number) => v.toLocaleString('es')],
+    ['cbo', 'Acoplamiento (CBO)', c.cbo],
+    ['lcom', 'Falta de cohesión (LCOM)', c.lcom, (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(2))],
+    ['complexity_max', 'Complejidad máxima', c.complexity_max],
+    ['ejb_type', 'Tipo EJB', c.ejb_type],
+    ['messaging_type', 'Mensajería', c.messaging_type && [c.messaging_type, c.messaging_role].filter(Boolean).join(' · ')],
+    ['web_type', 'Web', c.web_type && [c.web_type, c.web_role].filter(Boolean).join(' · ')],
+    ['extends', 'Extiende', c.extends],
+    ['implements', 'Implementa', c.implements, (v: string[]) => v.join(', ')],
+    ['annotations', 'Anotaciones', c.annotations, (v: string[]) => v.map((a) => `@${a}`).join(' ')],
+    ['tables_used', 'Tablas', c.tables_used, (v: string[]) => v.join(', ')],
+    ['external_dependencies', 'Dependencias externas', c.external_dependencies, (v: string[]) => v.join(', ')],
+    ['secrets_references', 'Referencias a secretos', c.secrets_references, (v: string[]) => String(v.length)],
+    ['sensitive_data', 'Datos sensibles', c.sensitive_data ? 'Sí' : null],
+    ['uses_jndi', 'Usa JNDI', c.uses_jndi ? 'Sí' : null],
+    ['is_interface', 'Interfaz', c.is_interface ? 'Sí' : null],
+  ];
+  return list
+    .filter(([, , v]) => has(v))
+    .map(([key, label, v, f]) => ({ key, label, value: f ? f(v as never) : String(v) }));
+}
 
-  const ListDisplay = ({ title, items }: { title: string, items?: string[] | null }) => {
-    if (!items || items.length === 0) return <div><strong>{title}:</strong> Ninguno</div>;
-    return (
+export default function ComponentDetails({
+  component, profile, canOpenSource, onOpenSource, onSelect, onClose,
+}: {
+  component: Component;
+  profile: TechnologyProfile;
+  canOpenSource: boolean;
+  onOpenSource: (file: string, id: string) => void;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+}) {
+  const c = component;
+  const attrs = componentAttributes(c, profile);
+  const calls = (title: string, ids: string[], testId: string) =>
+    ids.length > 0 && (
       <div>
-        <strong>{title}:</strong>
-        <ul className="list-disc list-inside ml-4 mt-1">
-          {items.map((item, i) => <li key={i}>{item}</li>)}
+        <h4 className="text-xs font-medium text-muted-foreground">{title} ({ids.length})</h4>
+        <ul className="mt-1 max-h-40 space-y-0.5 overflow-auto">
+          {ids.map((id) => (
+            <li key={id}>
+              <button type="button" data-testid={testId} onClick={() => onSelect(id)} className="max-w-full truncate text-left font-mono text-xs hover:underline">
+                {id}
+              </button>
+            </li>
+          ))}
         </ul>
       </div>
     );
-  };
-
   return (
-    <div className="space-y-6 text-sm py-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-        <div><strong>Capa:</strong> <Badge variant="secondary">{inferLayer(component.id, component)}</Badge></div>
-        <div><strong>Líneas de Código (LOC):</strong> {component.loc || 'N/A'}</div>
-        <div><strong>Interfaz:</strong> {component.interface ? 'Sí' : 'No'}</div>
-        <div><strong>Tipo EJB:</strong> {component.ejb_type || 'N/A'}</div>
-        <div><strong>Datos Sensibles:</strong> {component.sensitive_data ? <span className="font-bold text-destructive">Sí</span> : 'No'}</div>
-        {jobId && hasSources && component.files && component.files.length > 0 && (
-          <div className="md:col-span-2 mt-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => showDetails(`Código Fuente: ${component.id}`, <CodeViewer jobId={jobId} filePath={component.files![0]} />)}
-            >
-              <FileCode className="mr-2 h-4 w-4" />
-              Ver Código Fuente
-            </Button>
+    <aside data-testid="component-details" aria-label={`Detalle de ${c.id}`} className="space-y-4 rounded-md border border-border bg-card p-4">
+      <div className="flex items-start gap-2">
+        <h3 className="min-w-0 flex-1 break-all font-mono text-sm font-medium">{c.id}</h3>
+        <button type="button" onClick={onClose} aria-label="Cerrar detalle" className="rounded p-1 text-muted-foreground hover:bg-accent">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+        {attrs.map((a) => (
+          <div key={a.key} data-testid="detail-attr" data-attr={a.key} className="contents">
+            <dt className="text-muted-foreground">{a.label}</dt>
+            <dd data-testid="detail-value" className="break-words">{a.value}</dd>
           </div>
-        )}
-      </div>
-      <Separator />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-        <DetailSection title="Métricas de Código" icon={<Code className="h-4 w-4 mr-2"/>}>
-          <div><strong>CBO (Coupling Between Objects):</strong> {component.cbo ?? 'N/A'}</div>
-          <div><strong>LCOM (Lack of Cohesion in Methods):</strong> {component.lcom ?? 'N/A'}</div>
-          <ListDisplay title="Anotaciones" items={component.annotations} />
-        </DetailSection>
-        <DetailSection title="Jerarquía" icon={<GitBranch className="h-4 w-4 mr-2"/>}>
-          <div><strong>Extiende:</strong> {component.extends || 'Ninguno'}</div>
-          <ListDisplay title="Implementa" items={component.implements} />
-        </DetailSection>
-        <DetailSection title="Dependencias" icon={<Package className="h-4 w-4 mr-2"/>}>
-          <ListDisplay title="Tablas de BD" items={component.tables_used} />
-          <ListDisplay title="Dependencias Externas" items={component.external_dependencies} />
-          <ListDisplay title="Referencias a Secretos" items={component.secrets_references} />
-        </DetailSection>
-        <DetailSection title="Integraciones" icon={<Network className="h-4 w-4 mr-2"/>}>
-          <div><strong>Tipo de Mensajería:</strong> {component.messaging_type || 'N/A'}</div>
-          <div><strong>Rol de Mensajería:</strong> {component.messaging_role || 'N/A'}</div>
-          <div><strong>Tipo Web:</strong> {component.web_type || 'N/A'}</div>
-          <div><strong>Rol Web:</strong> {component.web_role || 'N/A'}</div>
-        </DetailSection>
-      </div>
-    </div>
+        ))}
+      </dl>
+      {c.code_issues.length > 0 && (
+        <div>
+          <h4 className="text-xs font-medium text-muted-foreground">Problemas de código ({c.code_issues.length})</h4>
+          <ul className="mt-1 max-h-48 space-y-1 overflow-auto text-xs">
+            {c.code_issues.map((i, k) => (
+              <li key={k} className="flex gap-2">
+                <SeverityBadge severity={i.severity} />
+                <span className="min-w-0">{i.message} <span className="text-muted-foreground">(línea {i.line})</span></span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {calls('Llamadas entrantes', c.calls_in, 'calls-in-item')}
+      {calls('Llamadas salientes', c.calls_out, 'calls-out-item')}
+      {c.files.length > 0 && (
+        <div>
+          <h4 className="text-xs font-medium text-muted-foreground">Archivos</h4>
+          <ul className="mt-1 space-y-1">
+            {c.files.map((f) => (
+              <li key={f} className="flex items-center gap-2 font-mono text-xs">
+                <span className="min-w-0 flex-1 truncate" title={f}>{f}</span>
+                {canOpenSource && (
+                  <button type="button" onClick={() => onOpenSource(f, c.id)} className="inline-flex items-center gap-1 rounded px-1 text-muted-foreground hover:bg-accent hover:text-foreground">
+                    <FileCode className="h-3.5 w-3.5" aria-hidden /> Ver
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </aside>
   );
-};
-
-export default ComponentDetails;
+}

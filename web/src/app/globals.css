@@ -2,75 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens of 010-modernization-ux (plan.md "Design system"): a sober inspection console for legacy
+   systems. Severity and technology colors mirror src/lib/modernization/severity.ts (WCAG AA on each surface). */
 @layer base {
   :root {
-    --background: 220 14% 98%;
-    --foreground: 240 10% 3.9%;
+    --background: 216 27% 97%;      /* #F4F6F9 */
+    --foreground: 221 38% 15%;      /* #172033 */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 221 38% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 242 78% 58%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 255 83% 77%;
-    --accent-foreground: 255 83% 15%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 242 78% 58%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --popover-foreground: 221 38% 15%;
+    --primary: 222 64% 47%;         /* #2B59C3 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 25% 94%;
+    --secondary-foreground: 221 38% 15%;
+    --muted: 216 25% 95%;
+    --muted-foreground: 220 16% 40%; /* #556076 */
+    --accent: 216 30% 93%;
+    --accent-foreground: 221 38% 15%;
+    --destructive: 4 76% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 21% 89%;          /* #DCE1E8 */
+    --input: 215 21% 85%;
+    --ring: 222 64% 47%;
+    --radius: 6px;
+    --chart-1: 222 64% 47%;
+    --chart-2: 186 79% 26%;
+    --chart-3: 17 68% 38%;
+    --chart-4: 258 54% 52%;
+    --chart-5: 43 100% 24%;
+
+    --tech-java: #A3461F;
+    --tech-dotnet: #6941C6;
+    --tech-vb: #0E6E78;
+    --sev-critical: #B42318;
+    --sev-error: #B54708;
+    --sev-warning: #7A5B00;
+    --sev-info: #475467;
+    --viab-alta: #067647;
+    --viab-media: #7A5B00;
+    --viab-baja: #B42318;
+    --map-edge: #8A94A6;
+    --map-node: #FFFFFF;
   }
   .dark {
-    --background: 240 6% 15%; /* Lighter background */
-    --foreground: 0 0% 98%;
-    --card: 240 5% 17%; /* Lighter card background */
-    --card-foreground: 0 0% 98%;
-    --popover: 240 5% 17%; /* Lighter popover */
-    --popover-foreground: 0 0% 98%;
-    --primary: 242 78% 58%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4% 22%; /* Lighter secondary */
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 22%; /* Lighter muted */
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 255 83% 77%;
-    --accent-foreground: 255 83% 15%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 25%; /* Lighter border */
-    --input: 240 4% 25%; /* Lighter input */
-    --ring: 242 78% 58%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 6% 10%;
-    --sidebar-foreground: 240 4.8%  சிவன்.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4% 18%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 4% 20%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 222 24% 10%;      /* #141821 */
+    --foreground: 218 24% 92%;      /* #E4E8EF */
+    --card: 221 23% 14%;            /* #1B202B */
+    --card-foreground: 218 24% 92%;
+    --popover: 221 23% 14%;
+    --popover-foreground: 218 24% 92%;
+    --primary: 224 79% 71%;         /* #7B9BF0 */
+    --primary-foreground: 222 24% 10%;
+    --secondary: 220 19% 19%;
+    --secondary-foreground: 218 24% 92%;
+    --muted: 220 19% 17%;
+    --muted-foreground: 219 15% 66%; /* #9AA4B6 */
+    --accent: 220 19% 20%;
+    --accent-foreground: 218 24% 92%;
+    --destructive: 4 100% 76%;
+    --destructive-foreground: 222 24% 10%;
+    --border: 220 19% 21%;          /* #2C3341 */
+    --input: 220 19% 26%;
+    --ring: 224 79% 71%;
+    --chart-1: 224 79% 71%;
+    --chart-2: 184 57% 61%;
+    --chart-3: 20 80% 72%;
+    --chart-4: 255 100% 84%;
+    --chart-5: 48 87% 68%;
+
+    --tech-java: #F2A47E;
+    --tech-dotnet: #C2AEFF;
+    --tech-vb: #5ED0DA;
+    --sev-critical: #FF8F85;
+    --sev-error: #FDB022;
+    --sev-warning: #F5D565;
+    --sev-info: #B4BFD0;
+    --viab-alta: #75E0A7;
+    --viab-media: #F5D565;
+    --viab-baja: #FF8F85;
+    --map-edge: #6B7487;
+    --map-node: #1B202B;
   }
 }
 
@@ -78,7 +90,37 @@
   * {
     @apply border-border;
   }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
     @apply bg-background text-foreground;
+    font-size: 14px;
+    line-height: 1.5;
+    font-feature-settings: 'tnum' 1;
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  @page {
+    margin: 16mm 14mm;
+  }
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
   }
 }

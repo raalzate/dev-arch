@@ -10,9 +10,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['monospace'],
+        body: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        headline: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        code: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -45,6 +47,9 @@ export default {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        tech: { java: 'var(--tech-java)', dotnet: 'var(--tech-dotnet)', vb: 'var(--tech-vb)' },
+        sev: { critical: 'var(--sev-critical)', error: 'var(--sev-error)', warning: 'var(--sev-warning)', info: 'var(--sev-info)' },
+        viab: { alta: 'var(--viab-alta)', media: 'var(--viab-media)', baja: 'var(--viab-baja)' },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -65,6 +70,15 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+      },
+      fontSize: {
+        '2xs': ['12px', '16px'],
+        xs: ['12px', '16px'],
+        sm: ['13px', '18px'],
+        base: ['14px', '20px'],
+        md: ['16px', '22px'],
+        lg: ['20px', '26px'],
+        xl: ['26px', '32px'],
       },
       borderRadius: {
         lg: 'var(--radius)',

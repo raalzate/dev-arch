@@ -1,165 +1,159 @@
-
 "use client";
 
+// Extraction proposal (010 FR-026, FR-032): metrics, members, edit mode to move a component to another proposal
+// (both are re-scored by the engine) and details with legacy entrypoint, signals, tables, rationale and actions.
 import React, { useState } from 'react';
-import type { Proposal } from '@/lib/types';
-import { getAISuggestions } from '@/app/actions';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Button } from '@/components/ui/button';
-import { Bot, CheckCircle, Package, AlertTriangle, Database, GitCommitHorizontal, ListTodo, Loader2, Edit, Save } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { ChevronDown, ChevronRight, Loader2, Pencil } from 'lucide-react';
+import type { Component, Proposal, ScoreProposalResponse } from '@static-inference/schema';
+import { layerLabel } from '@/lib/modernization/layers';
+import type { TechnologyProfile } from '@/lib/modernization/technology';
+import { ViabilityBadge } from './badges';
 
-interface ProposalCardProps {
+export type ScoreState = { status: 'pending' } | { status: 'done'; result: ScoreProposalResponse } | { status: 'error'; message: string };
+
+const ENTRY_LABELS: Record<string, string> = { rest: 'API REST', messaging: 'Mensajería', service: 'Servicio', internal: 'Interno' };
+
+export default function ProposalCard({
+  proposal, components, edited, score, others, byId, profile, onMove,
+}: {
   proposal: Proposal;
-  onUpdate: (updatedProposal: Proposal) => void;
-}
-
-const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
-  const [aiSuggestions, setAiSuggestions] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  const handleGetSuggestions = async () => {
-    setIsLoading(true);
-    setError(null);
-    setAiSuggestions(null);
-    const { suggestions, error: apiError } = await getAISuggestions({
-      proposalName: proposal.name,
-      proposalRationale: proposal.rationale || [],
-      proposalMetrics: proposal.metrics,
-    });
-
-    if (apiError) {
-      setError("No se pudieron cargar las sugerencias de la IA.");
-    } else {
-      setAiSuggestions(suggestions);
-    }
-    setIsLoading(false);
-  };
-  
-  const viabilityVariant = proposal.viability === 'High' ? 'default' : proposal.viability === 'Medium' ? 'secondary' : 'destructive';
-  const formatList = (list: string[] | undefined, icon: React.ReactNode) => {
-    if (!list || list.length === 0) return <li>N/A</li>;
-    return list.map((item, index) => {
-      const cleanItem = item.replace(/^[✅⚠️❌•]\s*/, '');
-      return <li key={index} className="flex items-start"><span className="mr-2 mt-1">{icon}</span><span>{cleanItem}</span></li>;
-    });
-  };
-
-  const handleSaveChanges = (formData: FormData) => {
-    const updatedProposal: Proposal = {
-      ...proposal,
-      name: formData.get('name') as string,
-      rationale: (formData.get('rationale') as string).split('\n'),
-      recommended_actions: (formData.get('recommended_actions') as string).split('\n'),
-    };
-    onUpdate(updatedProposal);
-    setIsEditModalOpen(false);
-  };
-
-  const EditModal = () => (
-    <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl">
-            <DialogHeader>
-                <DialogTitle>Editar Propuesta: {proposal.name}</DialogTitle>
-            </DialogHeader>
-            <form action={handleSaveChanges} className="space-y-4">
-                <div>
-                    <Label htmlFor="name">Nombre de la Propuesta</Label>
-                    <Input id="name" name="name" defaultValue={proposal.name} />
-                </div>
-                <div>
-                    <Label htmlFor="rationale">Justificación (una por línea)</Label>
-                    <Textarea id="rationale" name="rationale" defaultValue={proposal.rationale?.join('\n')} rows={5} />
-                </div>
-                <div>
-                    <Label htmlFor="recommended_actions">Acciones Recomendadas (una por línea)</Label>
-                    <Textarea id="recommended_actions" name="recommended_actions" defaultValue={proposal.recommended_actions?.join('\n')} rows={5} />
-                </div>
-                <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="secondary">Cancelar</Button>
-                    </DialogClose>
-                    <Button type="submit"><Save className="mr-2 h-4 w-4" /> Guardar Cambios</Button>
-                </DialogFooter>
-            </form>
-        </DialogContent>
-    </Dialog>
-);
-
-
+  components: string[];
+  edited: boolean;
+  score: ScoreState | undefined;
+  others: { id: number; name: string }[];
+  byId: Map<string, Component>;
+  profile: TechnologyProfile;
+  onMove: (componentId: string, toProposal: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
+  const p = proposal;
+  const m = p.metrics;
   return (
-    <Card data-testid="proposal-card" className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-xl text-primary">{proposal.name} (Cluster {proposal.id})</CardTitle>
-          <div className='flex items-center gap-2'>
-            <Badge variant={viabilityVariant} className="text-sm">{proposal.viability} Viabilidad</Badge>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditModalOpen(true)}>
-                <Edit className="h-4 w-4" />
-                <span className="sr-only">Editar propuesta</span>
-            </Button>
-          </div>
+    <article
+      data-testid="proposal-card"
+      data-proposal-id={p.id}
+      data-viability={p.viability}
+      data-edited={edited ? 'true' : 'false'}
+      className="rounded-md border border-border bg-card"
+    >
+      <header className="flex flex-wrap items-center gap-2 px-4 pt-3">
+        <h3 className="text-md font-semibold">{p.name}</h3>
+        <ViabilityBadge viability={p.viability} />
+        {edited && <span className="rounded bg-accent px-1.5 py-0.5 text-xs">Editada</span>}
+        <button
+          type="button"
+          data-testid="proposal-edit"
+          aria-pressed={editing}
+          onClick={() => setEditing((v) => !v)}
+          className="ml-auto inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"
+        >
+          <Pencil className="h-3.5 w-3.5" aria-hidden /> {editing ? 'Terminar edición' : 'Editar'}
+        </button>
+      </header>
+      <dl className="flex flex-wrap gap-x-6 gap-y-1 px-4 pt-2 text-xs tabular-nums">
+        <div><dt className="inline text-muted-foreground">Componentes </dt><dd className="inline font-medium">{components.length}</dd></div>
+        <div><dt className="inline text-muted-foreground">Cohesión </dt><dd className="inline font-medium">{m.cohesion_avg.toFixed(2)}</dd></div>
+        <div><dt className="inline text-muted-foreground">Acoplamiento externo </dt><dd className="inline font-medium">{m.external_coupling}</dd></div>
+        {m.tables.length > 0 && <div><dt className="inline text-muted-foreground">Tablas </dt><dd className="inline font-medium">{m.tables.length}</dd></div>}
+        {m.sensitive && <div><dd className="inline font-medium" style={{ color: 'var(--sev-critical)' }}>Datos sensibles</dd></div>}
+      </dl>
+      {score && (
+        <div className="mx-4 mt-3 rounded border border-border bg-background px-3 py-2 text-xs">
+          {score.status === 'pending' && <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />Puntuando la propuesta editada con el motor…</span>}
+          {score.status === 'error' && <span role="alert" style={{ color: 'var(--sev-critical)' }}>{score.message}</span>}
+          {score.status === 'done' && (
+            <div data-testid="proposal-score" data-viability={score.result.viability} data-score={score.result.score} className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <span className="font-medium">Puntuación del motor tras la edición</span>
+              <ViabilityBadge viability={score.result.viability} />
+              <span className="tabular-nums">puntuación {score.result.score.toFixed(2)}</span>
+              <span className="tabular-nums text-muted-foreground">cohesión ajustada {score.result.metrics.cohesion_adjusted.toFixed(2)} · acoplamiento {score.result.metrics.external_coupling}</span>
+            </div>
+          )}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Separator />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-          <div>
-            <h4 className="font-semibold mb-2 flex items-center"><Package className="h-4 w-4 mr-2" />Métricas</h4>
-            <div className="space-y-1 text-muted-foreground">
-              <p><strong>Tamaño:</strong> {proposal.metrics.size} componentes</p>
-              <p><strong>Cohesión:</strong> {(proposal.metrics.cohesion_avg * 100).toFixed(0)}%</p>
-              <p><strong>Acoplamiento Externo:</strong> {(proposal.metrics.external_coupling * 100).toFixed(0)}%</p>
-              <p><strong>Tablas:</strong> {proposal.metrics.tables.length}</p>
-              <p><strong>Datos Sensibles:</strong> {proposal.metrics.sensitive ? <span className="font-bold text-destructive">Sí</span> : 'No'}</p>
+      )}
+      <ul className="mt-3 max-h-64 divide-y divide-border overflow-auto border-t border-border">
+        {components.map((id) => {
+          const c = byId.get(id);
+          return (
+            <li key={id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5">
+              <span className="min-w-0 flex-1 truncate font-mono text-xs" title={id}>{id}</span>
+              {c && <span className="text-xs text-muted-foreground">{layerLabel(c.layer, profile)}</span>}
+              {editing && others.length > 0 && (
+                <select
+                  data-testid="proposal-move-select"
+                  aria-label={`Mover ${id} a otra propuesta`}
+                  value=""
+                  onChange={(e) => { if (e.target.value) onMove(id, Number(e.target.value)); }}
+                  className="h-7 max-w-[12rem] rounded border border-input bg-background px-1.5 text-xs"
+                >
+                  <option value="">Mover a…</option>
+                  {others.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+                </select>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <div className="border-t border-border px-4 py-2">
+        <button
+          type="button"
+          data-testid="proposal-details-toggle"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+        >
+          {open ? <ChevronDown className="h-4 w-4" aria-hidden /> : <ChevronRight className="h-4 w-4" aria-hidden />}
+          {open ? 'Ocultar detalle' : 'Ver detalle'}
+        </button>
+        {open && (
+          <div data-testid="proposal-details" className="mt-2 grid gap-4 text-sm md:grid-cols-2">
+            <div className="space-y-2">
+              {p.legacy_entrypoint && (
+                <div data-testid="proposal-entrypoint" data-type={p.legacy_entrypoint.type}>
+                  <h4 className="text-xs font-medium text-muted-foreground">Punto de entrada legacy</h4>
+                  <p>
+                    {ENTRY_LABELS[p.legacy_entrypoint.type] ?? p.legacy_entrypoint.type}
+                    {p.legacy_entrypoint.primary_entry_class && <span className="font-mono text-xs"> · {p.legacy_entrypoint.primary_entry_class}</span>}
+                  </p>
+                  {p.legacy_entrypoint.description && <p className="text-xs text-muted-foreground">{p.legacy_entrypoint.description}</p>}
+                  {(p.legacy_entrypoint.endpoints?.length ?? 0) > 0 && (
+                    <ul className="mt-1 space-y-0.5 font-mono text-xs">
+                      {p.legacy_entrypoint.endpoints!.slice(0, 8).map((e) => <li key={e.id}>{e.method} {e.path}</li>)}
+                    </ul>
+                  )}
+                </div>
+              )}
+              <div data-testid="proposal-signals" data-cluster-count={p.signals.cluster_count}>
+                <h4 className="text-xs font-medium text-muted-foreground">Señales</h4>
+                <p className="tabular-nums">
+                  {p.signals.cluster_count} clústeres · tamaño medio {p.signals.avg_cluster_size.toFixed(1)} · densidad interna {m.internal_edge_density.toFixed(2)}
+                </p>
+              </div>
+              {(p.tables?.length ?? 0) > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-muted-foreground">Tablas</h4>
+                  <ul className="font-mono text-xs">{p.tables!.map((t) => <li key={`${t.name}-${t.component}`}>{t.name} <span className="text-muted-foreground">({t.source})</span></li>)}</ul>
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              {p.rationale.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-muted-foreground">Por qué</h4>
+                  <ul className="list-disc space-y-0.5 pl-4">{p.rationale.map((r, i) => <li key={i}>{r}</li>)}</ul>
+                </div>
+              )}
+              {p.recommended_actions.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-muted-foreground">Acciones recomendadas</h4>
+                  <ul className="list-disc space-y-0.5 pl-4">{p.recommended_actions.map((r, i) => <li key={i}>{r}</li>)}</ul>
+                </div>
+              )}
             </div>
           </div>
-          <div>
-            <h4 className="font-semibold mb-2 flex items-center"><GitCommitHorizontal className="h-4 w-4 mr-2" />Justificación</h4>
-            <ul className="space-y-1 text-muted-foreground">{formatList(proposal.rationale, <CheckCircle className="h-4 w-4 text-green-500"/>)}</ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-2 flex items-center"><ListTodo className="h-4 w-4 mr-2" />Acciones Recomendadas</h4>
-            <ul className="space-y-1 text-muted-foreground">{formatList(proposal.recommended_actions, <AlertTriangle className="h-4 w-4 text-amber-500" />)}</ul>
-          </div>
-        </div>
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader>
-             <CardTitle className="text-base flex items-center"><Bot className="mr-2 h-5 w-5"/>Sugerencias Impulsadas por IA</CardTitle>
-             <CardDescription>Análisis automatizado y próximos pasos.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!aiSuggestions && !isLoading && !error && (
-              <Button onClick={handleGetSuggestions} disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
-                Obtener Sugerencias
-              </Button>
-            )}
-            {isLoading && (
-              <div className="flex items-center space-x-2">
-                <Loader2 className="h-5 w-5 animate-spin text-primary"/>
-                <span className="text-sm text-muted-foreground">Generando sugerencias...</span>
-              </div>
-            )}
-            {error && !isLoading && (
-              <div className="text-sm text-destructive">{error}</div>
-            )}
-            {aiSuggestions && !isLoading && (
-              <p className="text-sm text-foreground">{aiSuggestions}</p>
-            )}
-          </CardContent>
-        </Card>
-      </CardContent>
-      <EditModal />
-    </Card>
+        )}
+      </div>
+    </article>
   );
-};
-
-export default ProposalCard;
+}
