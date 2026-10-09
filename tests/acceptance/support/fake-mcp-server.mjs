@@ -11,6 +11,10 @@
 //   noSpace        answer "Analysis failed: No space left on device" (disk full while writing results)
 //   launchCounter  file that gets one line per process start
 //   intervalsLog   file that gets one JSON line {projectPath,start,end} per call
+//   callsLog       file that gets one JSON line {name,args} per reinfer_architecture / score_proposal call (010)
+//   reinferFail    error message returned by reinfer_architecture (010)
+//   scoreFail      error message returned by score_proposal (010)
+//   scoreInvalid   score_proposal answers a body that violates the contract (010)
 // Documents are the contract fixtures of java-standar with component files rebased under the analyzed path.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -113,6 +117,65 @@ server.registerTool(
       ...(warnings.length ? { _meta: { 'static-inference/warnings': warnings } } : {}),
     };
   },
+);
+
+// --- 010-modernization-ux: inference tools and the configuration defaults resource ----------------------
+
+function recordCall(name, args) {
+  const ctl = control();
+  if (ctl.callsLog) appendFileSync(ctl.callsLog, `${JSON.stringify({ name, args })}\n`);
+  return ctl;
+}
+
+const configShape = { config: z.record(z.any()).optional(), configPath: z.string().optional() };
+
+server.registerTool(
+  'reinfer_architecture',
+  {
+    description: 'stub reinfer_architecture',
+    inputSchema: { graphPath: z.string().optional(), jobId: z.string().optional(), minViability: z.string().optional(), ...configShape },
+  },
+  async (args) => {
+    const ctl = recordCall('reinfer_architecture', args);
+    if (ctl.reinferFail) return { content: [{ type: 'text', text: ctl.reinferFail }], isError: true };
+    const architecture = JSON.parse(readFileSync(path.join(fixtures, 'java-standar', 'output_architecture.json'), 'utf8'));
+    return { content: [{ type: 'text', text: JSON.stringify(architecture, null, 2) }] };
+  },
+);
+
+server.registerTool(
+  'score_proposal',
+  {
+    description: 'stub score_proposal',
+    inputSchema: { components: z.array(z.string()), graphPath: z.string().optional(), jobId: z.string().optional(), ...configShape },
+  },
+  async (args) => {
+    const ctl = recordCall('score_proposal', args);
+    if (ctl.scoreFail) return { content: [{ type: 'text', text: ctl.scoreFail }], isError: true };
+    const score = ctl.scoreInvalid
+      ? { name: 'broken', viability: 'Excelente' }
+      : {
+          meta: { schema_version: '1.0.0' },
+          name: 'Propuesta editada',
+          viability: 'Media',
+          score: 0.61,
+          metrics: { cohesion_adjusted: 0.7, external_coupling: 0.2, data_cohesion: 0.5, internal_edge_density: 0.4, size: args.components.length, cluster_count: 1 },
+          components: args.components,
+          clusters: [1],
+          rationale: ['stub rationale'],
+          recommended_actions: ['stub action'],
+        };
+    return { content: [{ type: 'text', text: JSON.stringify(score, null, 2) }] };
+  },
+);
+
+server.registerResource(
+  'configuration-defaults',
+  'static-inference://configuration/defaults',
+  { mimeType: 'application/json' },
+  async (uri) => ({
+    contents: [{ uri: uri.href, mimeType: 'application/json', text: readFileSync(path.resolve(here, '..', 'fixtures', 'inference-defaults.json'), 'utf8') }],
+  }),
 );
 
 await server.connect(new StdioServerTransport());

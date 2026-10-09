@@ -1,6 +1,7 @@
 'use server';
-import { generateMicroserviceActionSuggestions, type MicroserviceActionSuggestionsInput } from '@/ai/flows/generate-microservice-action-suggestions';
 import { generateArchitectureDocumentation, type ArchitectureDocumentationInput } from '@/ai/flows/generate-architecture-documentation';
+import { LlmConfigError } from '@/ai/llm/provider';
+import { generateMicroserviceActionSuggestions, type MicroserviceActionSuggestionsInput } from '@/ai/flows/generate-microservice-action-suggestions';
 
 export async function getAISuggestions(input: MicroserviceActionSuggestionsInput) {
   try {
@@ -15,10 +16,10 @@ export async function getAISuggestions(input: MicroserviceActionSuggestionsInput
 export async function getArchitectureDocumentation(input: ArchitectureDocumentationInput) {
   try {
     const result = await generateArchitectureDocumentation(input);
-    return { documentation: result.documentation, error: null };
+    return { documentation: result.documentation, template: result.template, provider: result.provider, error: null };
   } catch (error) {
     console.error('Error generating documentation:', error);
-    const errorMessage = error instanceof Error ? `${error.message}\n\n${error.stack}` : 'An unknown error occurred.';
-    return { documentation: null, error: `Failed to generate documentation:\n\n${errorMessage}` };
+    const message = error instanceof LlmConfigError ? error.message : error instanceof Error ? error.message : 'Unknown error';
+    return { documentation: null, template: null, provider: null, error: `No se pudo generar la documentación: ${message}` };
   }
 }

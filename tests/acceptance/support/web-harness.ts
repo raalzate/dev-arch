@@ -188,7 +188,12 @@ export class WebHarness implements ApiClient {
     let params: Record<string, string> = {};
     if (parts[1] === 'analyses' && parts.length === 2) file = api('analyses', 'route.ts');
     else if (parts[1] === 'analyses' && parts[2] === 'import' && parts.length === 3) file = api('analyses', 'import', 'route.ts');
-    else if (parts[1] === 'analyses' && parts.length === 3) {
+    else if (parts[1] === 'inference' && parts[2] === 'defaults' && parts.length === 3) file = api('inference', 'defaults', 'route.ts');
+    else if (parts[1] === 'analyses' && parts.length === 4 && (parts[3] === 'reinfer' || parts[3] === 'score')) {
+      // 010-modernization-ux: static segments take precedence over [doc], as in Next.js.
+      file = api('analyses', '[id]', parts[3], 'route.ts');
+      params = { id: decodeURIComponent(parts[2]) };
+    } else if (parts[1] === 'analyses' && parts.length === 3) {
       file = api('analyses', '[id]', 'route.ts');
       params = { id: decodeURIComponent(parts[2]) };
     } else if (parts[1] === 'analyses' && parts.length === 4) {

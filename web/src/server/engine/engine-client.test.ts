@@ -119,3 +119,28 @@ test('stderr lines are logged with [engine] and delivered to every in-flight ana
   assert.ok(s.logs.includes('[engine] java.lang.IllegalStateException: boom'), s.logs.join('\n'));
   assert.deepEqual(lines, ['java.lang.IllegalStateException: boom']);
 });
+
+// --- 010-modernization-ux: generic tool calls and resources --------------------------------------------
+
+test('callTool returns the text and warnings of a tool and records the arguments', async () => {
+  const s = setup({});
+  const log = path.join(s.dir, 'calls.jsonl');
+  s.setControl({ callsLog: log });
+  const r = await s.client.callTool('score_proposal', { jobId: 'j1', components: ['a.A'] }, 20_000);
+  assert.equal(JSON.parse(r.text).name, 'Propuesta editada');
+  assert.deepEqual(r.warnings, []);
+  const calls = readFileSync(log, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
+  assert.deepEqual(calls.pop(), { name: 'score_proposal', args: { jobId: 'j1', components: ['a.A'] } });
+});
+
+test('callTool raises EngineToolError with the engine message', async () => {
+  const s = setup({ reinferFail: 'Invalid inference configuration: x: unknown parameter' });
+  await assert.rejects(s.client.callTool('reinfer_architecture', { jobId: 'j' }, 20_000), (e: unknown) =>
+    e instanceof EngineToolError && e.message === 'Invalid inference configuration: x: unknown parameter');
+});
+
+test('readResource returns the text of a resource', async () => {
+  const s = setup({});
+  const text = await s.client.readResource('static-inference://configuration/defaults');
+  assert.equal(JSON.parse(text).viability.thresholds.high, 0.7);
+});

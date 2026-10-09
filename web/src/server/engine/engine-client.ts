@@ -161,6 +161,38 @@ export class EngineClient {
     }
   }
 
+  /**
+   * Calls any engine tool (010: reinfer_architecture, score_proposal) and returns its text content and warnings.
+   * Engine errors (`isError`) raise EngineToolError with the engine message; crashes and timeouts as analyze().
+   */
+  async callTool(name: string, args: Record<string, unknown>, timeoutMs: number): Promise<{ text: string; warnings: string[] }> {
+    const client = await this.ensureStarted();
+    let result: unknown;
+    try {
+      result = await client.callTool({ name, arguments: args }, undefined, { timeout: timeoutMs });
+    } catch (e) {
+      const code = (e as { code?: number }).code;
+      if (code === REQUEST_TIMEOUT) throw new EngineTimeoutError(timeoutMs);
+      if (code === CONNECTION_CLOSED && !this.closed) throw new EngineCrashedError();
+      throw e;
+    }
+    const r = result as { isError?: boolean; content?: { type: string; text?: string }[]; _meta?: Record<string, unknown> };
+    const text = r.content?.find((c) => c.type === 'text')?.text ?? '';
+    const raw = r._meta?.[WARNINGS_META];
+    const warnings = Array.isArray(raw) ? raw.map(String) : [];
+    if (r.isError) throw new EngineToolError(text || 'The engine reported an error without a message', warnings);
+    return { text, warnings };
+  }
+
+  /** Reads an engine MCP resource (010: static-inference://configuration/defaults) as text. */
+  async readResource(uri: string): Promise<string> {
+    const client = await this.ensureStarted();
+    const res = await client.readResource({ uri });
+    const first = res.contents[0] as { text?: string } | undefined;
+    if (!first || typeof first.text !== 'string') throw new EngineToolError(`The engine resource ${uri} has no text content`);
+    return first.text;
+  }
+
   /** Restarts the process once no analysis is using it (after a timeout the engine may still be busy). */
   private async recycle(): Promise<void> {
     this.recycleWhenIdle = false;

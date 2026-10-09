@@ -174,7 +174,7 @@ const SoftwareArchitectureAnalyzer = () => {
     setDocumentation(null);
     setDocError(null);
     try {
-        const { documentation: doc, error } = await getArchitectureDocumentation({ archData, componentsData });
+        const { documentation: doc, error } = await getArchitectureDocumentation({ graph: componentsData as never, architecture: archData as never, warnings: analysis?.warnings ?? [] });
         if (error) {
             toast({ variant: "destructive", title: "Falló la Generación de la Documentación" });
             setDocError(error);

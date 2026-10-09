@@ -172,8 +172,8 @@ Given('the visual vocabulary of the interface', function () {
 
 Then(
   'each severity {string}, {string}, {string} and {string} has a distinct Spanish label and a distinct color',
-  function (this: DevArchWorld, ...sev: string[]) {
-    const list = sev.slice(0, 4);
+  function (this: DevArchWorld, s1: string, s2: string, s3: string, s4: string) {
+    const list = [s1, s2, s3, s4];
     assert.deepEqual([...SEVERITIES].sort(), [...list].sort());
     const labels = new Set(list.map((s) => SEVERITY_STYLES[s as keyof typeof SEVERITY_STYLES].label));
     const light = new Set(list.map((s) => SEVERITY_STYLES[s as keyof typeof SEVERITY_STYLES].light.toLowerCase()));
@@ -185,8 +185,8 @@ Then(
   },
 );
 
-Then('each technology accent {string}, {string} and {string} has a distinct color', function (this: DevArchWorld, ...acc: string[]) {
-  const list = acc.slice(0, 3) as (keyof typeof TECH_ACCENTS)[];
+Then('each technology accent {string}, {string} and {string} has a distinct color', function (this: DevArchWorld, a1: string, a2: string, a3: string) {
+  const list = [a1, a2, a3] as (keyof typeof TECH_ACCENTS)[];
   assert.equal(new Set(list.map((a) => TECH_ACCENTS[a].light.toLowerCase())).size, 3);
   assert.equal(new Set(list.map((a) => TECH_ACCENTS[a].dark.toLowerCase())).size, 3);
 });
@@ -301,8 +301,8 @@ When('the findings tabs are resolved', function (this: DevArchWorld) {
 
 Then(
   'the tabs offered are exactly those of {string}, {string}, {string} and {string} with at least one item',
-  function (this: DevArchWorld, ...tabs: string[]) {
-    const ids = tabs.slice(0, 4);
+  function (this: DevArchWorld, t1: string, t2: string, t3: string, t4: string) {
+    const ids = [t1, t2, t3, t4];
     const p = profileOf(this);
     const r = this.data.findings as ReturnType<typeof resolveSections>;
     const offered = r.visible.map((v) => v.def.id).filter((id) => ids.includes(id));
@@ -480,8 +480,8 @@ Then('the components present only in each analysis are listed in alphabetical or
 
 Given(
   'history entries with the states {string}, {string}, {string} and {string}',
-  function (this: DevArchWorld, ...states: string[]) {
-    this.data.entries = states.slice(0, 4).map((status) => ({ status }));
+  function (this: DevArchWorld, s1: string, s2: string, s3: string, s4: string) {
+    this.data.entries = [s1, s2, s3, s4].map((status) => ({ status }));
   },
 );
 
@@ -569,14 +569,14 @@ Given('the generated contract package', function (this: DevArchWorld) {
   this.data.generated = path.join(layout.schemaDir, 'generated');
 });
 
-Then('it declares the types {string}, {string} and {string}', function (this: DevArchWorld, ...names: string[]) {
+Then('it declares the types {string}, {string} and {string}', function (this: DevArchWorld, n1: string, n2: string, n3: string) {
   const types = readFileSync(path.join(this.data.generated as string, 'types.ts'), 'utf8');
-  for (const n of names.slice(0, 3)) assert.match(types, new RegExp(`export (interface|type) ${n}\\b`), n);
+  for (const n of [n1, n2, n3]) assert.match(types, new RegExp(`export (interface|type) ${n}\\b`), n);
 });
 
-Then('it registers runtime validators for the kinds {string}, {string} and {string}', async function (this: DevArchWorld, ...kinds: string[]) {
+Then('it registers runtime validators for the kinds {string}, {string} and {string}', async function (this: DevArchWorld, k1: string, k2: string, k3: string) {
   const g = (await import('@static-inference/schema')) as unknown as { validatorsByKind: Record<string, unknown> };
-  for (const k of kinds.slice(0, 3)) assert.ok(g.validatorsByKind[k], `no validator for ${k}`);
+  for (const k of [k1, k2, k3]) assert.ok(g.validatorsByKind[k], `no validator for ${k}`);
 });
 
 const CONTRACT_TYPE = new RegExp(

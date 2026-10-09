@@ -97,13 +97,13 @@ async function reinfer(world: DevArchWorld, body: Record<string, unknown>) {
 }
 
 When(
-  'the client re-infers that analysis with the configuration {} and the minimum viability {string}',
+  /^the client re-infers that analysis with the configuration (\{.*\}) and the minimum viability "([^"]*)"$/,
   async function (this: DevArchWorld, json: string, min: string) {
     await reinfer(this, { config: JSON.parse(json), minViability: min });
   },
 );
 
-When('the client re-infers that analysis with the configuration {}', async function (this: DevArchWorld, json: string) {
+When(/^the client re-infers that analysis with the configuration (\{.*\})$/, async function (this: DevArchWorld, json: string) {
   await reinfer(this, { config: JSON.parse(json) });
 });
 
@@ -139,11 +139,12 @@ When('the client calls {string} without a token', async function (this: DevArchW
 
 Then(
   'the response lists the parameters {string}, {string}, {string}, {string}, {string}, {string} and {string}',
-  function (this: DevArchWorld, ...names: string[]) {
+  function (this: DevArchWorld, a: string, b: string, c: string, d: string, e: string, f: string, g: string) {
+    const names = [a, b, c, d, e, f, g];
     const r = lastResponse(this);
     assert.equal(r.status, 200, r.text);
-    assert.deepEqual(r.json.parameters.map((p: { path: string }) => p.path), names.slice(0, 7));
-    assert.deepEqual(names.slice(0, 7), PANEL);
+    assert.deepEqual(r.json.parameters.map((p: { path: string }) => p.path), names);
+    assert.deepEqual(names, PANEL);
   },
 );
 

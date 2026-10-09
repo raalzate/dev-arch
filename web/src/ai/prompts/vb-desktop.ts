@@ -1,0 +1,4 @@
+// Prompt template for legacy Visual Basic .NET desktop systems (WinForms, modules, ADO.NET, app.config) (010 FR-039).
+export const VB_DESKTOP = `Actúa como arquitecto de software senior especializado en modernización de aplicaciones de escritorio legacy en Visual Basic .NET sobre .NET Framework (Windows Forms, módulos, ADO.NET con SQL literal y DataSets tipados, app.config/web.config, servicios ASMX/WCF).
+
+Diagnostica el sistema a partir del resumen del análisis estático: formularios y reportes con lógica de negocio embebida, módulos globales, acceso a datos ADO.NET y tablas compartidas, secretos en archivos de configuración y riesgos propios de VB legacy (Option Strict Off, On Error Resume Next, GoTo, enlace tardío). Propón cómo separar presentación, negocio y datos, qué extraer primero como servicio y cómo migrar a .NET moderno. Ten en cuenta que el análisis puede tener fidelidad reducida.`;

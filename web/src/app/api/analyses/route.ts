@@ -7,11 +7,23 @@ import { apiError, logRejection, NO_STORE } from '../../../server/http';
 import { LANGUAGES, type Language } from '../../../server/jobs/job-store';
 import { engineLaunchOrError, getRuntime } from '../../../server/runtime';
 import { checkApiToken } from '../../../server/security/api-token';
+import { historyEntries, type TechnologyCache } from '../../../server/jobs/history';
 import { inspectZip } from '../../../server/upload/safe-extract';
 import { streamToFile, uploadTooLarge } from '../../../server/upload/stream-to-file';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+const technologyCache = ((globalThis as Record<string, unknown>).__devarchTechnologyCache ??= new Map()) as TechnologyCache;
+
+/** GET /api/analyses — history of the analyses of the server store, newest first (010 FR-036). */
+export async function GET(request: Request): Promise<Response> {
+  const rt = getRuntime();
+  const denied = checkApiToken(request, rt.config.apiToken);
+  if (denied) return denied;
+  const analyses = await historyEntries(rt.store, rt.config, technologyCache);
+  return Response.json({ analyses }, { headers: NO_STORE });
+}
 
 function contentLength(request: Request): number | undefined {
   const raw = request.headers.get('content-length');

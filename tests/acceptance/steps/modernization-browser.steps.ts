@@ -155,10 +155,10 @@ Then('the findings step shows the sections {string} and {string}', function (thi
 
 Then(
   'the step navigation lists {string}, {string}, {string}, {string} and {string} in this order',
-  async function (this: DevArchWorld, ...steps: string[]) {
+  async function (this: DevArchWorld, s1: string, s2: string, s3: string, s4: string, s5: string) {
     const p = page(this);
     const shown = await p.locator(`${byTestId('step-nav')} ${byTestId('step-link')}`).evaluateAll((els) => els.map((e) => e.getAttribute('data-step')));
-    assert.deepEqual(shown, steps.slice(0, 5));
+    assert.deepEqual(shown, [s1, s2, s3, s4, s5]);
   },
 );
 
