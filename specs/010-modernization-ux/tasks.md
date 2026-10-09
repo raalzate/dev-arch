@@ -17,9 +17,9 @@ description: "Task list for 010-modernization-ux"
 
 ## Phase 1: Setup
 
-- [ ] T001 Añadir `specs/010-modernization-ux/tests/features/**/*.feature` a `cucumber.mjs`; crear la fixture `tests/acceptance/fixtures/vb-synthetic/{output,output_architecture,output_entrypoints}.json` con el motor real sobre `Fixtures/VbLegacy/SyntheticDesktop` (rutas de archivo relativas) [TS-001, TS-003, TS-005, TS-006]
-- [ ] T002 Crear los steps de todos los escenarios rápidos de 010 en `tests/acceptance/steps/modernization-*.steps.ts` (perfil, secciones, mapa, hallazgos, plan, comparación, IA, tipos, API con motor simulado) con aserciones reales; ejecutar: rojo [TS-001 … TS-007, TS-016 … TS-021, TS-023 … TS-028, TS-033, TS-034, TS-037 … TS-039, TS-041 … TS-044, TS-046 … TS-053]
-- [ ] T003 Crear los steps `@e2e` de 010 en `tests/acceptance/steps/modernization-browser.steps.ts` (VB ZIP desde archivos versionados del fixture, visitar pasos, secciones, mapa, inferencia, exportaciones, historial, tema); ejecutar en seco (`--dry-run`): sin pasos indefinidos [TS-008 … TS-015, TS-022, TS-029 … TS-032, TS-035, TS-036, TS-040, TS-045]
+- [x] T001 Añadir `specs/010-modernization-ux/tests/features/**/*.feature` a `cucumber.mjs`; crear la fixture `tests/acceptance/fixtures/vb-synthetic/{output,output_architecture,output_entrypoints}.json` con el motor real sobre `Fixtures/VbLegacy/SyntheticDesktop` (rutas de archivo relativas) [TS-001, TS-003, TS-005, TS-006]
+- [x] T002 Crear los steps de todos los escenarios rápidos de 010 en `tests/acceptance/steps/modernization-*.steps.ts` (perfil, secciones, mapa, hallazgos, plan, comparación, IA, tipos, API con motor simulado) con aserciones reales; ejecutar: rojo [TS-001 … TS-007, TS-016 … TS-021, TS-023 … TS-028, TS-033, TS-034, TS-037 … TS-039, TS-041 … TS-044, TS-046 … TS-053]
+- [x] T003 Crear los steps `@e2e` de 010 en `tests/acceptance/steps/modernization-browser.steps.ts` (VB ZIP desde archivos versionados del fixture, visitar pasos, secciones, mapa, inferencia, exportaciones, historial, tema); ejecutar en seco (`--dry-run`): sin pasos indefinidos [TS-008 … TS-015, TS-022, TS-029 … TS-032, TS-035, TS-036, TS-040, TS-045]
 
 **Checkpoint**: Cucumber descubre los 53 escenarios de 010; los rápidos fallan en rojo.
 
