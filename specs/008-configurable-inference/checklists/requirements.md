@@ -4,7 +4,7 @@
 **Created**: 2026-10-08 (`/iikit-01-specify`)
 **Feature**: [spec.md](../spec.md)
 
-> Modo no interactivo: los gaps se resolvieron con defaults conservadores registrados en spec.md *Clarifications* como "(default elegido por agente — pendiente confirmar)". Ninguno cambia las salidas existentes.
+> Modo no interactivo: los gaps se resolvieron con defaults conservadores registrados en spec.md *Clarifications* como "(default elegido por agente — confirmado por usuario 2026-10-09)". Ninguno cambia las salidas existentes.
 
 ## Content Quality
 
