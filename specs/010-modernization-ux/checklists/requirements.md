@@ -64,4 +64,4 @@
 - [x] **CHK023**: ¿Se documenta que la re-inferencia depende de que la web active las herramientas de 008 y del grafo almacenado? [Assumption, Assumptions §1]
 - [x] **CHK024**: ¿Se documenta el único cambio a escenarios bloqueados (005 TS-028) y su aprobación? [Dependency, Clarifications]
 
-**Resultado**: 34/34 ítems completos (2 huecos resueltos en spec.md: FR-021a y FR-023).
+**Resultado**: 29/29 ítems completos (2 huecos resueltos en spec.md: FR-021a y FR-023).
