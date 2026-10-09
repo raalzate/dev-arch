@@ -28,6 +28,12 @@ of features 001–003) point to `schema/1.0.0/` and must never contradict it.
 | MCP `score_proposal` (008) | `mcp/score_proposal.response.schema.json` | `ScoreProposalResponse` |
 | Inference configuration (008: `--config`, `config`, `configPath`) | `inference-config.schema.json` | `InferenceConfig` |
 
+The last three rows (008) are generated into the separate extension module `schema/extensions/`
+(`@static-inference/schema/extensions`, registry `extensionValidatorsByKind`, `parseInferenceConfig`,
+`parseReinferArchitectureResponse`, `parseScoreProposalResponse`); the original module `schema/generated/` and its
+`validatorsByKind` registry keep the eight kinds of 005. `npm --prefix schema run generate` regenerates both and
+`make schema-check` detects drift in both.
+
 Rules applied by the schemas: objects of known structure are **closed** (`additionalProperties: false`); the maps
 `meta.microservice_candidates`, `api_contracts.schemas`, `project_metadata.external_dependencies`,
 `project_metadata.package_dependencies` and `ApiSchema.properties` accept arbitrary keys; closed catalogues

@@ -1,6 +1,6 @@
 // Inference panel parameters (010 FR-022, FR-023; data-model.md InferenceScenario). Only the values that differ
 // from the engine defaults are sent, clamped to the contract range and rounded to the parameter step.
-import type { InferenceConfig } from '@static-inference/schema';
+import type { InferenceConfig } from '@static-inference/schema/extensions';
 
 export interface PanelParameter {
   path: string;

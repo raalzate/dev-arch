@@ -4,9 +4,8 @@ import { Given, Then, When } from '@cucumber/cucumber';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import {
-  consolidatedArchitectureSchema, scoreProposalResponseSchema,
-} from '@static-inference/schema';
+import { consolidatedArchitectureSchema } from '@static-inference/schema';
+import { scoreProposalResponseSchema } from '@static-inference/schema/extensions';
 import { layout } from '../support/layout.ts';
 import type { WebHarness } from '../support/web-harness.ts';
 import type { DevArchWorld } from '../support/world.ts';

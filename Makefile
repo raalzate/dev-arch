@@ -45,7 +45,7 @@ test-e2e-browser:
 schema-check:
 	bash scripts/schema-check.sh
 
-## Regenerate schema/generated/ from schema/<VERSION>/*.schema.json.
+## Regenerate schema/generated/ and the extension module schema/extensions/ from schema/<VERSION>/*.schema.json.
 schema-generate:
 	npm --prefix schema run generate
 

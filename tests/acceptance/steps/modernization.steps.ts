@@ -566,7 +566,9 @@ Then('the configuration sent is {}', function (this: DevArchWorld, json: string)
 // --- generated types ------------------------------------------------------------------------------------
 
 Given('the generated contract package', function (this: DevArchWorld) {
-  this.data.generated = path.join(layout.schemaDir, 'generated');
+  // Option B (user decision 2026-10-09): the inference configuration and the 008 responses are generated into the
+  // separate extension module of the contract package; the original 005 registry is unchanged.
+  this.data.generated = path.join(layout.schemaDir, 'extensions');
 });
 
 Then('it declares the types {string}, {string} and {string}', function (this: DevArchWorld, n1: string, n2: string, n3: string) {
@@ -575,8 +577,8 @@ Then('it declares the types {string}, {string} and {string}', function (this: De
 });
 
 Then('it registers runtime validators for the kinds {string}, {string} and {string}', async function (this: DevArchWorld, k1: string, k2: string, k3: string) {
-  const g = (await import('@static-inference/schema')) as unknown as { validatorsByKind: Record<string, unknown> };
-  for (const k of [k1, k2, k3]) assert.ok(g.validatorsByKind[k], `no validator for ${k}`);
+  const g = (await import('@static-inference/schema/extensions')) as unknown as { extensionValidatorsByKind: Record<string, unknown> };
+  for (const k of [k1, k2, k3]) assert.ok(g.extensionValidatorsByKind[k], `no validator for ${k}`);
 });
 
 const CONTRACT_TYPE = new RegExp(

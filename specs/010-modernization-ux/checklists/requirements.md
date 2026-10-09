@@ -4,7 +4,7 @@
 **Created**: 2026-10-09 (`/iikit-01-specify`)
 **Feature**: [spec.md](../spec.md)
 
-> Modo no interactivo: los huecos se resolvieron con defaults conservadores registrados en spec.md *Clarifications* como "(default elegido por agente — pendiente confirmar)". Las decisiones de arquitectura de información, aspecto, LLM y re-testify de 005 TS-028 son del usuario (2026-10-09).
+> Modo no interactivo: los huecos se resolvieron con defaults conservadores registrados en spec.md *Clarifications* como "(default elegido por agente — confirmado por usuario 2026-10-09)". Las decisiones de arquitectura de información, aspecto, LLM y el tratamiento de los tipos de 008 (opción B: módulo de extensión generado, 005 intacto) son del usuario (2026-10-09).
 
 ## Content Quality
 
@@ -62,6 +62,6 @@
 ### Dependencies & Assumptions
 
 - [x] **CHK023**: ¿Se documenta que la re-inferencia depende de que la web active las herramientas de 008 y del grafo almacenado? [Assumption, Assumptions §1]
-- [x] **CHK024**: ¿Se documenta el único cambio a escenarios bloqueados (005 TS-028) y su aprobación? [Dependency, Clarifications]
+- [x] **CHK024**: ¿Se documenta que no se cambia ningún escenario bloqueado de 001–009 (opción B, 2026-10-09)? [Dependency, Clarifications]
 
 **Resultado**: 29/29 ítems completos (2 huecos resueltos en spec.md: FR-021a y FR-023).

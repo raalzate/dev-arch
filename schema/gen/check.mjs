@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 // Verifies the contract package (FR-015..FR-018). Run through tsx: npm --prefix schema run check [-- options]
-//   (no options)            generated/ up to date + VERSION/$id/const coherence + fixtures + producer samples
+//   (no options)            generated/ and extensions/ up to date + VERSION/$id/const coherence + fixtures + producer samples
 //   --samples-only          only ../engine/target/schema-samples/** (producer samples of the engine tests)
 //   --file <path> --kind <kind>   validate one document with the generated validators
 import { mkdtempSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
-import { BASE_IRI, PACKAGE_DIR, VERSION, VERSION_DIR, formatIssues, jsonFiles, kindForFile, readSchema, schemaFiles } from "./lib.mjs";
-import { generate } from "./generate.mjs";
-import { validatorsByKind } from "../generated/validators.ts";
+import { BASE_IRI, EXTENSIONS_DIR, PACKAGE_DIR, VERSION, VERSION_DIR, formatIssues, jsonFiles, kindForFile, readSchema, schemaFiles } from "./lib.mjs";
+import { generate, generateExtensions } from "./generate.mjs";
+import { validatorsByKind as baseValidatorsByKind } from "../generated/validators.ts";
+import { extensionValidatorsByKind } from "../extensions/validators.ts";
+
+// The original registry (005) plus the separate extension registry (010-modernization-ux, option B).
+const validatorsByKind = { ...baseValidatorsByKind, ...extensionValidatorsByKind };
 
 // 006-devarch-monorepo: the producers (engine tests) write their samples under the engine build directory.
 const SAMPLES = resolve(PACKAGE_DIR, "..", "engine", "target", "schema-samples");
@@ -36,23 +40,23 @@ function checkVersionCoherence() {
   if (failures.length === 0) log(`version ${VERSION}: VERSION, $id and const agree`);
 }
 
-async function checkGenerated() {
+async function checkGenerated(label = "generated", committedDir = join(PACKAGE_DIR, "generated"), gen = generate) {
   const tmp = mkdtempSync(join(tmpdir(), "si-schema-check-"));
-  const files = await generate(tmp);
+  const files = await gen(tmp);
   let stale = 0;
   for (const name of files) {
     let committed = null;
     try {
-      committed = readFileSync(join(PACKAGE_DIR, "generated", name), "utf8");
+      committed = readFileSync(join(committedDir, name), "utf8");
     } catch {
       committed = null;
     }
     if (committed !== readFileSync(join(tmp, name), "utf8")) {
       stale++;
-      fail(`generated/${name} out of date — run: npm --prefix schema run generate`);
+      fail(`${label}/${name} out of date — run: npm --prefix schema run generate`);
     }
   }
-  if (stale === 0) log(`generated/ up to date (${files.join(", ")})`);
+  if (stale === 0) log(`${label}/ up to date (${files.join(", ")})`);
 }
 
 function checkFixtures() {
@@ -96,6 +100,7 @@ try {
     log(`contract ${VERSION} (${relative(PACKAGE_DIR, VERSION_DIR)}/)`);
     checkVersionCoherence();
     await checkGenerated();
+    await checkGenerated("extensions", EXTENSIONS_DIR, generateExtensions);
     checkFixtures();
     checkSamples();
   }

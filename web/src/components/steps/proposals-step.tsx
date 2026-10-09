@@ -3,7 +3,7 @@
 // Step 3 — Proposals (010 FR-022..FR-027): live inference panel next to the proposals of the active scenario
 // (original or re-inferred), edited proposals re-scored by the engine, and the support libraries.
 import React, { useMemo } from 'react';
-import type { ScoreProposalResponse } from '@static-inference/schema';
+import type { ScoreProposalResponse } from '@static-inference/schema/extensions';
 import { orderProposals } from '@/lib/modernization/ordering';
 import { resolveSections, type AnalysisView } from '@/lib/modernization/sections';
 import type { TechnologyProfile } from '@/lib/modernization/technology';

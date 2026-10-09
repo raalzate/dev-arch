@@ -1,6 +1,6 @@
 # Data Model: 010-modernization-ux
 
-Todos los datos del contrato usan los tipos generados de `@static-inference/schema` (`DependencyGraph`, `ConsolidatedArchitecture`, `EntrypointsDocument`, `Component`, `Proposal`, `InferenceConfig`, `ScoreProposalResponse`, …). Las entidades siguientes son modelos de presentación de la web (no forman parte del contrato) y viven en `web/src/lib/modernization/`.
+Todos los datos del contrato usan los tipos generados de `@static-inference/schema` y, para la configuración de inferencia y las respuestas de 008, de su módulo de extensión generado `@static-inference/schema/extensions` (`DependencyGraph`, `ConsolidatedArchitecture`, `EntrypointsDocument`, `Component`, `Proposal`, `InferenceConfig`, `ScoreProposalResponse`, …). Las entidades siguientes son modelos de presentación de la web (no forman parte del contrato) y viven en `web/src/lib/modernization/`.
 
 ## TechnologyProfile (FR-001, FR-001a, FR-002, FR-007, FR-015)
 

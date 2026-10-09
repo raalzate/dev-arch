@@ -6,6 +6,12 @@
   "type": "module",
   "main": "generated/index.ts",
   "types": "generated/index.ts",
+  "exports": {
+    ".": "./generated/index.ts",
+    "./extensions": "./extensions/index.ts",
+    "./1.0.0/*": "./1.0.0/*",
+    "./package.json": "./package.json"
+  },
   "engines": {
     "node": ">=20"
   },

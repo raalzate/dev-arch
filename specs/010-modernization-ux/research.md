@@ -60,7 +60,9 @@
 
 ## D12. Tipos generados para 008
 
-- **Decision**: añadir a `ENTRIES` de `schema/gen/lib.mjs`: `inference-config` (`InferenceConfig`, `parseInferenceConfig`), `mcp/reinfer_architecture` (alias de `ConsolidatedArchitecture`), `mcp/score_proposal` (`ScoreProposalResponse`). Re-testify de 005 TS-028 (aprobado por el usuario) + actualización de los pasos Java/TS que enumeran los tipos. La web importa tipos solo de `@static-inference/schema`; se elimina `web/src/lib/types.ts`.
+- **Decision (revisada 2026-10-09, decisión del usuario "opción B")**: no se toca nada de 005 (`ENTRIES`, `schema/generated/*`, escenarios, `context.json`, pasos Java/TS): el registro original conserva sus 8 tipos y los archivos generados son byte-idénticos a los previos. Una segunda lista `EXTENSION_ENTRIES` en `schema/gen/lib.mjs` — `inference-config` (`InferenceConfig`, `parseInferenceConfig`), `mcp/reinfer_architecture` (alias de `ConsolidatedArchitecture`, `parseReinferArchitectureResponse`), `mcp/score_proposal` (`ScoreProposalResponse`, `parseScoreProposalResponse`) — se genera con la misma cadena (`generateExtensions` en `schema/gen/generate.mjs`) en `schema/extensions/{types,validators,index}.ts`, con registro propio `extensionValidatorsByKind`. Las definiciones ya generadas en el módulo original (p. ej. `DocumentMeta`, `ConsolidatedArchitecture`) se importan de `../generated/` en lugar de re-declararse. El paquete lo exporta como `@static-inference/schema/extensions` (campo `exports`); `npm --prefix schema run check` (y por tanto `make schema-check`) detecta deriva también en `extensions/`. La web importa los tipos del contrato solo de `@static-inference/schema` y `@static-inference/schema/extensions`; se elimina `web/src/lib/types.ts`.
+- **Por qué no `schema/generated/extensions/`**: la prueba bloqueada 005 TS-033 lee cada entrada de `schema/generated/` como archivo; un subdirectorio la rompería.
+- **Alternativa descartada**: re-testify de 005 TS-028 (ampliar el registro original a 11 tipos) — aprobada inicialmente y revertida por la decisión del usuario de no modificar artefactos de 001–009.
 
 ## D13. Pruebas
 

@@ -319,18 +319,19 @@ Como desarrollador del producto, quiero que la interfaz use exclusivamente tipos
 - Q: ¿Arquitectura de información? -> A: Flujo de modernización: (1) Resumen ejecutivo (salud, riesgos, deuda técnica, insignia de tecnología, advertencias incluida la fidelidad reducida) → (2) Mapa del sistema (color/filtro por tipo de dependencia, grosor por peso, agrupación por capa o propuesta, filtro por severidad) → (3) Propuestas con viabilidad + panel "Parámetros de inferencia" con re-inferencia en vivo y re-puntuación de propuestas editadas → (4) Hallazgos (problemas por severidad/patrón, secretos, contratos, puntos de entrada legacy, señales/clústeres/llamadas entrantes/dominio) → (5) Plan de modernización exportable (JSON editado, Markdown, PDF). Secciones específicas de tecnología solo donde tienen sentido (EJB/@Deprecated solo Java; inyección y endpoints ASP.NET para C#; formularios, módulos, ADO.NET y app.config para VB). [US1, US2, US4, US5, US6, US7]
 - Q: ¿Aspecto? -> A: Herramienta técnica sobria (estilo Linear/Grafana): densa pero legible, modo claro/oscuro, colores de acento por tecnología, insignias de severidad, accesible, estados de carga reales con las fases de 007; se mantiene la pila de componentes actual. [US3]
 - Q: ¿LLM? -> A: Gemini por defecto, abstracción de proveedor `LLM_PROVIDER=gemini|anthropic` (Anthropic opcional, modelo por defecto según la guía vigente), plantillas especializadas por tecnología elegidas por el origen/lenguaje. [US9]
-- Q: ¿Ampliar el registro de tipos generados de 005 (TS-028 fija 8 tipos)? -> A: Aprobado como parte de 010: re-testify de 005 TS-028 para cubrir los tres esquemas añadidos en 008. [US10]
+- Q: ¿Ampliar el registro de tipos generados de 005 (TS-028 fija 8 tipos)? -> A: ~~Aprobado como parte de 010: re-testify de 005 TS-028 para cubrir los tres esquemas añadidos en 008.~~ Sustituida por la decisión de 2026-10-09 (opción B), abajo. [US10]
+- Q (2026-10-09, decisión del usuario, opción B): ¿Cómo se cubren los tres esquemas de 008 sin tocar los artefactos bloqueados de 001–009? -> A: No se modifica nada de 005 (escenarios, `context.json`, spec ni pasos; el registro generado original conserva exactamente sus 8 tipos). Los tipos y validadores de la configuración de inferencia y de las respuestas `reinfer_architecture` y `score_proposal` se generan con la misma cadena de generación en un módulo de extensión separado del paquete del contrato, con su propio registro de validadores y sus propias funciones de análisis; la verificación de deriva del contrato cubre también ese módulo y la web importa esos tipos desde él. [US10, FR-041]
 - Q: ¿Alcance adicional? -> A: Reemplazo del estado local por el almacén de análisis del servidor, historial y comparación de dos análisis, tipos generados para todo lo mostrado. [US8, US10]
 
-### Defaults elegidos por el agente (pendientes de confirmar)
+### Defaults elegidos por el agente (confirmados por el usuario 2026-10-09)
 
-- Exportación PDF mediante una vista imprimible del navegador ("Guardar como PDF"), sin nueva dependencia (principio VI). (default elegido por agente — pendiente confirmar) [FR-034]
-- Los recálculos y propuestas editadas viven en la sesión de la página (no se persisten en el almacén); se conservan en la exportación JSON. (default elegido por agente — pendiente confirmar) [FR-027]
-- Parámetros del panel: los siete de FR-022 más viabilidad mínima; el resto de parámetros de 008 queda accesible solo por archivo de configuración. (default elegido por agente — pendiente confirmar) [FR-022]
-- Preferencia de tema guardada en el almacenamiento local del navegador (valor de pocos caracteres, compatible con FR-012 y con TS-015 de 007). (default elegido por agente — pendiente confirmar) [FR-013]
-- Comparación limitada a dos análisis completados; sin persistir la comparación. (default elegido por agente — pendiente confirmar) [FR-038]
-- Etapas del plan: Etapa 1 = viabilidad Alta, Etapa 2 = Media, Etapa 3 = Baja (re-diseñar antes de extraer); las librerías de soporte se listan como "base compartida". (default elegido por agente — pendiente confirmar) [FR-033]
-- Perfil mixto C# + VB: se aplican las secciones de ambos lenguajes y la plantilla IA de escritorio VB. (default elegido por agente — pendiente confirmar) [FR-001a, FR-039]
+- Exportación PDF mediante una vista imprimible del navegador ("Guardar como PDF"), sin nueva dependencia (principio VI). (default elegido por agente — confirmado por usuario 2026-10-09) [FR-034]
+- Los recálculos y propuestas editadas viven en la sesión de la página (no se persisten en el almacén); se conservan en la exportación JSON. (default elegido por agente — confirmado por usuario 2026-10-09) [FR-027]
+- Parámetros del panel: los siete de FR-022 más viabilidad mínima; el resto de parámetros de 008 queda accesible solo por archivo de configuración. (default elegido por agente — confirmado por usuario 2026-10-09) [FR-022]
+- Preferencia de tema guardada en el almacenamiento local del navegador (valor de pocos caracteres, compatible con FR-012 y con TS-015 de 007). (default elegido por agente — confirmado por usuario 2026-10-09) [FR-013]
+- Comparación limitada a dos análisis completados; sin persistir la comparación. (default elegido por agente — confirmado por usuario 2026-10-09) [FR-038]
+- Etapas del plan: Etapa 1 = viabilidad Alta, Etapa 2 = Media, Etapa 3 = Baja (re-diseñar antes de extraer); las librerías de soporte se listan como "base compartida". (default elegido por agente — confirmado por usuario 2026-10-09) [FR-033]
+- Perfil mixto C# + VB: se aplican las secciones de ambos lenguajes y la plantilla IA de escritorio VB. (default elegido por agente — confirmado por usuario 2026-10-09) [FR-001a, FR-039]
 
 ## Assumptions
 

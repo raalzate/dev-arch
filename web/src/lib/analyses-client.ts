@@ -1,7 +1,8 @@
 // Browser client of the asynchronous analyses API (007-native-engine-runtime, contracts/analyses-api.md; FR-007,
 // FR-035). The browser keeps only the identifier of the active analysis (localStorage) and, when the server
 // requires it, the API token for the browser session (sessionStorage) — never analysis results.
-import type { ConsolidatedArchitecture, DependencyGraph, EntrypointsDocument, InferenceConfig, ScoreProposalResponse } from '@static-inference/schema';
+import type { ConsolidatedArchitecture, DependencyGraph, EntrypointsDocument } from '@static-inference/schema';
+import type { InferenceConfig, ScoreProposalResponse } from '@static-inference/schema/extensions';
 
 export const ACTIVE_JOB_KEY = 'devarch.activeJobId';
 export const API_TOKEN_KEY = 'devarch.apiToken';

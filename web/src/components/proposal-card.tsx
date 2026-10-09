@@ -4,7 +4,8 @@
 // (both are re-scored by the engine) and details with legacy entrypoint, signals, tables, rationale and actions.
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Loader2, Pencil } from 'lucide-react';
-import type { Component, Proposal, ScoreProposalResponse } from '@static-inference/schema';
+import type { Component, Proposal } from '@static-inference/schema';
+import type { ScoreProposalResponse } from '@static-inference/schema/extensions';
 import { layerLabel } from '@/lib/modernization/layers';
 import type { TechnologyProfile } from '@/lib/modernization/technology';
 import { ViabilityBadge, num } from './badges';

@@ -5,7 +5,7 @@ description: "Task list for 010-modernization-ux"
 # Tasks: Experiencia de modernización en dev-arch
 
 **Input**: Design documents from `specs/010-modernization-ux/`
-**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md, tests/features/ (hash LOCKED; escenarios TS-001 … TS-053) + re-testify aprobado de 005 TS-028
+**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md, tests/features/ (hash LOCKED; escenarios TS-001 … TS-053) (005 intacto: opción B, 2026-10-09)
 
 **Tests**: TDD obligatorio (Constitución III). Cada tarea de pruebas / step definitions se ejecuta y falla (rojo) antes de su implementación. Prohibido modificar `.feature`, `context.json` o aserciones existentes.
 
@@ -27,8 +27,8 @@ description: "Task list for 010-modernization-ux"
 
 ## Phase 2: Foundational — tipos generados (US10)
 
-- [x] T004 [US10] Actualizar `schema/test/validators.test.ts` y `engine/src/test/java/com/extractor/bdd/GeneratedTypesSteps.java` (KINDS + paso de tres tipos) para 005 TS-028 re-testificado; ejecutar: rojo [005 TS-028, TS-051]
-- [x] T005 [US10] Añadir `inference-config`, `mcp/reinfer_architecture`, `mcp/score_proposal` a `ENTRIES` de `schema/gen/lib.mjs`; `npm --prefix schema run generate`; `make schema-check`; verde [005 TS-028, TS-051]
+- [x] T004 [US10] ~~Actualizar pasos de 005 TS-028~~ (revertido, opción B 2026-10-09: 005 intacto). Pasos de 010 TS-051 contra el módulo de extensión (`schema/extensions/`, `extensionValidatorsByKind`) y `schema/test/extensions.test.ts`; ejecutar: rojo [TS-051]
+- [x] T005 [US10] `EXTENSION_ENTRIES` (`inference-config`, `mcp/reinfer_architecture`, `mcp/score_proposal`) en `schema/gen/lib.mjs` + `generateExtensions` → `schema/extensions/*` (registro propio); `ENTRIES` y `schema/generated/*` sin cambios; deriva de `extensions/` en `check`; web importa de `@static-inference/schema/extensions`; `npm --prefix schema run generate`; `make schema-check`; verde [TS-051]
 - [x] T006 [US10] Sustituir `web/src/lib/types.ts` por tipos de `@static-inference/schema` en toda la web; prueba que recorre `web/src` sin declaraciones de tipos del contrato [TS-052]
 
 **Checkpoint**: 005 completo en verde; la web compila con tipos generados.

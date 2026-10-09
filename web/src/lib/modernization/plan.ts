@@ -1,6 +1,7 @@
 // Modernization plan (010 FR-033; data-model.md ModernizationPlan). Stages by viability (Alta → Media → Baja), each
 // ordered by external coupling and name; engine scores of edited proposals override the inferred values.
-import type { Component, ScoreProposalResponse } from '@static-inference/schema';
+import type { Component } from '@static-inference/schema';
+import type { ScoreProposalResponse } from '@static-inference/schema/extensions';
 import { compareProposals, severityCounts, VIABILITY_ORDER, type Viability } from './ordering';
 import type { AnalysisView } from './sections';
 import type { Severity } from './severity';
