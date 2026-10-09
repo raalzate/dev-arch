@@ -1,7 +1,7 @@
 // Browser client of the asynchronous analyses API (007-native-engine-runtime, contracts/analyses-api.md; FR-007,
 // FR-035). The browser keeps only the identifier of the active analysis (localStorage) and, when the server
 // requires it, the API token for the browser session (sessionStorage) — never analysis results.
-import type { ArchitectureData, ComponentsData } from '@/lib/types';
+import type { ConsolidatedArchitecture, DependencyGraph, EntrypointsDocument, InferenceConfig, ScoreProposalResponse } from '@static-inference/schema';
 
 export const ACTIVE_JOB_KEY = 'devarch.activeJobId';
 export const API_TOKEN_KEY = 'devarch.apiToken';
@@ -115,13 +115,60 @@ export async function getStatus(jobId: string): Promise<AnalysisStatus> {
   return (await request(`/api/analyses/${encodeURIComponent(jobId)}`)).json();
 }
 
-export async function getDocuments(jobId: string): Promise<{ componentsData: ComponentsData; archData: ArchitectureData }> {
+export async function getDocuments(jobId: string): Promise<{ graph: DependencyGraph; architecture: ConsolidatedArchitecture }> {
   const id = encodeURIComponent(jobId);
   const [graph, architecture] = await Promise.all([
     request(`/api/analyses/${id}/graph`).then((r) => r.json()),
     request(`/api/analyses/${id}/architecture`).then((r) => r.json()),
   ]);
-  return { componentsData: graph as ComponentsData, archData: architecture as ArchitectureData };
+  return { graph: graph as DependencyGraph, architecture: architecture as ConsolidatedArchitecture };
+}
+
+/** Endpoints document of the analysis (null when the analysis has none). */
+export async function getContracts(jobId: string): Promise<EntrypointsDocument | null> {
+  try {
+    return (await (await request(`/api/analyses/${encodeURIComponent(jobId)}/contracts`)).json()) as EntrypointsDocument;
+  } catch (e) {
+    if (e instanceof ApiRequestError && e.status === 404) return null;
+    throw e;
+  }
+}
+
+/** History entry (010 contracts/web-api.md): the 007 status view plus the detected technology. */
+export interface HistoryEntry extends AnalysisStatus {
+  technology: 'java' | 'csharp' | 'vb' | 'dotnet-mixed' | 'dotnet' | null;
+  technologyLabel: string | null;
+}
+
+export async function listAnalyses(): Promise<HistoryEntry[]> {
+  return ((await (await request('/api/analyses')).json()) as { analyses: HistoryEntry[] }).analyses;
+}
+
+export interface InferenceDefaults {
+  parameters: { path: string; label: string; min: number; max: number; step: number; default: number }[];
+  defaults: unknown;
+}
+
+export async function getInferenceDefaults(): Promise<InferenceDefaults> {
+  return (await request('/api/inference/defaults')).json();
+}
+
+function postJson(url: string, body: unknown, signal?: AbortSignal): Promise<Response> {
+  return request(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal });
+}
+
+/** Re-infers the proposals of a completed analysis with the engine (never analyzes again). */
+export async function reinfer(
+  jobId: string,
+  body: { config?: InferenceConfig; minViability?: 'Alta' | 'Media' | 'Baja' },
+  signal?: AbortSignal,
+): Promise<ConsolidatedArchitecture> {
+  return (await postJson(`/api/analyses/${encodeURIComponent(jobId)}/reinfer`, body, signal)).json();
+}
+
+/** Scores an edited proposal (its component list) with the engine. */
+export async function scoreProposal(jobId: string, body: { components: string[]; config?: InferenceConfig }): Promise<ScoreProposalResponse> {
+  return (await postJson(`/api/analyses/${encodeURIComponent(jobId)}/score`, body)).json();
 }
 
 export async function getSource(jobId: string, filePath: string): Promise<{ path: string; content: string }> {

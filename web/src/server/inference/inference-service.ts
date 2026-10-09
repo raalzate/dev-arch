@@ -2,10 +2,8 @@
 // web-api.md): panel parameters (engine defaults + contract ranges), request validation with the generated zod
 // schemas, delegation to the engine tools reinfer_architecture / score_proposal by analysis id, and mapping of the
 // engine messages to HTTP errors. The web never re-implements the inference (Constitution II).
-import {
-  inferenceConfigSchema, reinferArchitectureResponseSchema, scoreProposalResponseSchema,
-  type ConsolidatedArchitecture, type InferenceConfig, type ScoreProposalResponse,
-} from '@static-inference/schema';
+import { inferenceConfigSchema, reinferArchitectureResponseSchema, scoreProposalResponseSchema } from '@static-inference/schema';
+import type { ConsolidatedArchitecture, InferenceConfig, ScoreProposalResponse } from '@static-inference/schema';
 import inferenceConfigJsonSchema from '@static-inference/schema/1.0.0/inference-config.schema.json';
 import { ApiError } from '../api-error';
 import { EngineToolError, type EngineClient } from '../engine/engine-client';

@@ -4,26 +4,26 @@ import { layerLabel } from './layers';
 import { severityRank, type Severity } from './severity';
 import type { TechnologyProfile } from './technology';
 
-type Edge = Pick<DependencyGraph['edges'][number], 'from' | 'to' | 'type'>;
+type EdgeLike = Pick<DependencyGraph['edges'][number], 'from' | 'to' | 'type'>;
 export type GroupMode = 'layer' | 'proposal';
 export const NO_PROPOSAL = 'Sin propuesta';
 
-export function edgeTypes(e: Pick<Edge, 'type'>): string[] {
+export function edgeTypes(e: Pick<EdgeLike, 'type'>): string[] {
   return e.type.split(',').map((t) => t.trim()).filter(Boolean);
 }
 
-export function edgeKey(e: Pick<Edge, 'from' | 'to'>): string {
+export function edgeKey(e: Pick<EdgeLike, 'from' | 'to'>): string {
   return `${e.from}->${e.to}`;
 }
 
-export function legend(edges: readonly Edge[]): { type: string; count: number }[] {
+export function legend(edges: readonly EdgeLike[]): { type: string; count: number }[] {
   const counts = new Map<string, number>();
   for (const e of edges) for (const t of new Set(edgeTypes(e))) counts.set(t, (counts.get(t) ?? 0) + 1);
   return [...counts.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([type, count]) => ({ type, count }));
 }
 
 /** An edge is visible while at least one of its types is not disabled. */
-export function visibleEdges<E extends Edge>(edges: readonly E[], disabled: ReadonlySet<string>): E[] {
+export function visibleEdges<E extends EdgeLike>(edges: readonly E[], disabled: ReadonlySet<string>): E[] {
   return edges.filter((e) => edgeTypes(e).some((t) => !disabled.has(t)));
 }
 

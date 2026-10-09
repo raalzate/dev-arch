@@ -25,7 +25,7 @@ export interface AnalysisView {
   warnings: string[];
 }
 
-type Edge = DependencyGraph['edges'][number];
+type GraphEdge = DependencyGraph['edges'][number];
 type Endpoint = DependencyGraph['api_contracts']['endpoints'][number];
 type SecretLocation = NonNullable<ConsolidatedArchitecture['project_metadata']['secrets_locations']>[number];
 export type IssueRow = Component['code_issues'][number] & { componentId: string };
@@ -41,7 +41,7 @@ export interface SectionDef<T = unknown> {
 const VB_LEGACY_PATTERNS = new Set(['OPTION_STRICT_OFF', 'ON_ERROR_RESUME_NEXT', 'GOTO_STATEMENT', 'LATE_BINDING']);
 const comps = (v: AnalysisView) => v.graph.components;
 const issues = (v: AnalysisView): IssueRow[] => comps(v).flatMap((c) => c.code_issues.map((i) => ({ ...i, componentId: c.id })));
-const edgeTypes = (e: Edge) => e.type.split(',').map((t) => t.trim());
+const edgeTypes = (e: GraphEdge) => e.type.split(',').map((t) => t.trim());
 
 function def<T>(d: SectionDef<T>): SectionDef<T> {
   return d;
@@ -58,7 +58,7 @@ export const SECTIONS: readonly SectionDef[] = [
   def<Component>({ id: 'java-deprecated', step: 'findings', title: 'Componentes obsoletos (@Deprecated)', appliesTo: ['java'], items: (v) => comps(v).filter((c) => c.annotations.includes('Deprecated')) }),
   def<Component>({ id: 'java-ejb', step: 'findings', title: 'Componentes EJB', appliesTo: ['java'], items: (v) => comps(v).filter((c) => !!c.ejb_type) }),
   def<Component>({ id: 'java-jndi', step: 'findings', title: 'Uso de JNDI', appliesTo: ['java'], items: (v) => comps(v).filter((c) => c.uses_jndi) }),
-  def<Edge>({ id: 'csharp-di', step: 'findings', title: 'Dependencias inyectadas y registradas en el contenedor', appliesTo: ['csharp'], items: (v) => v.graph.edges.filter((e) => edgeTypes(e).some((t) => t === 'injection' || t === 'registration')) }),
+  def<GraphEdge>({ id: 'csharp-di', step: 'findings', title: 'Dependencias inyectadas y registradas en el contenedor', appliesTo: ['csharp'], items: (v) => v.graph.edges.filter((e) => edgeTypes(e).some((t) => t === 'injection' || t === 'registration')) }),
   def<Component>({ id: 'vb-desktop-ui', step: 'findings', title: 'Presentación de escritorio (formularios y reportes)', appliesTo: ['vb'], items: (v) => comps(v).filter((c) => c.layer === 'Web' && c.files.some((f) => f.toLowerCase().endsWith('.vb'))) }),
   def<Component>({ id: 'vb-modules', step: 'findings', title: 'Módulos compartidos', appliesTo: ['vb'], items: (v) => comps(v).filter((c) => c.layer === 'Compartida' && c.files.some((f) => f.toLowerCase().endsWith('.vb'))) }),
   def<IssueRow>({ id: 'vb-legacy-risks', step: 'findings', title: 'Riesgos de VB legacy', appliesTo: ['vb'], items: (v) => issues(v).filter((i) => VB_LEGACY_PATTERNS.has(i.pattern)) }),
