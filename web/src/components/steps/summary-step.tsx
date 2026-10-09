@@ -10,7 +10,7 @@ import { resolveSections, type AnalysisView } from '@/lib/modernization/sections
 import { SEVERITIES } from '@/lib/modernization/severity';
 import { summarize } from '@/lib/modernization/summary';
 import type { TechnologyProfile } from '@/lib/modernization/technology';
-import { SeverityBadge, TechBadge, ViabilityBadge, severityColor } from '../badges';
+import { SeverityBadge, TechBadge, ViabilityBadge, num, severityColor } from '../badges';
 import { NoFindings, Section } from '../section';
 
 const fmt = (n: number) => n.toLocaleString('es');
@@ -153,7 +153,7 @@ export default function SummaryStep({
                     <ViabilityBadge viability={p.viability} />
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground tabular-nums">
-                    {p.components.length} componentes · cohesión {p.metrics.cohesion_avg.toFixed(2)} · acoplamiento externo {p.metrics.external_coupling}
+                    {p.components.length} componentes · cohesión {p.metrics.cohesion_avg.toFixed(2)} · acoplamiento externo {num(p.metrics.external_coupling)}
                     {p.metrics.tables.length > 0 && ` · ${p.metrics.tables.length} tablas`}
                   </div>
                 </li>

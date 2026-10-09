@@ -48,10 +48,14 @@ function IssueRows({ issues, onSelect }: { issues: IssueRow[]; onSelect: (id: st
   return (
     <ul className="divide-y divide-border">
       {issues.map((i, k) => (
-        <li key={k} className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 py-1.5 text-xs md:grid-cols-[auto_minmax(0,16rem)_minmax(0,1fr)]">
-          <SeverityBadge severity={i.severity} />
-          <span className="truncate"><CompLink id={i.componentId} onSelect={onSelect} /><span className="text-muted-foreground"> :{i.line}</span></span>
-          <span className="col-span-2 md:col-span-1">{i.message} <span className="font-mono text-muted-foreground">{i.pattern}</span></span>
+        <li key={k} className="space-y-0.5 py-2 text-xs">
+          <div className="flex min-w-0 items-center gap-2">
+            <SeverityBadge severity={i.severity} />
+            <span className="min-w-0 truncate"><CompLink id={i.componentId} onSelect={onSelect} /></span>
+            <span className="shrink-0 tabular-nums text-muted-foreground">línea {i.line}</span>
+            <span className="ml-auto shrink-0 font-mono text-2xs text-muted-foreground">{i.pattern}</span>
+          </div>
+          <p className="break-words">{i.message}</p>
         </li>
       ))}
     </ul>

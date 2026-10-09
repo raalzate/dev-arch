@@ -7,7 +7,7 @@ import { ChevronDown, ChevronRight, Loader2, Pencil } from 'lucide-react';
 import type { Component, Proposal, ScoreProposalResponse } from '@static-inference/schema';
 import { layerLabel } from '@/lib/modernization/layers';
 import type { TechnologyProfile } from '@/lib/modernization/technology';
-import { ViabilityBadge } from './badges';
+import { ViabilityBadge, num } from './badges';
 
 export type ScoreState = { status: 'pending' } | { status: 'done'; result: ScoreProposalResponse } | { status: 'error'; message: string };
 
@@ -54,7 +54,7 @@ export default function ProposalCard({
       <dl className="flex flex-wrap gap-x-6 gap-y-1 px-4 pt-2 text-xs tabular-nums">
         <div><dt className="inline text-muted-foreground">Componentes </dt><dd className="inline font-medium">{components.length}</dd></div>
         <div><dt className="inline text-muted-foreground">Cohesión </dt><dd className="inline font-medium">{m.cohesion_avg.toFixed(2)}</dd></div>
-        <div><dt className="inline text-muted-foreground">Acoplamiento externo </dt><dd className="inline font-medium">{m.external_coupling}</dd></div>
+        <div><dt className="inline text-muted-foreground">Acoplamiento externo </dt><dd className="inline font-medium">{num(m.external_coupling)}</dd></div>
         {m.tables.length > 0 && <div><dt className="inline text-muted-foreground">Tablas </dt><dd className="inline font-medium">{m.tables.length}</dd></div>}
         {m.sensitive && <div><dd className="inline font-medium" style={{ color: 'var(--sev-critical)' }}>Datos sensibles</dd></div>}
       </dl>
@@ -67,7 +67,7 @@ export default function ProposalCard({
               <span className="font-medium">Puntuación del motor tras la edición</span>
               <ViabilityBadge viability={score.result.viability} />
               <span className="tabular-nums">puntuación {score.result.score.toFixed(2)}</span>
-              <span className="tabular-nums text-muted-foreground">cohesión ajustada {score.result.metrics.cohesion_adjusted.toFixed(2)} · acoplamiento {score.result.metrics.external_coupling}</span>
+              <span className="tabular-nums text-muted-foreground">cohesión ajustada {score.result.metrics.cohesion_adjusted.toFixed(2)} · acoplamiento {num(score.result.metrics.external_coupling)}</span>
             </div>
           )}
         </div>

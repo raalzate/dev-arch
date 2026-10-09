@@ -4,6 +4,9 @@ import { cn } from '@/lib/utils';
 import { SEVERITY_STYLES, type Severity } from '@/lib/modernization/severity';
 import type { Accent, TechnologyProfile } from '@/lib/modernization/technology';
 
+/** Metric value for display: integers as is, fractions with two decimals. */
+export const num = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
+
 export const ACCENT_VAR: Record<Accent, string> = {
   java: 'var(--tech-java)',
   dotnet: 'var(--tech-dotnet)',

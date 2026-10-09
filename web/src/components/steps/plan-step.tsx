@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { Download, FileText, Loader2, Printer, Sparkles } from 'lucide-react';
 import type { ModernizationPlan } from '@/lib/modernization/plan';
-import { ViabilityBadge } from '../badges';
+import { ViabilityBadge, num } from '../badges';
 
 function download(name: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -65,7 +65,7 @@ export default function PlanStep({
                     {p.entrypoint && p.entrypoint.type !== 'internal' && <span className="text-xs text-muted-foreground">entrada {p.entrypoint.type}</span>}
                   </div>
                   <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
-                    {p.components.length} componentes · cohesión {p.cohesion.toFixed(2)} · acoplamiento externo {p.coupling}
+                    {p.components.length} componentes · cohesión {p.cohesion.toFixed(2)} · acoplamiento externo {num(p.coupling)}
                     {p.tables.length > 0 && ` · ${p.tables.length} tablas`}
                     {p.severeIssues > 0 && ` · ${p.severeIssues} problemas graves`}
                     {p.componentsWithSecrets.length > 0 && ` · ${p.componentsWithSecrets.length} con secretos`}

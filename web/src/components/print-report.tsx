@@ -2,6 +2,7 @@
 // saves it as PDF, so no PDF dependency is needed (Constitution VI).
 import React from 'react';
 import type { ModernizationPlan } from '@/lib/modernization/plan';
+import { num } from './badges';
 import { SEVERITIES, SEVERITY_STYLES } from '@/lib/modernization/severity';
 
 export default function PrintReport({ plan }: { plan: ModernizationPlan }) {
@@ -27,7 +28,7 @@ export default function PrintReport({ plan }: { plan: ModernizationPlan }) {
               <li key={p.id} className="break-inside-avoid">
                 <strong>{p.name}</strong>
                 {p.edited && p.score !== null ? ` (editada, puntuación del motor ${p.score.toFixed(2)})` : ''} — {p.components.length} componentes,
-                cohesión {p.cohesion.toFixed(2)}, acoplamiento externo {p.coupling}
+                cohesión {p.cohesion.toFixed(2)}, acoplamiento externo {num(p.coupling)}
                 {p.tables.length > 0 ? `, tablas: ${p.tables.join(', ')}` : ''}
                 {p.sensitive ? ', datos sensibles' : ''}.
                 {p.actions.length > 0 && <ul className="list-disc pl-5">{p.actions.map((a, i) => <li key={i}>{a}</li>)}</ul>}

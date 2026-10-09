@@ -108,7 +108,7 @@ export default function ComponentGraph({
       className="h-[560px] w-full cursor-grab touch-none select-none rounded-md border border-border bg-background active:cursor-grabbing"
     >
       <defs>
-        <marker id="map-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <marker id="map-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
           <path d="M0,0 L10,5 L0,10 z" fill="var(--map-edge)" />
         </marker>
       </defs>
