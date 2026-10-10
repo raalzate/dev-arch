@@ -1,6 +1,7 @@
 // Resolution of the locally built engine used by POST /api/analyze (006-devarch-monorepo,
 // contracts/engine-resolution.md). Pure functions: the route passes process.env, process.cwd() and fs.existsSync.
 import path from 'node:path';
+import type { Env } from '../config';
 
 export type EngineResolution =
   | { kind: 'resolved'; javaBin: string; jarPath: string }
@@ -15,7 +16,7 @@ export const DEFAULT_ENGINE_JAR = path.join('engine-dist', 'engine.jar');
  * - java: $JAVA_HOME/bin/java when JAVA_HOME is set, else `java` from the PATH
  */
 export function resolveEngine(
-  env: NodeJS.ProcessEnv,
+  env: Env,
   cwd: string,
   exists: (p: string) => boolean,
 ): EngineResolution {

@@ -1,4 +1,5 @@
 // LLM provider selection (010 FR-040; research D10). Pure: reads only the environment passed in, never prints secrets.
+import type { Env } from '../../server/config';
 export type LlmProviderName = 'gemini' | 'anthropic';
 export const LLM_PROVIDERS: readonly LlmProviderName[] = ['gemini', 'anthropic'];
 export const GEMINI_DEFAULT_MODEL = 'gemini-2.5-flash';
@@ -17,7 +18,7 @@ export class LlmConfigError extends Error {
   }
 }
 
-export function resolveLlmProvider(env: NodeJS.ProcessEnv): LlmSelection {
+export function resolveLlmProvider(env: Env): LlmSelection {
   const raw = (env.LLM_PROVIDER ?? '').trim().toLowerCase();
   const provider = (raw || 'gemini') as LlmProviderName;
   if (!LLM_PROVIDERS.includes(provider)) {

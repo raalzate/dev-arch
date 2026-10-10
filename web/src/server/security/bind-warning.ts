@@ -1,7 +1,8 @@
 // Prominent warning when the web listens beyond the local machine without an API token (007, decision A3, FR-036).
 // Next.js listens on every interface unless HOSTNAME or -H/--hostname says otherwise.
+import type { Env } from '../config';
 
-export function listenHost(env: NodeJS.ProcessEnv, argv: string[]): string | null {
+export function listenHost(env: Env, argv: string[]): string | null {
   const fromEnv = env.HOSTNAME?.trim();
   if (fromEnv) return fromEnv;
   for (let i = 0; i < argv.length; i++) {

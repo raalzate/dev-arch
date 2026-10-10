@@ -2,7 +2,7 @@
 # Product test subsets (FR-010, contracts/make-targets.md):
 #   all         version-check, engine (Java + .NET), schema-check, web, acceptance
 #   engine      mvn -B verify in engine/ + dotnet test --filter "Category!=Corpus"
-#   web         npm test -w web (node:test + tsx)
+#   web         npm run typecheck/lint -w web, then npm test -w web (node:test + tsx, coverage + 85 % gate; 011)
 #   acceptance  Cucumber-JS scenarios of 006 (@slow only with DEVARCH_E2E=true; ACCEPTANCE_TAGS narrows them)
 # Prints "[test] <subset>: OK|FAIL" per subset and a final summary; exits 1 when any subset fails.
 set -u
@@ -47,8 +47,14 @@ run_schema_check() {
 }
 
 run_web() {
-  announce "npm test -w web"
-  npm test -w web; record web $?
+  # 011-quality-delivery (FR-005, FR-013, FR-018): type check and lint block the subset; the unit tests run with
+  # coverage (web/coverage) and fail below the line-coverage threshold.
+  announce "npm run typecheck -w web"
+  npm run typecheck -w web; record web-typecheck $?
+  announce "npm run lint -w web"
+  npm run lint -w web; record web-lint $?
+  announce "npm test -w web -- --coverage"
+  npm test -w web -- --coverage; record web $?
 }
 
 run_acceptance() {

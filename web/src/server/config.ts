@@ -30,7 +30,7 @@ export const DEFAULT_SOURCE_EXTENSIONS: readonly string[] = [
  */
 export const DEFAULT_MAX_CONCURRENT = 2;
 
-function positiveInt(env: NodeJS.ProcessEnv, name: string, fallback: number): number {
+function positiveInt(env: Env, name: string, fallback: number): number {
   const raw = env[name]?.trim();
   if (raw === undefined || raw === '') return fallback;
   if (!/^\d+$/.test(raw) || Number(raw) <= 0 || !Number.isSafeInteger(Number(raw))) {
@@ -39,7 +39,7 @@ function positiveInt(env: NodeJS.ProcessEnv, name: string, fallback: number): nu
   return Number(raw);
 }
 
-function bool(env: NodeJS.ProcessEnv, name: string, fallback: boolean): boolean {
+function bool(env: Env, name: string, fallback: boolean): boolean {
   const raw = env[name]?.trim().toLowerCase();
   if (raw === undefined || raw === '') return fallback;
   if (raw === 'true' || raw === '1') return true;
@@ -47,7 +47,14 @@ function bool(env: NodeJS.ProcessEnv, name: string, fallback: boolean): boolean 
   throw new Error(`Invalid configuration: ${name} must be true or false (got '${env[name]}')`);
 }
 
-export function loadConfig(env: NodeJS.ProcessEnv, cwd: string): AppConfig {
+/**
+ * Environment read by the pure configuration and resolution functions (011-quality-delivery, research D1).
+ * `NodeJS.ProcessEnv` is widened by Next.js with a mandatory NODE_ENV, which makes plain records (tests, child
+ * environments) unassignable; these functions only read variables, so a read-only string map is the exact need.
+ */
+export type Env = Readonly<Record<string, string | undefined>>;
+
+export function loadConfig(env: Env, cwd: string): AppConfig {
   const dataDirRaw = env.ARCHVIEW_DATA_DIR?.trim();
   const token = env.DEVARCH_API_TOKEN?.trim();
   return {
