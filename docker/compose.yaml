@@ -1,0 +1,57 @@
+# dev-arch with Docker Compose (012-install-doctor-docker). Run from apps/dev-arch:
+#   docker compose -f docker/compose.yaml up -d                     default profile: all-in-one web on :9002
+#   docker compose -f docker/compose.yaml --profile dev up web-dev  dev profile: mounted sources, hot reload on :9003
+# Variables come from the environment or docker/.env (GEMINI_API_KEY, GOOGLE_GENAI_API_KEY, LLM_MODEL, ...).
+# Ports bind to 127.0.0.1 unless DEV_ARCH_BIND says otherwise (set DEVARCH_API_TOKEN before exposing the web).
+# Generic and provider-neutral: one image, no cloud-specific settings.
+name: dev-arch
+
+services:
+  web:
+    image: ${DEV_ARCH_IMAGE:-dev-arch:local}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: runtime
+    volumes:
+      - dev-arch-data:/data
+    environment:
+      ARCHVIEW_DATA_DIR: /data
+      ARCHVIEW_JOB_TTL_HOURS: ${ARCHVIEW_JOB_TTL_HOURS:-24}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_GENAI_API_KEY: ${GOOGLE_GENAI_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      DEVARCH_API_TOKEN: ${DEVARCH_API_TOKEN:-}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xmx2g}
+    ports:
+      - "${DEV_ARCH_BIND:-127.0.0.1}:${DEV_ARCH_PORT:-9002}:9002"
+    restart: unless-stopped
+    mem_limit: ${DEV_ARCH_MEM_LIMIT:-4g}
+
+  web-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: dev
+    volumes:
+      - ..:/app
+      - /app/node_modules
+      - /app/web/node_modules
+      - /app/schema/node_modules
+      - dev-arch-dev-data:/data
+    environment:
+      NODE_ENV: development
+      ARCHVIEW_DATA_DIR: /data
+      DEVARCH_ALLOW_LOCAL_PATH: "true"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_GENAI_API_KEY: ${GOOGLE_GENAI_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xmx2g}
+    ports:
+      - "${DEV_ARCH_BIND:-127.0.0.1}:9003:9002"
+    mem_limit: ${DEV_ARCH_MEM_LIMIT:-4g}
+    profiles: ["dev"]
+
+volumes:
+  dev-arch-data:
+  dev-arch-dev-data:

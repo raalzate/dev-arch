@@ -1,0 +1,17 @@
+# Build context of docker/Dockerfile (apps/dev-arch), 012-install-doctor-docker. BuildKit reads this file because
+# it sits next to the Dockerfile (a .dockerignore at the product root would add a root entry, 006 TS-001).
+**/.git
+**/node_modules
+**/target
+**/.next
+**/engine-dist
+**/coverage
+**/bin
+**/obj
+**/.archview
+**/*.log
+docker/.env
+specs
+tests
+engine/test-for-demo
+engine/src/test
