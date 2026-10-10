@@ -35,7 +35,7 @@ public class McpServerMain {
      *
      * @return the version filtered into the version resource
      */
-    static String serverVersion() {
+    public static String serverVersion() {
         return SERVER_VERSION;
     }
 

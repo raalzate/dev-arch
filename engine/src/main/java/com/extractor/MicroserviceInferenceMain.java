@@ -31,6 +31,15 @@ public class MicroserviceInferenceMain {
             return;
         }
 
+        // 012-install-doctor-docker: java -jar tool.jar --doctor
+        if (args.length >= 1 && "--doctor".equals(args[0])) {
+            int code = EngineDoctor.run(McpServerMain.serverVersion());
+            if (code != 0) {
+                System.exit(code);
+            }
+            return;
+        }
+
         if (args.length < 2) {
             System.err.println("Uso: java MicroserviceInferenceMain <ruta-proyecto> <archivo-salida>");
             System.err.println("     java MicroserviceInferenceMain --mcp");
