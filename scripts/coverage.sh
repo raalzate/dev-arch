@@ -27,7 +27,11 @@ summary() {
   else
     echo "[coverage] java: MISSING ($JAVA_REPORT)"; missing=1
   fi
-  report="$(find "$DOTNET_DIR" -name coverage.cobertura.xml 2>/dev/null | sort | tail -n 1)"
+  # Newest run (each dotnet test --collect writes a new <guid>/ folder).
+  report=""
+  while IFS= read -r f; do
+    if [ -z "$report" ] || [ "$f" -nt "$report" ]; then report="$f"; fi
+  done < <(find "$DOTNET_DIR" -name coverage.cobertura.xml 2>/dev/null)
   if [ -n "$report" ]; then
     pct="$(grep -o '<coverage line-rate="[0-9.]*"' "$report" | head -n 1 | sed -E 's/.*"([0-9.]+)"/\1/' \
       | awk '{ printf "%.2f", 100*$1 }')"

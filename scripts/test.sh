@@ -42,8 +42,8 @@ run_engine() {
   # shellcheck disable=SC2086
   (cd "$ENGINE_DIR" && "$mvn" -B ${MVN_ARGS:-} verify); rc=$?
   record engine-java $rc
-  # 011 (FR-012): coverlet collects the .NET coverage (engine/target/coverage/dotnet/<run>/coverage.cobertura.xml).
-  rm -rf "$ENGINE_DIR/target/coverage/dotnet"
+  # 011 (FR-012): coverlet collects the .NET coverage (engine/target/coverage/dotnet/<run>/coverage.cobertura.xml;
+  # the newest run is the one reported by scripts/coverage.sh).
   announce "dotnet test engine/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj --filter \"Category!=Corpus\" --collect \"XPlat Code Coverage\""
   dotnet test "$ENGINE_DIR/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj" --filter "Category!=Corpus" --collect "XPlat Code Coverage" --results-directory "$ENGINE_DIR/target/coverage/dotnet"
   record engine-dotnet $?
