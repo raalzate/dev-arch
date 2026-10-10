@@ -49,6 +49,8 @@ build_dotnet() {
     if [ -x "$PUBLISH_DIR/dotnet-analyzer" ]; then
       rm -f "$ENGINE_DIR/target/dotnet-analyzer"
       write_launcher "$ENGINE_DIR/target/dotnet-analyzer"
+      # 011 (FR-029): publication stamp compared with the analyzer sources by dotnet-analyzer-freshness.sh.
+      touch "$ENGINE_DIR/target/dotnet-analyzer.published"
     fi
     status build engine-dotnet OK "engine/target/dotnet-analyzer"
   else

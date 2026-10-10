@@ -108,9 +108,20 @@ prepare_dotnet_analyzer() {
     sdk_dir="$(dotnet --list-sdks 2>/dev/null | tail -n 1 | sed -E 's/.*\[(.*)\]$/\1/')"
     [ -n "$sdk_dir" ] && [ -d "$sdk_dir/.." ] && export DOTNET_ROOT="$(cd "$sdk_dir/.." && pwd)"
   fi
-  if [ "${SCHEMA_CHECK_SKIP_BUILD:-0}" != "1" ] || [ ! -x "$out/dotnet-analyzer" ]; then
+  # 011 (FR-029/FR-030): reuse the published analyzer only when it is newer than its sources; SCHEMA_CHECK_SKIP_BUILD=0
+  # (the default outside make test) forces the publication.
+  local force="" decision
+  [ "${SCHEMA_CHECK_SKIP_BUILD:-0}" != "1" ] && force="--force"
+  decision="$(bash "$PRODUCT_ROOT/scripts/dotnet-analyzer-freshness.sh" "$out/.published" \
+    "$ENGINE_DIR/src/main/dotnet/DotNetAnalyzer" $force)"
+  [ -x "$out/dotnet-analyzer" ] || decision="rebuild: missing"
+  if [ "$decision" != "reuse" ]; then
+    echo "[schema-check] dotnet-analyzer: rebuilt ($decision)"
     dotnet publish "$ENGINE_DIR/src/main/dotnet/DotNetAnalyzer/DotNetAnalyzer.csproj" -c Release -o "$out" \
       > "$LOG_DIR/dotnet-publish.log" 2>&1 || return 0
+    touch "$out/.published"
+  else
+    echo "[schema-check] dotnet-analyzer: reused"
   fi
   [ -x "$out/dotnet-analyzer" ] || return 0
   rm -f "$ENGINE_DIR/target/dotnet-analyzer"
@@ -121,6 +132,7 @@ prepare_dotnet_analyzer() {
     echo "exec \"$out/dotnet-analyzer\" \"\$@\""
   } > "$ENGINE_DIR/target/dotnet-analyzer"
   chmod +x "$ENGINE_DIR/target/dotnet-analyzer"
+  touch "$ENGINE_DIR/target/dotnet-analyzer.published"
   return 0
 }
 

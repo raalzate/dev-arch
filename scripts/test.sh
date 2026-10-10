@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Product test subsets (FR-010, contracts/make-targets.md):
 #   all         version-check, engine (Java + .NET), schema-check, web, acceptance
-#   engine      mvn -B verify in engine/ + dotnet test --filter "Category!=Corpus"
+#   engine      mvn -B verify in engine/ (JaCoCo) + dotnet test --filter "Category!=Corpus" (coverlet)
 #   web         npm run typecheck/lint -w web, then npm test -w web (node:test + tsx, coverage + 85 % gate; 011)
 #   acceptance  Cucumber-JS scenarios of 006 (@slow only with DEVARCH_E2E=true; ACCEPTANCE_TAGS narrows them)
 # Prints "[test] <subset>: OK|FAIL" per subset and a final summary; exits 1 when any subset fails.
@@ -24,9 +24,17 @@ run_version() {
 
 run_engine() {
   local mvn rc
-  # The Java tests analyze the .NET demos through engine/target/dotnet-analyzer: publish it when missing.
-  if [ ! -x "$ENGINE_DIR/target/dotnet-analyzer" ]; then
+  # The Java tests analyze the .NET demos through engine/target/dotnet-analyzer: publish it when missing or older
+  # than its sources (011 FR-029; never validate a stale analyzer).
+  local decision
+  decision="$(bash "$PRODUCT_ROOT/scripts/dotnet-analyzer-freshness.sh" "$ENGINE_DIR/target/dotnet-analyzer.published" \
+    "$ENGINE_DIR/src/main/dotnet/DotNetAnalyzer")"
+  [ -x "$ENGINE_DIR/target/dotnet-analyzer" ] || decision="rebuild: missing"
+  if [ "$decision" != "reuse" ]; then
+    echo "[test] dotnet-analyzer: rebuilt ($decision)"
     bash "$PRODUCT_ROOT/scripts/engine-build.sh" --dotnet-only
+  else
+    echo "[test] dotnet-analyzer: reused"
   fi
   export_dotnet_root
   mvn="$(mvn_cmd)"
@@ -34,8 +42,10 @@ run_engine() {
   # shellcheck disable=SC2086
   (cd "$ENGINE_DIR" && "$mvn" -B ${MVN_ARGS:-} verify); rc=$?
   record engine-java $rc
-  announce "dotnet test engine/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj --filter \"Category!=Corpus\""
-  dotnet test "$ENGINE_DIR/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj" --filter "Category!=Corpus"
+  # 011 (FR-012): coverlet collects the .NET coverage (engine/target/coverage/dotnet/<run>/coverage.cobertura.xml).
+  rm -rf "$ENGINE_DIR/target/coverage/dotnet"
+  announce "dotnet test engine/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj --filter \"Category!=Corpus\" --collect \"XPlat Code Coverage\""
+  dotnet test "$ENGINE_DIR/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj" --filter "Category!=Corpus" --collect "XPlat Code Coverage" --results-directory "$ENGINE_DIR/target/coverage/dotnet"
   record engine-dotnet $?
 }
 

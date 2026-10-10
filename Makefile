@@ -5,11 +5,11 @@
 SHELL := /bin/bash
 
 .PHONY: help prereqs build build-engine test test-engine test-web test-acceptance e2e schema-check \
-        schema-generate dev clean doctor version-sync version-check test-e2e-browser
+        schema-generate dev clean doctor version-sync version-check test-e2e-browser coverage
 
 help:
 	@echo "make build | test | test-engine | test-web | test-acceptance | schema-check | dev | clean"
-	@echo "make e2e | doctor (reserved) | schema-generate | version-sync | version-check"
+	@echo "make e2e | doctor (reserved) | schema-generate | version-sync | version-check | coverage"
 
 ## Verify JDK 17, .NET SDK >= 8 + .NET 8 runtime and Node >= 20 before compiling anything.
 prereqs:
@@ -40,6 +40,11 @@ test-acceptance:
 ## `npx playwright install chromium`). `make e2e` stays reserved for feature 011.
 test-e2e-browser:
 	@DEVARCH_E2E=true DEVARCH_E2E_BROWSER=true NODE_OPTIONS="--import tsx $${NODE_OPTIONS:-}" npx cucumber-js --tags @e2e
+
+## Coverage of the three stacks (011-quality-delivery): JaCoCo, coverlet and the web unit tests, then one summary
+## line per stack (contracts/coverage.md).
+coverage: prereqs
+	@bash scripts/coverage.sh
 
 ## Verify Java, .NET and generated TypeScript types against the output contract (005-json-schema-contract).
 schema-check:

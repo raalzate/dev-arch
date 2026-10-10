@@ -5,7 +5,7 @@ set -u
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 cd "$PRODUCT_ROOT" || exit 1
 
-rm -rf engine/target target web/.next web/engine-dist web/next-env.d.ts web/*.tsbuildinfo \
+rm -rf engine/target target web/.next web/engine-dist web/coverage web/next-env.d.ts web/*.tsbuildinfo \
   node_modules web/node_modules schema/node_modules
 find engine/src -type d \( -name obj -o -name bin \) -prune -exec rm -rf {} + 2>/dev/null
-status clean product OK "engine/target, web/.next, web/engine-dist, node_modules, .NET obj/bin removed"
+status clean product OK "engine/target, web/.next, web/engine-dist, web/coverage, node_modules, .NET obj/bin removed"
