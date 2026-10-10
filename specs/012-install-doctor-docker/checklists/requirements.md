@@ -30,3 +30,11 @@
 
 - [x] **CHK007**: ¿Cada historia es implementable y verificable de forma independiente? [Readiness]
 - [x] **CHK008**: ¿Los conflictos con escenarios bloqueados (006 TS-001 raíz, TS-012 `make doctor`, TS-013 espacios de trabajo, TS-025/029/030 CI) están resueltos sin modificarlos? [Consistency, FR-013, FR-024, FR-027]
+
+## Checklist review (`/iikit-03-checklist`, 2026-10-10)
+
+- [x] **CHK009**: ¿Cada FR se verifica sin intervención manual? [Testability] — doctor con sistemas simulados por SO y ejecución real local; salud con ejecutor del doctor simulado y real; imagen/Compose/CI por inspección estática; construcción real solo en CI (FR-025)
+- [x] **CHK010**: ¿Los umbrales tienen valores (JDK 17, Maven 3.6, .NET 8, Node 20/npm 10, Docker 24/Compose v2, RAM 4 GB, disco 2 GB, 30 s, Checkstyle 4589)? [Measurability]
+- [x] **CHK011**: ¿Se respetan 006 TS-001 (raíz), TS-012 (`make doctor`), TS-013 (workspaces), TS-025/029/030 (CI)? [Consistency] — sí (plan Structure Decision, research D1/D8)
+- [x] **CHK012**: ¿El cambio del motor preserva paridad CLI/MCP y la lista de herramientas MCP? [Consistency, FR-015]
+- [x] **CHK013**: ¿Las exclusiones del usuario (sin `split`, sin MCP HTTP, sin proveedor) tienen verificación negativa? [Coverage, FR-022]

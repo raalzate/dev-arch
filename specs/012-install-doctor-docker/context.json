@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "97b68394f515a3537e55abe761e80c3844b4d2539b5e0596516579c310fbd005",
+    "generated_at": "2026-10-10T16:30:15Z",
+    "features_dir": "specs/012-install-doctor-docker/tests/features",
+    "file_count": 5
+  }
+}
