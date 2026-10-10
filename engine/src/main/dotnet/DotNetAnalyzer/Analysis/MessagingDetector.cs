@@ -77,6 +77,16 @@ public class MessagingDetector
             }
         }
 
+        // Without a package restore (FR-012) IConsumer<T> is an unresolved (error) type,
+        // which Roslyn binds as the base type and leaves out of AllInterfaces.
+        if (typeSymbol.BaseType is { TypeKind: TypeKind.Error } unresolvedBase
+            && MassTransitConsumerInterfaces.Contains(unresolvedBase.Name))
+        {
+            component.MessagingType = "MassTransit";
+            component.MessagingRole = "consumer";
+            return;
+        }
+
         // Publisher: ctor param or field of type IPublishEndpoint or IBus.
         if (HasMemberOrParameterOfType(typeSymbol, MassTransitPublisherTypes))
         {

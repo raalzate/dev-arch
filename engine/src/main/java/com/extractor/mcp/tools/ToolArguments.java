@@ -37,6 +37,43 @@ final class ToolArguments {
     }
 
     /**
+     * Required string argument (001, FR-008: wrong input yields a clear
+     * message, never a JVM cast error).
+     *
+     * @param request the tool request
+     * @param name    argument name
+     * @return the value
+     * @throws IllegalArgumentException when missing or not a string
+     */
+    static String requiredString(final McpSchema.CallToolRequest request,
+            final String name) {
+        String value = optionalString(request, name);
+        if (value == null) {
+            throw new IllegalArgumentException("Missing required argument '"
+                    + name + "'");
+        }
+        return value;
+    }
+
+    /**
+     * Optional string argument.
+     *
+     * @param request the tool request
+     * @param name    argument name
+     * @return the value or null when absent
+     * @throws IllegalArgumentException when present but not a string
+     */
+    static String optionalString(final McpSchema.CallToolRequest request,
+            final String name) {
+        Object value = arguments(request).get(name);
+        if (value != null && !(value instanceof String)) {
+            throw new IllegalArgumentException("Invalid argument '" + name
+                    + "': expected a string");
+        }
+        return (String) value;
+    }
+
+    /**
      * Progress token of the request, if any.
      *
      * @param request the tool request

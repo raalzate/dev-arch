@@ -33,7 +33,7 @@ public final class GetDependencyGraphTool {
     public static McpSchema.CallToolResult handle(AnalysisService service, McpSchema.CallToolRequest request) {
         try {
             AnalysisOptions options = ToolArguments.options(request);
-            String projectPath = (String) request.arguments().get("projectPath");
+            String projectPath = ToolArguments.requiredString(request, "projectPath");
             Path projectRoot = Paths.get(projectPath);
 
             DependencyGraph graph = service.getDependencyGraph(projectRoot, options);

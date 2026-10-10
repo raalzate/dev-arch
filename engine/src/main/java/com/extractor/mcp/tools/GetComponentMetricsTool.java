@@ -34,8 +34,8 @@ public final class GetComponentMetricsTool {
     public static McpSchema.CallToolResult handle(AnalysisService service, McpSchema.CallToolRequest request) {
         try {
             AnalysisOptions options = ToolArguments.options(request);
-            String projectPath = (String) request.arguments().get("projectPath");
-            String componentId = (String) request.arguments().get("componentId");
+            String projectPath = ToolArguments.requiredString(request, "projectPath");
+            String componentId = ToolArguments.requiredString(request, "componentId");
             Path projectRoot = Paths.get(projectPath);
 
             Component component = service.getComponentMetrics(

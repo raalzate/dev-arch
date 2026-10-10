@@ -24,6 +24,11 @@
     <!-- 009-vb-legacy-completion: BDD runner for the .feature files of the feature (test project only,
          Constitution VI; 2.0.3 keeps xUnit 2.7.0, research D9) -->
     <PackageReference Include="Reqnroll.xUnit" Version="2.0.3" />
+    <!-- 011-quality-delivery (FR-012): coverage collector (dotnet test with the "XPlat Code Coverage" collector), test project only -->
+    <PackageReference Include="coverlet.collector" Version="6.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

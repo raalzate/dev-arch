@@ -33,8 +33,8 @@ public final class GetArchitectureTool {
     public static McpSchema.CallToolResult handle(AnalysisService service, McpSchema.CallToolRequest request) {
         try {
             AnalysisOptions options = ToolArguments.options(request);
-            String projectPath = (String) request.arguments().get("projectPath");
-            String minViability = (String) request.arguments().get("minViability");
+            String projectPath = ToolArguments.requiredString(request, "projectPath");
+            String minViability = ToolArguments.optionalString(request, "minViability");
             Path projectRoot = Paths.get(projectPath);
 
             ConsolidatedArchitecture architecture = service.getArchitectureProposal(

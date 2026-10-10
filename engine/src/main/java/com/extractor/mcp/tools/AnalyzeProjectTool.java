@@ -102,8 +102,9 @@ public final class AnalyzeProjectTool {
         try {
             AnalysisOptions options = ToolArguments.options(request);
             String projectPath =
-                    (String) request.arguments().get("projectPath");
-            String outputDir = (String) request.arguments().get("outputDir");
+                    ToolArguments.requiredString(request, "projectPath");
+            String outputDir =
+                    ToolArguments.optionalString(request, "outputDir");
 
             Path projectRoot = Paths.get(projectPath);
             if (!Files.exists(projectRoot)) {

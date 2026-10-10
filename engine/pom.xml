@@ -191,6 +191,35 @@
                 </configuration>
             </plugin>
 
+            <!-- 011-quality-delivery (FR-011): line/branch coverage of the engine tests, report (XML + HTML) in verify
+                 at target/site/jacoco. Surefire declares no argLine, so the agent property is used as is. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <formats>
+                                <format>XML</format>
+                                <format>HTML</format>
+                            </formats>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Maven Assembly Plugin for creating executable jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

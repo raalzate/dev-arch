@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Package that does not exist on any feed: restore and build fail. -->
+    <PackageReference Include="Contoso.Internal.LedgerSdk" Version="9.9.9-missing" />
+    <ProjectReference Include="../Missing.Shared/Missing.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

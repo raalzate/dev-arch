@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -21,6 +22,21 @@ public class RoslynCodeAnalyzer
         {
             var root = syntaxTree.GetRoot();
             var relativePath = GetRelativePath(syntaxTree.FilePath);
+
+            // FR-005: a C# file that cannot be parsed does not stop the analysis, but it is reported
+            if (syntaxTree.Options.Language == LanguageNames.CSharp)
+            {
+                var syntaxError = syntaxTree.GetDiagnostics()
+                    .FirstOrDefault(d => d.Severity == DiagnosticSeverity.Error);
+                if (syntaxError != null)
+                {
+                    var errorLine = syntaxError.Location.GetLineSpan().StartLinePosition.Line + 1;
+                    Console.Error.WriteLine(
+                        $"[WARN] RoslynCodeAnalyzer: '{relativePath}' cannot be parsed (line {errorLine}: "
+                        + $"{syntaxError.Id} {syntaxError.GetMessage(CultureInfo.InvariantCulture)}); "
+                        + "code issues of this file may be incomplete.");
+                }
+            }
 
             // Find type declarations and map to components by fully-qualified name
             SemanticModel? semanticModel = null;
