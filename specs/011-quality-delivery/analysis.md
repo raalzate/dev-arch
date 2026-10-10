@@ -25,3 +25,8 @@ re-testifying them (forbidden by the user's additive rule of 2026-10-09) or reve
 
 They are excluded by tag filter in the new runners (documented in each runner) pending the user's decision;
 011 TS-007/TS-008 (every legacy scenario reported/passed) stay red until then. **Status: STOP — awaiting user.**
+
+**Resolution (user decision 2026-10-09, option B "Exclusión documentada")**: versioned list
+`legacy-exclusions.md` (single source, read by the runners' first `@Before` hook and by the 011 steps); FR-033 added;
+011 re-testified (TS-007/TS-008/TS-009 accept exactly the documented exclusions, TS-035 guards the list). The
+`.feature` files of 001–003 are unchanged. Re-analysis: CRITICAL 0, HIGH 0.

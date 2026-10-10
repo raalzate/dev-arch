@@ -96,6 +96,15 @@ tests/acceptance/steps/quality-*.steps.ts       # NUEVO (escenarios 011)
  tag dev-arch-vX.Y.Z ──► release-check ──► release (matriz) + release-skills ──► GitHub Release
 ```
 
+### Legacy exclusions (FR-033, user decision 2026-10-09)
+
+`specs/011-quality-delivery/legacy-exclusions.md` is the single, versioned, machine-readable list of excluded legacy
+scenarios (markdown table: feature, `@TS-XXX`, locked assertion, superseding decision, date). A shared test helper
+`com.extractor.legacybdd.LegacyExclusions` parses it; each legacy glue package registers a first-order `@Before` hook
+that aborts a listed scenario (`Assumptions.abort`, reported as skipped) with the reason
+`excluded-by-decision: …`. The runners carry no tag filter. The cucumber-js steps of TS-007/TS-008/TS-009/TS-035
+parse the same file: stale entries, undocumented skips and tag filters in the runners fail the verification.
+
 ## Complexity Tracking
 
 | Adición | Por qué | Alternativa descartada |

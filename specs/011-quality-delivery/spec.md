@@ -49,10 +49,11 @@ Como mantenedor, quiero que todos los escenarios Gherkin bloqueados de 001, 002 
 **Acceptance Scenarios**:
 
 1. **Given** los archivos `.feature` de 001, 002 y 003, **When** se ejecuta la verificación del motor, **Then** cada escenario se ejecuta con definiciones de pasos y ninguno queda indefinido, pendiente ni ambiguo
-2. **Given** la verificación del motor con el analizador .NET disponible, **When** termina, **Then** todos los escenarios de 001–003 pasan y ninguno se omite
-3. **Given** la verificación del motor sin el analizador .NET, **When** termina, **Then** los escenarios que lo necesitan se reportan como omitidos con un motivo explícito y el resto pasa
+2. **Given** la verificación del motor con el analizador .NET disponible, **When** termina, **Then** todos los escenarios de 001–003 que no figuran en la lista documentada de exclusiones pasan, ninguno de ellos se omite, y los excluidos son exactamente los de la lista, cada uno omitido con el motivo de exclusión
+3. **Given** la verificación del motor sin el analizador .NET, **When** termina, **Then** los escenarios que lo necesitan se reportan como omitidos con un motivo explícito, los excluidos solo con el motivo de exclusión, y el resto pasa
 4. **Given** los `.feature`, los `context.json` y las pruebas existentes de 001–010, **When** se comparan con la línea base, **Then** ninguno ha cambiado y los hashes de aserción verifican
 5. **Given** el trabajo de CI del motor Java, **When** se inspecciona, **Then** prepara el analizador .NET antes de la verificación, de modo que los escenarios .NET se ejecutan en CI
+6. **Given** la lista versionada de exclusiones de escenarios heredados, **When** se inspecciona, **Then** cada entrada identifica la feature, el escenario, la decisión posterior que lo reemplaza y la fecha de la decisión, cada entrada corresponde a un escenario existente, y los ejecutores de escenarios heredados toman sus exclusiones de esa lista y de ninguna otra fuente
 
 ---
 
@@ -146,7 +147,7 @@ Como desarrollador, quiero que las pruebas locales reconstruyan el analizador .N
 ### Edge Cases
 
 - Analizador .NET ausente en la máquina: los escenarios .NET de 002/003 se omiten con motivo explícito; nunca se reportan como pasados.
-- Escenario heredado cuya redacción no coincide con el comportamiento actual del motor: se corrige el código de producción si es un defecto; si el escenario contradice una decisión posterior registrada, se detiene y se reporta (no se edita el escenario).
+- Escenario heredado cuya redacción no coincide con el comportamiento actual del motor: se corrige el código de producción si es un defecto; si el escenario contradice una decisión posterior registrada, se detiene y se reporta (no se edita el escenario); con decisión del usuario, se añade a la lista documentada de exclusiones (FR-033).
 - Pasos con el mismo texto en features distintas de 001–003 con significados distintos: cada feature tiene su propio conjunto de pasos aislado.
 - Errores de tipos en pruebas bloqueadas de features anteriores: se corrigen en el código de producción o en la configuración, nunca editando la prueba.
 - Tag que no sigue `dev-arch-vX.Y.Z`: la comprobación de versión lo rechaza.
@@ -171,8 +172,9 @@ Como desarrollador, quiero que las pruebas locales reconstruyan el analizador .N
 - **FR-006**: Cada escenario de los `.feature` de 001, 002 (incluidos `bugfix_BUG-001` … `bugfix_BUG-006`) y 003 MUST ejecutarse en la verificación del motor con definiciones de pasos que ejercen el motor real (línea de comandos, servidor MCP, analizador .NET) y aserciones reales.
 - **FR-007**: Las definiciones de pasos MUST añadirse en archivos nuevos; ningún `.feature`, `context.json`, especificación, definición de pasos ni prueba existente de 001–010 MUST cambiar.
 - **FR-008**: Ningún escenario de 001–003 MUST quedar indefinido, pendiente o ambiguo; la verificación MUST fallar si ocurre.
-- **FR-009**: Los escenarios que requieren el analizador .NET MUST omitirse con un motivo explícito cuando no está disponible y MUST ejecutarse cuando lo está (comando de pruebas del producto y CI).
+- **FR-009**: Los escenarios que requieren el analizador .NET MUST omitirse con un motivo explícito cuando no está disponible y MUST ejecutarse cuando lo está (comando de pruebas del producto y CI). Ningún escenario heredado MUST omitirse por un motivo distinto de esos dos (analizador ausente o exclusión documentada según FR-033).
 - **FR-010**: El trabajo de CI del motor Java MUST preparar el analizador .NET antes de la verificación del motor.
+- **FR-033**: Los escenarios heredados de 001–003 que contradicen una decisión posterior bloqueada MUST figurar en una lista versionada de exclusiones de esta feature, con feature, escenario, decisión que lo reemplaza y fecha de la decisión; los ejecutores heredados MUST tomar sus exclusiones solo de esa lista y omitir cada escenario excluido con un motivo de exclusión que cite la decisión; la verificación MUST fallar si una entrada no corresponde a un escenario existente o si un escenario se omite sin estar en la lista ni requerir el analizador ausente.
 
 **Cobertura (US3)**
 
@@ -217,6 +219,7 @@ Como desarrollador, quiero que las pruebas locales reconstruyan el analizador .N
 ### Key Entities
 
 - **Escenario heredado**: escenario Gherkin bloqueado de 001–003 con su conjunto de pasos y su resultado (pasado, fallido, omitido con motivo).
+- **Exclusión documentada**: feature, escenario, aserción bloqueada, decisión posterior que la reemplaza, fecha de la decisión; versión de la lista.
 - **Informe de cobertura**: pila, porcentaje de líneas (y ramas cuando exista), ruta del informe legible por máquina.
 - **Evento de trabajo**: instante, análisis, tipo (encolado, inicio, inicio de fase, fin de fase, completado, fallido), fase, duración, código de error.
 - **Métricas del análisis**: duración por fase, tiempo en cola, duración total.
@@ -227,7 +230,7 @@ Como desarrollador, quiero que las pruebas locales reconstruyan el analizador .N
 ### Measurable Outcomes
 
 - **SC-001**: La comprobación de tipos y el lint de la web terminan con 0 errores y el build de producción se ejecuta sin opciones de tolerancia.
-- **SC-002**: 100 % de los escenarios de 001–003 (incluidos los bugfix de 002) se ejecutan en la verificación del motor; con el analizador .NET disponible, 0 fallidos, 0 omitidos, 0 indefinidos.
+- **SC-002**: 100 % de los escenarios de 001–003 (incluidos los bugfix de 002) se ejecutan en la verificación del motor; con el analizador .NET disponible, 0 fallidos, 0 indefinidos y 0 omitidos fuera de la lista documentada de exclusiones (exactamente 4 entradas al 2026-10-09).
 - **SC-003**: El comando de cobertura del producto produce 3 informes (Java, .NET, TypeScript) y CI publica los 3.
 - **SC-004**: La cobertura de líneas agregada de los módulos no visuales del servidor, rutas de API y utilidades de la web es ≥ 85 % y el 100 % de esos módulos aparece en el informe.
 - **SC-005**: Un tag que no coincide con la versión del producto produce 0 artefactos publicados.
@@ -243,15 +246,20 @@ Como desarrollador, quiero que las pruebas locales reconstruyan el analizador .N
 - Q: ¿Se pueden modificar pruebas, escenarios o guardas de features anteriores? -> A: No; la feature es aditiva. Se permiten archivos nuevos de pasos para `.feature` existentes. Si un objetivo exige modificar pruebas anteriores, se detiene y se reporta. [FR-003, FR-007, FR-031]
 - Q: ¿Cómo se resuelven los errores TS5097 (importaciones con extensión `.ts`) de los módulos generados? -> A: Por configuración del proyecto o del generador, nunca editando las pruebas bloqueadas de 005. [FR-003]
 
+### Session 2026-10-09 (decisión del usuario sobre escenarios heredados contradictorios)
+
+- Q: Cuatro escenarios bloqueados (001 TS-003, 002 TS-014, 003 TS-001, 003 TS-018) contradicen decisiones posteriores bloqueadas (007 FR-026/TS-061; respaldo Java deliberado, 007 research E5; 003 FR-001/TS-003; contrato 1.0.0, 005 research E3). ¿Cómo se tratan? -> A: Opción B, "Exclusión documentada": lista versionada `legacy-exclusions.md` de esta feature con cada escenario, la decisión que lo reemplaza y la fecha; los ejecutores heredados toman sus exclusiones de ella; se re-testifica solo 011 para que TS-007/TS-008 acepten exactamente las exclusiones documentadas y sigan fallando ante cualquier omisión no documentada. Los `.feature` de 001–003 no cambian. [FR-008, FR-009, FR-033, SC-002]
+- Q: ¿Se confirman los defaults elegidos por el agente en esta feature? -> A: Sí, confirmados por el usuario el 2026-10-09.
+
 ### Defaults elegidos por el agente
 
-- Las pruebas unitarias de la web siguen con el ejecutor de pruebas existente del entorno de ejecución (sin añadir un framework nuevo; el plan mencionaba Vitest, pero "ampliar lo existente" y el principio VI favorecen no añadir dependencias); su cobertura usa la cobertura integrada del entorno. (default elegido por agente — pendiente confirmar) [FR-013, FR-016..018]
-- Umbral de cobertura bloqueante solo para la web (≥ 85 % de líneas sobre servidor, rutas API y utilidades); Java y .NET se reportan sin umbral en esta feature. (default elegido por agente — pendiente confirmar) [FR-011, FR-012, FR-018]
-- Reglas de lint: conjunto recomendado del framework web para Core Web Vitals; sin el conjunto estricto de TypeScript (que exigiría reescrituras masivas). (default elegido por agente — pendiente confirmar) [FR-004]
-- Comando de cobertura del producto: `make coverage`. (default elegido por agente — pendiente confirmar) [FR-014]
-- Registro estructurado por análisis en un archivo propio dentro de la carpeta del análisis (líneas JSON), separado del registro de errores del motor existente; métricas expuestas como campo adicional del estado del análisis. (default elegido por agente — pendiente confirmar) [FR-023, FR-024]
-- Release: además de la matriz existente, un trabajo que empaqueta los skills y un paso inicial de comprobación de versión en tags; el disparo en `main` con cambios del motor se mantiene como pre-release. (default elegido por agente — pendiente confirmar) [FR-019..FR-021]
-- El trabajo de e2e `make e2e` reservado (006 TS-012) no se implementa en esta feature: el escenario bloqueado exige su mensaje de marcador de posición. (default elegido por agente — pendiente confirmar)
+- Las pruebas unitarias de la web siguen con el ejecutor de pruebas existente del entorno de ejecución (sin añadir un framework nuevo; el plan mencionaba Vitest, pero "ampliar lo existente" y el principio VI favorecen no añadir dependencias); su cobertura usa la cobertura integrada del entorno. (default elegido por agente — confirmado por usuario 2026-10-09) [FR-013, FR-016..018]
+- Umbral de cobertura bloqueante solo para la web (≥ 85 % de líneas sobre servidor, rutas API y utilidades); Java y .NET se reportan sin umbral en esta feature. (default elegido por agente — confirmado por usuario 2026-10-09) [FR-011, FR-012, FR-018]
+- Reglas de lint: conjunto recomendado del framework web para Core Web Vitals; sin el conjunto estricto de TypeScript (que exigiría reescrituras masivas). (default elegido por agente — confirmado por usuario 2026-10-09) [FR-004]
+- Comando de cobertura del producto: `make coverage`. (default elegido por agente — confirmado por usuario 2026-10-09) [FR-014]
+- Registro estructurado por análisis en un archivo propio dentro de la carpeta del análisis (líneas JSON), separado del registro de errores del motor existente; métricas expuestas como campo adicional del estado del análisis. (default elegido por agente — confirmado por usuario 2026-10-09) [FR-023, FR-024]
+- Release: además de la matriz existente, un trabajo que empaqueta los skills y un paso inicial de comprobación de versión en tags; el disparo en `main` con cambios del motor se mantiene como pre-release. (default elegido por agente — confirmado por usuario 2026-10-09) [FR-019..FR-021]
+- El trabajo de e2e `make e2e` reservado (006 TS-012) no se implementa en esta feature: el escenario bloqueado exige su mensaje de marcador de posición. (default elegido por agente — confirmado por usuario 2026-10-09)
 
 ## Assumptions
 

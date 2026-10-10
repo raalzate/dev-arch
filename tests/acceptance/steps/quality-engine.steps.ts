@@ -68,7 +68,7 @@ Then('those glue packages contain only files added after feature 010', function 
 // --- TS-007 / TS-008 / TS-009 -------------------------------------------------------------------------------
 
 type Step = { result: { status: string; error_message?: string } };
-type Element = { type: string; name: string; steps?: Step[]; before?: Step[]; after?: Step[] };
+type Element = { type: string; name: string; tags?: { name: string }[]; steps?: Step[]; before?: Step[]; after?: Step[] };
 type Feature = { uri: string; elements?: Element[] };
 
 function reportFile(feature: string): string {
@@ -114,9 +114,26 @@ function expectedScenarios(feature: string): number {
   return n;
 }
 
+/**
+ * Scenarios of a feature report. The JSON formatter writes the Background steps as a separate element just before
+ * each scenario; they are merged into that scenario (a skip or failure in the Background belongs to it).
+ */
 function scenarios(world: DevArchWorld, feature: string): Element[] {
   const report = (world.data.reports as Record<string, Feature[]>)[feature];
-  return report.flatMap((f) => f.elements ?? []).filter((e) => e.type === 'scenario');
+  const out: Element[] = [];
+  for (const f of report) {
+    let background: Element | null = null;
+    for (const e of f.elements ?? []) {
+      if (e.type === 'background') {
+        background = e;
+        continue;
+      }
+      if (e.type !== 'scenario') continue;
+      out.push(background ? { ...e, before: [...(e.before ?? []), ...(background.before ?? [])], steps: [...(background.steps ?? []), ...(e.steps ?? [])] } : e);
+      background = null;
+    }
+  }
+  return out;
 }
 
 const allSteps = (e: Element): Step[] => [...(e.before ?? []), ...(e.steps ?? []), ...(e.after ?? [])];
@@ -164,31 +181,72 @@ function status(e: Element): string {
   return statuses.find((s) => s !== 'passed') ?? 'passed';
 }
 
-Then('every scenario of {string}, {string} and {string} passed', function (this: DevArchWorld, a: string, b: string, c: string) {
-  const bad: string[] = [];
-  for (const f of [a, b, c]) {
-    const sc = scenarios(this, f);
-    assert.equal(sc.length, expectedScenarios(f), `scenarios of ${f} in its report`);
-    for (const e of sc) if (status(e) !== 'passed' && status(e) !== 'skipped') bad.push(`${f}: ${e.name} (${status(e)})`);
-  }
-  assert.deepEqual(bad, [], this.result!.output.slice(-3000));
-  this.data.checkedPassed = true;
-});
+// --- Documented exclusions (FR-033): specs/011-quality-delivery/legacy-exclusions.md is the only source ---------
 
-Then('no scenario is skipped', function (this: DevArchWorld) {
-  const skipped = LEGACY.flatMap((f) => scenarios(this, f).filter((e) => status(e) === 'skipped').map((e) => `${f}: ${e.name}`));
-  assert.deepEqual(skipped, []);
-  assert.equal(this.result!.code, 0, this.result!.output.slice(-4000));
-});
+export type Exclusion = { feature: string; scenario: string; decision: string; date: string };
+export const EXCLUSIONS_LIST = 'specs/011-quality-delivery/legacy-exclusions.md';
+const EXCLUSION_ROW = /^\|\s*(\d{3}-[a-z0-9-]+)\s*\|\s*(TS-\d{3})\s*\|([^|]*)\|([^|]+)\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*$/;
+
+/** Same grammar as engine/src/test/java/com/extractor/legacybdd/LegacyExclusions.java. */
+export function legacyExclusions(): Exclusion[] {
+  const text = readFileSync(path.join(layout.productRoot, EXCLUSIONS_LIST), 'utf8');
+  return text.split('\n').map((l) => EXCLUSION_ROW.exec(l.trim())).filter((m): m is RegExpExecArray => m !== null)
+    .map((m) => ({ feature: m[1], scenario: m[2], decision: m[4].trim(), date: m[5] }));
+}
+
+const tsOf = (e: Element): string[] => (e.tags ?? []).map((t) => t.name.replace(/^@/, '')).filter((t) => /^TS-\d{3}$/.test(t));
+const isExcluded = (feature: string, e: Element): boolean =>
+  legacyExclusions().some((x) => x.feature === feature && tsOf(e).includes(x.scenario));
 
 function skipReason(e: Element): string {
   const s = allSteps(e).find((x) => x.result.status === 'skipped' && x.result.error_message);
   const msg = s?.result.error_message ?? '';
-  return /Assumption failed: (.*)/.exec(msg)?.[1] ?? msg.split('\n')[0];
+  const first = /Assumption failed: (.*)/.exec(msg)?.[1] ?? msg.split('\n')[0];
+  return first.replace(/^[\w.$]*TestAbortedException:\s*/, '');
 }
 
-Then('every scenario that needs the .NET analyzer is skipped with a reason starting with {string}', function (this: DevArchWorld, prefix: string) {
-  const skipped = LEGACY.flatMap((f) => scenarios(this, f).filter((e) => status(e) === 'skipped'));
+Then('every entry of the legacy exclusions list matches a reported scenario', function (this: DevArchWorld) {
+  const stale = legacyExclusions().filter((x) => {
+    assert.ok(LEGACY.includes(x.feature), `exclusion of a non-legacy feature: ${x.feature}`);
+    return !scenarios(this, x.feature).some((e) => tsOf(e).includes(x.scenario));
+  }).map((x) => `${x.feature} ${x.scenario}`);
+  assert.deepEqual(stale, [], 'exclusions that match no reported scenario');
+});
+
+Then('every scenario of {string}, {string} and {string} not listed in the legacy exclusions passed', function (this: DevArchWorld, a: string, b: string, c: string) {
+  const bad: string[] = [];
+  for (const f of [a, b, c]) {
+    const sc = scenarios(this, f);
+    assert.equal(sc.length, expectedScenarios(f), `scenarios of ${f} in its report`);
+    for (const e of sc) if (!isExcluded(f, e) && status(e) !== 'passed') bad.push(`${f}: ${e.name} (${status(e)}: ${skipReason(e)})`);
+  }
+  assert.deepEqual(bad, [], this.result!.output.slice(-3000));
+});
+
+Then('every scenario listed in the legacy exclusions is skipped with a reason starting with {string}', function (this: DevArchWorld, prefix: string) {
+  const bad: string[] = [];
+  for (const x of legacyExclusions()) {
+    const hits = scenarios(this, x.feature).filter((e) => tsOf(e).includes(x.scenario));
+    if (hits.length === 0) bad.push(`${x.feature} ${x.scenario}: not reported`);
+    for (const e of hits) {
+      const reason = skipReason(e);
+      if (status(e) !== 'skipped' || !reason.startsWith(prefix) || !reason.includes(x.decision)) {
+        bad.push(`${x.feature} ${x.scenario}: ${status(e)} (${reason})`);
+      }
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+
+Then('no other scenario is skipped', function (this: DevArchWorld) {
+  const skipped = LEGACY.flatMap((f) => scenarios(this, f).filter((e) => !isExcluded(f, e) && status(e) === 'skipped')
+    .map((e) => `${f}: ${e.name} (${skipReason(e)})`));
+  assert.deepEqual(skipped, [], 'scenarios skipped without a documented exclusion');
+  assert.equal(this.result!.code, 0, this.result!.output.slice(-4000));
+});
+
+Then('every scenario that needs the .NET analyzer and is not listed in the legacy exclusions is skipped with a reason starting with {string}', function (this: DevArchWorld, prefix: string) {
+  const skipped = LEGACY.flatMap((f) => scenarios(this, f).filter((e) => !isExcluded(f, e) && status(e) === 'skipped'));
   assert.ok(skipped.length > 0, 'no scenario was skipped although the analyzer was reported absent');
   const wrong = skipped.filter((e) => !skipReason(e).startsWith(prefix)).map((e) => `${e.name}: ${skipReason(e)}`);
   assert.deepEqual(wrong, []);
@@ -200,6 +258,63 @@ Then('every other legacy scenario passed', function (this: DevArchWorld) {
   const passed = LEGACY.flatMap((f) => scenarios(this, f).filter((e) => status(e) === 'passed'));
   assert.ok(passed.length > 0, 'no legacy scenario passed');
   assert.equal(this.result!.code, 0, this.result!.output.slice(-4000));
+});
+
+// --- TS-035 -------------------------------------------------------------------------------------------------
+
+Given('the legacy exclusions list of feature {string}', function (this: DevArchWorld, feature: string) {
+  const file = path.join(layout.productRoot, 'specs', feature, 'legacy-exclusions.md');
+  assert.equal(path.relative(layout.productRoot, file).split(path.sep).join('/'), EXCLUSIONS_LIST);
+  assert.ok(existsSync(file), `${file} missing`);
+  this.data.exclusionsText = readFileSync(file, 'utf8');
+  this.data.exclusions = legacyExclusions();
+});
+
+Then('the list declares a version and has {int} entries', function (this: DevArchWorld, n: number) {
+  assert.match(this.data.exclusionsText as string, /^Version: \d+\.\d+\.\d+ \(\d{4}-\d{2}-\d{2}\)$/m);
+  assert.equal((this.data.exclusions as Exclusion[]).length, n);
+  const rows = (this.data.exclusionsText as string).split('\n').filter((l) => /^\|\s*\d{3}-/.test(l.trim()));
+  assert.equal(rows.length, n, 'table rows that do not follow the format');
+});
+
+Then('every entry names a feature of {string}, {string} or {string}, a scenario tag, a superseding decision and a decision date', function (this: DevArchWorld, a: string, b: string, c: string) {
+  for (const x of this.data.exclusions as Exclusion[]) {
+    assert.ok([a, b, c].includes(x.feature), `feature ${x.feature}`);
+    assert.match(x.scenario, /^TS-\d{3}$/);
+    assert.ok(x.decision.length >= 10, `${x.feature} ${x.scenario}: superseding decision missing`);
+    assert.ok(!Number.isNaN(Date.parse(x.date)), `${x.feature} ${x.scenario}: date ${x.date}`);
+  }
+});
+
+Then('every entry matches a scenario tag present in the locked feature files of its feature', function (this: DevArchWorld) {
+  for (const x of this.data.exclusions as Exclusion[]) {
+    const dir = path.join(layout.productRoot, 'specs', x.feature, 'tests', 'features');
+    const found = readdirSync(dir).filter((f) => f.endsWith('.feature'))
+      .some((f) => new RegExp(`^\\s*@.*@${x.scenario}\\b|^\\s*@${x.scenario}\\b`, 'm').test(readFileSync(path.join(dir, f), 'utf8')));
+    assert.ok(found, `${x.feature} has no scenario tagged @${x.scenario}`);
+  }
+});
+
+Then('no legacy engine runner declares a tag filter', function () {
+  for (const f of LEGACY) {
+    const src = readFileSync(legacyRunner(f).file, 'utf8');
+    assert.doesNotMatch(src, /FILTER_TAGS_PROPERTY_NAME|cucumber\.filter\.tags|@IncludeTags|@ExcludeTags/, `${f} runner filters tags`);
+  }
+});
+
+Then('every legacy glue package reads its exclusions from the legacy exclusions list', function () {
+  const helper = path.join(TEST_JAVA, 'com', 'extractor', 'legacybdd', 'LegacyExclusions.java');
+  assert.ok(existsSync(helper), 'LegacyExclusions.java missing');
+  assert.ok(readFileSync(helper, 'utf8').includes(`"${EXCLUSIONS_LIST}"`), 'LegacyExclusions does not read the list');
+  for (const f of LEGACY) {
+    const r = legacyRunner(f);
+    const dir = path.join(TEST_JAVA, ...r.glue.split('.'));
+    const hooks = filesUnder(dir).filter((file) => {
+      const src = readFileSync(file, 'utf8');
+      return /@Before\(order = 0\)/.test(src) && src.includes('LegacyExclusions.abortIfExcluded(');
+    });
+    assert.equal(hooks.length, 1, `glue ${r.glue} needs exactly one first-order hook applying the exclusions`);
+  }
 });
 
 // --- TS-010 -------------------------------------------------------------------------------------------------

@@ -5,7 +5,7 @@ description: "Task list for 011-quality-delivery"
 # Tasks: Calidad, CI/CD y entrega de dev-arch
 
 **Input**: Design documents from `specs/011-quality-delivery/`
-**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md, tests/features/ (hash LOCKED; escenarios TS-001 … TS-034)
+**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md, tests/features/ (hash LOCKED; escenarios TS-001 … TS-035, re-testificado 2026-10-10 por la decisión del usuario del 2026-10-09)
 
 **Tests**: TDD obligatorio (Constitución III). Cada tarea de pasos se ejecuta en rojo antes de su implementación. Regla aditiva (usuario 2026-10-09): prohibido modificar `.feature`, `context.json`, specs, pasos o pruebas de 001–010; solo archivos de pruebas nuevos.
 
@@ -37,7 +37,7 @@ description: "Task list for 011-quality-delivery"
 - [x] T008 [P] [US2] Pasos 001 (`legacybdd/mcp`): analyze-project, cli-backward-compatibility, error-handling, granular-tools, installation-setup [TS-007, TS-008]
 - [x] T009 [P] [US2] Pasos 002 (`legacybdd/dotnet`): 6 features + bugfix BUG-001…006 [TS-007, TS-008, TS-009]
 - [x] T010 [P] [US2] Pasos 003 (`legacybdd/codeissues`): bug-pattern-detection, graceful-degradation, schema-and-pipeline [TS-007, TS-008, TS-009]
-- [~] T011 [US2] Corregir en producción los defectos del motor que revelen los escenarios heredados (o detener y reportar si contradicen decisiones posteriores); `mvn verify` verde
+- [x] T011 [US2] Corregir en producción los defectos del motor que revelen los escenarios heredados (o detener y reportar si contradicen decisiones posteriores); `mvn verify` verde — 3 defectos corregidos (001 TS-022, 002 TS-051, 003 TS-025); los 4 contradictorios quedan como exclusiones documentadas (T029–T031)
 - [x] T012 [US2] Workflow `engine-java`: setup-dotnet 8 + `bash scripts/engine-build.sh --dotnet-only` antes de `mvn verify` [TS-010]
 
 ## Phase 4: US3/US4 — Cobertura y pruebas unitarias web (P1/P2)
@@ -64,10 +64,16 @@ description: "Task list for 011-quality-delivery"
 
 - [x] T024 [US7] `scripts/dotnet-analyzer-freshness.sh`; sello `.published` en `engine-build.sh` y `schema-check.sh`; `test.sh engine` y `schema-check.sh` usan la decisión y la anuncian [TS-030, TS-031]
 
+## Phase 7b: Exclusión documentada de escenarios heredados (decisión del usuario 2026-10-09, opción B)
+
+- [x] T029 [US2] `specs/011-quality-delivery/legacy-exclusions.md` versionado (1.0.0): 001 TS-003, 002 TS-014, 003 TS-001, 003 TS-018 con decisión que los reemplaza y fecha; spec (FR-033, Clarifications) y re-testify de 011 (TS-007/TS-008/TS-009 ajustados, TS-035 nuevo) [TS-035]
+- [x] T030 [US2] `engine/src/test/java/com/extractor/legacybdd/LegacyExclusions.java` + `ExclusionHooks` (primer `@Before`) en los tres paquetes glue; runners sin filtro de tags [TS-008, TS-009, TS-035]
+- [x] T031 [US2] Pasos de 011: exclusiones leídas de la lista, entradas obsoletas y omisiones no documentadas fallan; pasos de Background fusionados en su escenario [TS-007, TS-008, TS-009, TS-035]
+
 ## Phase 8: Polish & guards
 
 - [x] T025 Registrar la investigación de BUG-007 en `research.md` (D8) [TS-034]
-- [ ] T026 Verificar guardas: Checkstyle (conteo ≤ línea base), SpotBugs 0, `dotnet format`, artefactos bloqueados intactos [TS-032, TS-033]
+- [x] T026 Verificar guardas: Checkstyle (conteo ≤ línea base), SpotBugs 0, `dotnet format`, artefactos bloqueados intactos [TS-032, TS-033]
 - [ ] T027 `make test` completo verde (incluye escenarios 006/007/010/011 y runners heredados)
 - [ ] T028 Clon limpio de la rama: `make build && make test && make test-e2e-browser`; borrar el clon
 
@@ -77,7 +83,8 @@ T001–T002 → resto. US1 (T003–T006) antes de T018/T019 (las pruebas nuevas 
 
 ## Status (2026-10-10)
 
-- T011 partial: three production defects fixed (001 TS-022, 002 TS-051, 003 TS-025); four locked scenarios
-  (001 TS-003, 002 TS-014, 003 TS-001, TS-018) contradict later locked decisions — **BLOCKER, STOP** (analysis.md).
-  They are excluded by tag in the runners; 011 TS-007/TS-008 stay red until the user decides.
-- T026 done locally (Checkstyle 4589 = before, SpotBugs 0, `dotnet format` clean). T027/T028 not closed (blocked).
+- T011 done: three production defects fixed (001 TS-022, 002 TS-051, 003 TS-025); the four locked scenarios that
+  contradict later locked decisions (001 TS-003, 002 TS-014, 003 TS-001, TS-018) are documented exclusions
+  (`legacy-exclusions.md`, user decision 2026-10-09, option B) applied by the runners' first hook (T029–T031).
+- T026 done locally (Checkstyle 4589 = before, SpotBugs 0, `dotnet format` clean).
+- 011 TS-006…TS-010 and TS-035 green locally with DEVARCH_E2E=true (2026-10-10).

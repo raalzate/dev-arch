@@ -24,18 +24,21 @@ Feature: Legacy scenarios of 001 to 003 run in the engine verification
     When the legacy engine runners are executed in dry-run mode
     Then every scenario of "001-mcp-server-local", "002-dotnet-roslyn-analyzer" and "003-dotnet-code-issues" is reported
     And no step is undefined, pending or ambiguous
+    And every entry of the legacy exclusions list matches a reported scenario
 
-  @TS-008 @FR-006 @FR-009 @SC-002 @P1 @acceptance @slow
-  Scenario: With the .NET analyzer available every legacy scenario passes and none is skipped
+  @TS-008 @FR-006 @FR-009 @FR-033 @SC-002 @P1 @acceptance @slow
+  Scenario: With the .NET analyzer available every legacy scenario passes except exactly the documented exclusions
     Given the .NET analyzer of the engine is available
     When the legacy engine runners are executed
-    Then every scenario of "001-mcp-server-local", "002-dotnet-roslyn-analyzer" and "003-dotnet-code-issues" passed
-    And no scenario is skipped
+    Then every scenario of "001-mcp-server-local", "002-dotnet-roslyn-analyzer" and "003-dotnet-code-issues" not listed in the legacy exclusions passed
+    And every scenario listed in the legacy exclusions is skipped with a reason starting with "excluded-by-decision"
+    And no other scenario is skipped
 
   @TS-009 @FR-009 @P1 @acceptance @slow
   Scenario: Without the .NET analyzer the scenarios that need it are skipped with an explicit reason
     When the legacy engine runners are executed with the .NET analyzer reported absent
-    Then every scenario that needs the .NET analyzer is skipped with a reason starting with "requires-dotnet"
+    Then every scenario that needs the .NET analyzer and is not listed in the legacy exclusions is skipped with a reason starting with "requires-dotnet"
+    And every scenario listed in the legacy exclusions is skipped with a reason starting with "excluded-by-decision"
     And every other legacy scenario passed
 
   @TS-010 @FR-010 @P1 @contract
@@ -43,3 +46,12 @@ Feature: Legacy scenarios of 001 to 003 run in the engine verification
     Given the product continuous integration definition
     Then the job "engine-java" sets up .NET 8
     And the job "engine-java" publishes the .NET analyzer before it runs the engine verification
+
+  @TS-035 @FR-033 @FR-007 @P1 @contract
+  Scenario: The legacy exclusions list is versioned, complete and the only source of exclusions
+    Given the legacy exclusions list of feature "011-quality-delivery"
+    Then the list declares a version and has 4 entries
+    And every entry names a feature of "001-mcp-server-local", "002-dotnet-roslyn-analyzer" or "003-dotnet-code-issues", a scenario tag, a superseding decision and a decision date
+    And every entry matches a scenario tag present in the locked feature files of its feature
+    And no legacy engine runner declares a tag filter
+    And every legacy glue package reads its exclusions from the legacy exclusions list
