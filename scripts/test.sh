@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Product test subsets (FR-010, contracts/make-targets.md):
-#   all         version-check, engine (Java + .NET), schema-check, web, acceptance
+#   all         version-check, engine (Java + .NET), schema-check, web, doctor, acceptance
 #   engine      mvn -B verify in engine/ (JaCoCo) + dotnet test --filter "Category!=Corpus" (coverlet)
 #   web         npm run typecheck/lint -w web, then npm test -w web (node:test + tsx, coverage + 85 % gate; 011)
+#   doctor      node --test scripts/doctor/*.test.mjs (012: system dependency doctor, simulated per OS)
 #   acceptance  Cucumber-JS scenarios of 006 (@slow only with DEVARCH_E2E=true; ACCEPTANCE_TAGS narrows them)
 # Prints "[test] <subset>: OK|FAIL" per subset and a final summary; exits 1 when any subset fails.
 set -u
@@ -67,6 +68,11 @@ run_web() {
   npm test -w web -- --coverage; record web $?
 }
 
+run_doctor() {
+  announce "node --test scripts/doctor/*.test.mjs"
+  node --test scripts/doctor/*.test.mjs; record doctor $?
+}
+
 run_acceptance() {
   local args=()
   [ -n "${ACCEPTANCE_TAGS:-}" ] && args=(--tags "$ACCEPTANCE_TAGS")
@@ -75,11 +81,12 @@ run_acceptance() {
 }
 
 case "${1:-all}" in
-  all) run_version; run_engine; run_schema_check; run_web; run_acceptance ;;
+  all) run_version; run_engine; run_schema_check; run_web; run_doctor; run_acceptance ;;
   engine) run_engine ;;
   web) run_web ;;
+  doctor) run_doctor ;;
   acceptance) run_acceptance ;;
-  *) echo "usage: $0 [all|engine|web|acceptance]" >&2; exit 64 ;;
+  *) echo "usage: $0 [all|engine|web|doctor|acceptance]" >&2; exit 64 ;;
 esac
 
 if [ "${#FAILED[@]}" -eq 0 ]; then

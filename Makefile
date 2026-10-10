@@ -5,11 +5,11 @@
 SHELL := /bin/bash
 
 .PHONY: help prereqs build build-engine test test-engine test-web test-acceptance e2e schema-check \
-        schema-generate dev clean doctor version-sync version-check test-e2e-browser coverage
+        schema-generate dev clean doctor version-sync version-check test-e2e-browser coverage check-env
 
 help:
 	@echo "make build | test | test-engine | test-web | test-acceptance | schema-check | dev | clean"
-	@echo "make e2e | doctor (reserved) | schema-generate | version-sync | version-check | coverage"
+	@echo "make e2e | doctor (reserved) | check-env | schema-generate | version-sync | version-check | coverage"
 
 ## Verify JDK 17, .NET SDK >= 8 + .NET 8 runtime and Node >= 20 before compiling anything.
 prereqs:
@@ -73,3 +73,8 @@ e2e:
 
 doctor:
 	@echo "[doctor] not implemented yet (feature 012)"
+
+## System dependencies of the local installation (012-install-doctor-docker): the doctor in local mode; fails on FAIL.
+## DOCTOR_ARGS adds options (e.g. DOCTOR_ARGS="--fix" or "--json"). `make doctor` stays the 006 placeholder.
+check-env:
+	@node scripts/doctor/cli.mjs --mode local $(DOCTOR_ARGS)
