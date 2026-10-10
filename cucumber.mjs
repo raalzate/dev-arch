@@ -1,5 +1,5 @@
 // Cucumber-JS configuration for the acceptance scenarios of 006-devarch-monorepo (research D9) and
-// 007-native-engine-runtime (research D12) and 010-modernization-ux.
+// 007-native-engine-runtime (research D12), 010-modernization-ux and 011-quality-delivery.
 // - @slow (built product, running web, real engine) only with DEVARCH_E2E=true, mirroring SCHEMA_CHECK_E2E of 005.
 // - @e2e (Playwright browser) only with DEVARCH_E2E_BROWSER=true (`make test-e2e-browser`).
 // - @engine scenarios of 007 run on Cucumber-JVM (engine RunNativeEngineRuntimeFeaturesTest), never here.
@@ -15,6 +15,7 @@ export default {
     'specs/006-devarch-monorepo/tests/features/**/*.feature',
     'specs/007-native-engine-runtime/tests/features/**/*.feature',
     'specs/010-modernization-ux/tests/features/**/*.feature',
+    'specs/011-quality-delivery/tests/features/**/*.feature',
   ],
   import: ['tests/acceptance/support/**/*.ts', 'tests/acceptance/steps/**/*.ts'],
   tags: tags.join(' and '),
