@@ -42,6 +42,11 @@ export function engineLaunchOrError(cwd: string, dataDir?: string) {
   return locateEngine(process.env, cwd, existsSync, dataDir ? path.join(dataDir, 'jobs') : undefined);
 }
 
+/** The runtime if the server already created it, without creating one (GET /api/health, 012). */
+export function peekRuntime(): Runtime | undefined {
+  return holder.runtime;
+}
+
 export function getRuntime(): Runtime {
   if (holder.runtime) return holder.runtime;
   const cwd = process.cwd();
