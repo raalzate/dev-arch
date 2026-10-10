@@ -17,13 +17,14 @@ import { extractZip, type ExtractIo } from '../upload/safe-extract';
 import type { StreamIo } from '../upload/stream-to-file';
 import { findProjectRoot } from '../upload/project-root';
 import type { Job, JobError, JobStore, Phase } from './job-store';
+import { JobEventLog, type ObservabilityDeps } from './job-events';
 
 export interface Engine {
   analyze(req: AnalyzeRequest, hooks: AnalyzeHooks): Promise<AnalyzeResult>;
 }
 
 /** File-system operations of the pipeline that can fail with a full disk (injectable, FR-037). */
-export type JobRuntimeDeps = Partial<ExtractIo & StreamIo>;
+export type JobRuntimeDeps = Partial<ExtractIo & StreamIo> & ObservabilityDeps;
 
 export const DOCUMENTS = {
   graph: { file: 'output.json', schema: dependencyGraphSchema },
@@ -55,6 +56,8 @@ export class JobRunner {
   private readonly settled = new Set<Promise<void>>();
   /** Project folder of each queued/running job (realpath), for the per-project mutex (FR-010). */
   private readonly keys = new Map<string, string>();
+  /** Structured event log of each queued/running job (011 FR-023). */
+  private readonly eventLogs = new Map<string, JobEventLog>();
 
   constructor(
     private readonly store: JobStore,
@@ -87,6 +90,9 @@ export class JobRunner {
       }
       this.keys.set(jobId, key);
     }
+    const events = new JobEventLog(jobId, this.store.paths(jobId).events, this.deps);
+    events.queued();
+    this.eventLogs.set(jobId, events);
     this.queue.push(jobId);
     this.pump();
     return this.running.has(jobId) ? 'running' : 'queued';
@@ -134,6 +140,7 @@ export class JobRunner {
         .finally(() => {
           this.running.delete(id);
           this.keys.delete(id);
+          this.eventLogs.delete(id);
           this.settled.delete(p);
           if (!this.disposed) this.pump();
         });
@@ -148,6 +155,9 @@ export class JobRunner {
   private async run(id: string): Promise<void> {
     const p = this.store.paths(id);
     let job = await this.store.update(id, { status: 'running' });
+    const events = this.eventLogs.get(id) ?? new JobEventLog(id, p.events, this.deps);
+    events.started();
+    const queueMs = Date.parse(job.startedAt ?? job.createdAt) - Date.parse(job.createdAt);
     let updates: Promise<unknown> = Promise.resolve();
     const enqueue = (fn: () => Promise<unknown>) => {
       updates = updates.then(fn).catch(() => undefined);
@@ -172,7 +182,10 @@ export class JobRunner {
         { jobId: id, projectPath: projectRoot, outputDir: p.out, language: job.language },
         {
           timeoutMs: this.config.analysisTimeoutMs,
-          onPhase: (phase: Phase) => void enqueue(() => this.store.update(id, { phase })),
+          onPhase: (phase: Phase) => {
+            events.phase(phase);
+            void enqueue(() => this.store.update(id, { phase }));
+          },
           // Queued with the status updates so the log is complete before the final status is stored.
           onStderr: (line: string) => void enqueue(() => fs.appendFile(p.log, `${line}\n`)),
         },
@@ -181,8 +194,10 @@ export class JobRunner {
       if (this.disposed) return;
       await this.validateDocuments(p.out);
       const roots = this.roots(job);
+      const metrics = await events.finish({ status: 'completed' }, queueMs);
       await this.store.update(id, {
         status: 'completed',
+        metrics,
         summary: result.summary,
         warnings: result.warnings.map((w) => redactText(w, roots, [this.config.dataDir])),
       });
@@ -199,7 +214,8 @@ export class JobRunner {
       const warnings = e instanceof EngineToolError
         ? e.warnings.map((w) => redactText(w, this.roots(job), [this.config.dataDir]))
         : undefined;
-      await this.store.update(id, { status: 'failed', error, ...(warnings?.length ? { warnings } : {}) }).catch(() => undefined);
+      const metrics = await events.finish({ status: 'failed', code: error.code }, queueMs);
+      await this.store.update(id, { status: 'failed', error, metrics, ...(warnings?.length ? { warnings } : {}) }).catch(() => undefined);
     }
   }
 

@@ -53,5 +53,6 @@ export function publicJob(job: Job, store: JobStore, config: AppConfig) {
     summary: job.summary,
     projectRoot: publicProjectRoot(job, store),
     hasSources: job.origin !== 'import',
+    metrics: job.metrics ?? null,
   };
 }

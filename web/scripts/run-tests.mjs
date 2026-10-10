@@ -26,6 +26,11 @@ function walk(dir, out = []) {
 
 const rel = (p) => path.relative(WEB, p).split(path.sep).join('/');
 
+const NODE_MAJOR = Number(process.versions.node.split('.')[0]);
+
+/** Node >= 21 treats --test arguments as glob patterns: escape the glob characters of route folders ([id]). */
+const asTestArg = (f) => (NODE_MAJOR >= 21 ? f.replace(/[[\]*?{}]/g, (c) => `[${c}]`) : f);
+
 export function testFiles() {
   return walk(path.join(WEB, 'src')).filter((f) => f.endsWith('.test.ts')).map(rel).sort();
 }
@@ -106,7 +111,7 @@ function main(argv) {
     args.push('--experimental-test-coverage', '--test-reporter=spec', '--test-reporter-destination=stdout',
       '--test-reporter=lcov', '--test-reporter-destination=coverage/lcov.info');
   }
-  const res = spawnSync(process.execPath, [...args, ...testFiles()], { cwd: WEB, stdio: 'inherit' });
+  const res = spawnSync(process.execPath, [...args, ...testFiles().map(asTestArg)], { cwd: WEB, stdio: 'inherit' });
   if (res.status !== 0) return res.status ?? 1;
   if (!coverage) return 0;
   const lcovPath = 'coverage/lcov.info';

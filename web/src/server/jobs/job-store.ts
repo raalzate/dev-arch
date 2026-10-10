@@ -2,6 +2,7 @@
 import { randomUUID } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import type { JobMetrics } from './job-events';
 
 export type JobOrigin = 'zip' | 'localPath' | 'import' | 'sync';
 export type Language = 'java' | 'dotnet' | 'auto';
@@ -36,6 +37,8 @@ export interface Job {
   projectRoot: string | null;
   summary: JobSummary | null;
   uploadBytes: number | null;
+  /** Time metrics of a finished analysis (011 FR-024); absent until it finishes. */
+  metrics?: JobMetrics | null;
 }
 
 export interface JobPaths {
@@ -45,6 +48,8 @@ export interface JobPaths {
   source: string;
   out: string;
   log: string;
+  /** Structured events of the analysis (011 FR-023). */
+  events: string;
 }
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -84,6 +89,7 @@ export class JobStore {
       source: path.join(dir, 'source'),
       out: path.join(dir, 'out'),
       log: path.join(dir, 'engine.log'),
+      events: path.join(dir, 'events.jsonl'),
     };
   }
 

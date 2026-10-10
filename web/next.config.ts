@@ -1,6 +1,6 @@
 import type {NextConfig} from 'next';
 
-// 011-quality-delivery (FR-001): type and lint errors fail the build (no ignoreBuildErrors / ignoreDuringBuilds).
+// 011-quality-delivery (FR-001): type and lint errors fail the build (no tolerance options).
 const nextConfig: NextConfig = {
   devIndicators: false,
   images: {
