@@ -252,10 +252,16 @@ Then('both command line outputs are byte-identical', function (this: DevArchWorl
   for (const f of files) assert.ok(readFileSync(path.join(before, f)).equals(readFileSync(path.join(after, f))), `${f} differs`);
 });
 
-/** tools/list of the MCP server over stdio (initialize → initialized → tools/list). */
+/**
+ * tools/list of the MCP server over stdio (initialize → initialized → tools/list). The opt-in inference tools of
+ * 008 (STATIC_INFERENCE_INFERENCE_TOOLS) are enabled so the server can expose every tool of the contract.
+ */
 function mcpTools(jar: string): Promise<string[]> {
   return new Promise((resolve, reject) => {
-    const child = spawn(javaBin(), ['-jar', jar, '--mcp'], { stdio: ['pipe', 'pipe', 'pipe'] });
+    const child = spawn(javaBin(), ['-jar', jar, '--mcp'], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, STATIC_INFERENCE_INFERENCE_TOOLS: 'true' },
+    });
     let buffer = '';
     const timer = setTimeout(() => {
       child.kill();

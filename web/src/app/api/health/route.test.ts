@@ -30,3 +30,23 @@ test('GET /api/health answers the doctor report with the engine state, never cac
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('GET /api/health answers 200 when the doctor reports no FAIL', async () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'devarch-012-route-'));
+  const saved = process.env.DEVARCH_DOCTOR_CLI;
+  try {
+    const cli = path.join(dir, 'cli.mjs');
+    writeFileSync(cli, "process.stdout.write(JSON.stringify({ tool: 'dev-arch doctor', version: '1.2.0', mode: 'local', platform: 'linux', status: 'WARN', checks: [], engine: null }));");
+    process.env.DEVARCH_DOCTOR_CLI = cli;
+    resetHealthCache();
+    const res = await GET();
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get('cache-control'), 'no-store');
+    assert.equal((await res.json()).service, 'dev-arch');
+  } finally {
+    if (saved === undefined) delete process.env.DEVARCH_DOCTOR_CLI;
+    else process.env.DEVARCH_DOCTOR_CLI = saved;
+    resetHealthCache();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
