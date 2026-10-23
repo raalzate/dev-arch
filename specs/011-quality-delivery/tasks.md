@@ -74,8 +74,8 @@ description: "Task list for 011-quality-delivery"
 
 - [x] T025 Registrar la investigación de BUG-007 en `research.md` (D8) [TS-034]
 - [x] T026 Verificar guardas: Checkstyle (conteo ≤ línea base), SpotBugs 0, `dotnet format`, artefactos bloqueados intactos [TS-032, TS-033]
-- [ ] T027 `make test` completo verde (incluye escenarios 006/007/010/011 y runners heredados)
-- [ ] T028 Clon limpio de la rama: `make build && make test && make test-e2e-browser`; borrar el clon
+- [x] T027 `make test` completo verde (incluye escenarios 006/007/010/011 y runners heredados)
+- [x] T028 Clon limpio de la rama: `make build && make test && make test-e2e-browser`; borrar el clon
 
 ## Dependencies
 

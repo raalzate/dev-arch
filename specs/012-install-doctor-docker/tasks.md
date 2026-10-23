@@ -52,9 +52,9 @@ description: "Task list for 012-install-doctor-docker"
 
 ## Phase 6: Polish & guards
 
-- [ ] T017 Guardas: Checkstyle (≤ 4589), SpotBugs 0, `dotnet format`, typecheck/lint web, artefactos bloqueados intactos [TS-036, TS-037]
-- [ ] T018 `make test` completo verde y escenarios @slow de 012 con `DEVARCH_E2E=true`
-- [ ] T019 Clon limpio de la rama: `make build && make test && make test-e2e-browser` + muestra de `npm run doctor`; borrar el clon
+- [x] T017 Guardas: Checkstyle (≤ 4589), SpotBugs 0, `dotnet format`, typecheck/lint web, artefactos bloqueados intactos [TS-036, TS-037]
+- [x] T018 `make test` completo verde y escenarios @slow de 012 con `DEVARCH_E2E=true`
+- [x] T019 Clon limpio de la rama: `make build && make test && make test-e2e-browser` + muestra de `npm run doctor`; borrar el clon
 
 ## Dependencies
 
