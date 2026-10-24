@@ -13,6 +13,8 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
 - **Fix**: fixed Spanish locale (`es`) for the rationale text; `Locale.ROOT` for the metrics debug log.
 - **Test**: `engine/src/test/java/com/extractor/determinism/LocaleIndependenceTest.java` (same architecture under
   `en-US` and `es-CO` default locales; decimal comma in the rationale). Red before the fix, green after.
+- **Gate**: the first version added two Checkstyle line-length violations (4591 > 4589, caught by 012 TS-037 on CI);
+  wrapped back to 4589.
 
 ## BUG-009 — .NET semantic resolution depends on the installed targeting packs
 
@@ -55,10 +57,36 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
   `CodeIssuesSample.golden.json` is unchanged.
 - `docs/INSTALL.md`: "Reproducible .NET analysis (SDK 8)".
 
-## Note on BUG-007 (006, flaky `SchemaVersionContractTest.twoRunsAreByteIdentical[dotnet-ecommerce]`)
+## BUG-011 — CI area jobs exceed the 20-minute limit on the hosted runner
 
-- **Status**: not reproduced since BUG-009; kept open for observation.
-- BUG-009 showed that the .NET semantic resolution of `dotnet-ecommerce` depends on the targeting packs and the
-  restore state that MSBuild finds; a run that loads the project in a different state yields a different graph,
-  which matches the BUG-007 symptom. With the SDK 8 pinned, every local and CI run of this feature produced
-  byte-identical outputs. If it reappears, capture both outputs and the `[WARN] … unresolved type references` lines.
+- **Status**: fixed (pending confirmation on the GitHub Actions run of the fix)
+- **Severity**: high (the "Product acceptance" job never finished; schema-check and Engine Java at 15–20 min)
+- **Symptom**: first runs of the workflow on the own repository: "Product acceptance" cancelled at 20 min in every
+  run, "Contract - schema-check" 15–20 min, "Engine Java" 19 min, "clean clone build & test" cancelled at 45 min.
+  The workflow had never run before the move (the monorepo was never pushed).
+- **Root cause**: the acceptance job ran every scenario with `DEVARCH_E2E=true` (30–40 min); the 005 Cucumber
+  runner, which re-runs every suite, ran both in the schema job and inside `mvn verify` of Engine Java; the clean
+  clone job ran two full `make test` in sequence. Also latent: `not @TS-006 and not @TS-007` excluded the TS-006/TS-007
+  of 007 and 011 too (scenario ids are per feature).
+- **Fix** (job ids, area conditions and limits unchanged: 006 TS-025/TS-030, user decision A3):
+  - `acceptance`: matrix of feature groups (`ACCEPTANCE_FEATURES`, new filter of `cucumber.mjs`); the clean-clone
+    exclusion applies to 006 only.
+  - `schema`: matrix `schema-check` | `scenarios`.
+  - `engine-java`: matrix `tests` | `static-analysis`; `mvn verify` skips the 005 runner (run by the schema job).
+  - `acceptance-clean-clone`: one entry per clean-clone scenario (006 TS-006, 006 TS-007, 014 TS-003), 45 minutes
+    each; the acceptance shards exclude them, 006 TS-021 (one schema-check per front) has its own shard, and 006
+    TS-011 (`make clean`) runs alone so it never removes the build the other scenarios use.
+  - The acceptance job primes the Maven repository with the test dependencies: 006 TS-020/TS-023 run the engine
+    tests offline (`mvn -o`) after a `make build` that skips the tests.
+
+## BUG-012 — The agent bridge stays silent when launched through a symbolic link
+
+- **Status**: fixed
+- **Severity**: high for affected users (Claude Code shows the server as failed; no error printed)
+- **Symptom**: local clean-clone run: 013 TS-009 "bridge did not answer initialize" (macOS temporary folder);
+  passes on the Linux CI runner.
+- **Root cause**: the bridge ran `main()` only when `path.resolve(argv[1])` equals the module path, but Node
+  resolves the module through symbolic links (`/var` → `/private/var` on macOS, links in `~`).
+- **Fix**: compare real paths (`realpathSync`) in the entry-point check of `web/public/dev-arch-mcp.mjs`.
+- **Test**: `web/src/server/agent-mcp/bridge-symlink.test.ts` (`--version` through a link: empty before, version
+  after); 013 TS-009 green locally with the real engine.

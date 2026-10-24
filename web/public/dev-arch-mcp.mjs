@@ -6,6 +6,7 @@
 // works with a dev-arch running in a container or on another machine. Single file, Node >= 20, no dependencies.
 //
 //   node dev-arch-mcp.mjs [--url http://127.0.0.1:9002] [--token <DEVARCH_API_TOKEN>]
+import { realpathSync } from 'node:fs';
 import { lstat, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -283,7 +284,17 @@ async function main() {
   await Promise.all(inflight);
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+// Entry point: compare real paths, so the bridge also starts through a symbolic link (BUG-012: macOS temporary
+// folders, ~/ paths behind links).
+function isEntryPoint() {
+  try {
+    return !!process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isEntryPoint()) {
   main().catch((e) => {
     process.stderr.write(`dev-arch bridge: ${e?.stack ?? e}\n`);
     process.exit(1);

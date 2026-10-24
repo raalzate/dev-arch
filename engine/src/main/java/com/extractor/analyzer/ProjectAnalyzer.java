@@ -1045,7 +1045,9 @@ public class ProjectAnalyzer {
 
             logger.debug("Metrics for {}: CBO={}, LCOM={}, CC_MAX={}",
                     type.getQualifiedName(), cbo,
-                    lcom != null ? String.format(java.util.Locale.ROOT, "%.2f", lcom) : "N/A",
+                    lcom != null
+                            ? String.format(java.util.Locale.ROOT, "%.2f", lcom)
+                            : "N/A",
                     component.getComplexityMax());
         } catch (Exception e) {
             logger.warn("Failed to calculate metrics for {}: {}", type.getQualifiedName(), e.getMessage());

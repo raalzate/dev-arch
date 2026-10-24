@@ -1,7 +1,8 @@
 name: dev-arch - Build, Test & Release
 
 # CI of dev-arch (006-devarch-monorepo contracts/ci-workflow.md; 014-standalone-repo: own repository, product at the
-# root). Only changes to the product areas trigger it; inside, each area job only runs when its paths change.
+# root). Only changes to the product areas trigger it; inside, each area job only runs when its paths change. A
+# change to this workflow runs every area job (014 BUG-011).
 on:
   push:
     branches: [main]
@@ -40,21 +41,25 @@ jobs:
               - 'engine/src/test/resources/**'
               - 'schema/**'
               - 'VERSION'
+              - '.github/workflows/dev-arch.yml'
             engine-dotnet:
               - 'engine/src/main/dotnet/**'
               - 'engine/src/test/dotnet/**'
               - 'schema/**'
               - 'VERSION'
+              - '.github/workflows/dev-arch.yml'
             web:
               - 'web/**'
               - 'schema/**'
               - 'package.json'
               - 'package-lock.json'
               - 'VERSION'
+              - '.github/workflows/dev-arch.yml'
             schema:
               - 'schema/**'
               - 'engine/src/**'
               - 'scripts/schema-check.sh'
+              - '.github/workflows/dev-arch.yml'
             acceptance:
               - 'Makefile'
               - 'scripts/**'
@@ -74,6 +79,7 @@ jobs:
               - 'web/src/app/api/health/**'
               - 'web/src/server/health/**'
               - 'web/next.config.ts'
+              - '.github/workflows/dev-arch.yml'
 
   # ─── Java engine (Maven) ───────────────────────────────────────
   engine-java:
@@ -82,6 +88,11 @@ jobs:
     if: ${{ needs.changes.outputs.engine-java == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # 014 BUG-011: tests and static analysis run in parallel to stay within the 20-minute area-job limit.
+    strategy:
+      fail-fast: false
+      matrix:
+        part: ['tests', 'static-analysis']
     steps:
       - uses: actions/checkout@v4
 
@@ -93,22 +104,28 @@ jobs:
           cache: maven
 
       - name: Single product version
+        if: matrix.part == 'tests'
         run: make version-check
 
       # 011-quality-delivery (FR-010): the legacy .NET scenarios of 002/003 run in mvn verify, not skipped.
       - name: Set up .NET 8
+        if: matrix.part == 'tests'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
       - name: Publish the .NET analyzer for the engine tests
+        if: matrix.part == 'tests'
         run: bash scripts/engine-build.sh --dotnet-only
 
+      # The 005 Cucumber runner (it re-runs every suite) belongs to the schema job, not here.
       - name: Build & run tests
+        if: matrix.part == 'tests'
         working-directory: engine
-        run: mvn -B verify
+        run: mvn -B verify -Dtest='!RunSchemaContractFeaturesTest' -Dsurefire.failIfNoSpecifiedTests=false
 
       - name: Run SpotBugs analysis
+        if: matrix.part == 'static-analysis'
         working-directory: engine
         run: |
           mvn -B compile
@@ -116,6 +133,7 @@ jobs:
             -Dspotbugs.excludeFilterFile=spotbugs-exclude.xml
 
       - name: Run Checkstyle
+        if: matrix.part == 'static-analysis'
         working-directory: engine
         run: |
           mvn -B checkstyle:check \
@@ -127,21 +145,21 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: engine-java-reports
+          name: engine-java-reports-${{ matrix.part }}
           path: |
             engine/target/surefire-reports/
             engine/target/spotbugsXml.xml
             engine/target/checkstyle-result.xml
 
       - name: Upload Java coverage (JaCoCo)
-        if: always()
+        if: always() && matrix.part == 'tests'
         uses: actions/upload-artifact@v4
         with:
           name: engine-java-coverage
           path: engine/target/site/jacoco
 
       - name: Coverage summary
-        if: always()
+        if: always() && matrix.part == 'tests'
         run: bash scripts/coverage.sh summary | grep '^\[coverage\] java' >> "$GITHUB_STEP_SUMMARY" || true
 
   # ─── .NET analyzer (C# / VB.NET) ───────────────────────────────
@@ -252,6 +270,11 @@ jobs:
     if: ${{ needs.changes.outputs.schema == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # 014 BUG-011: the contract check and the 005 scenarios run in parallel to stay within the 20-minute limit.
+    strategy:
+      fail-fast: false
+      matrix:
+        part: ['schema-check', 'scenarios']
     steps:
       - uses: actions/checkout@v4
 
@@ -275,9 +298,16 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Verify Java, .NET and generated types against the contract
+        if: matrix.part == 'schema-check'
         run: make schema-check
 
+      # In the schema-check part `make schema-check` builds the .NET analyzer; this part builds it itself.
+      - name: Publish the .NET analyzer for the 005 scenarios
+        if: matrix.part == 'scenarios'
+        run: bash scripts/engine-build.sh --dotnet-only
+
       - name: BDD scenarios of 005 (incl. end-to-end schema-check divergences)
+        if: matrix.part == 'scenarios'
         working-directory: engine
         env:
           SCHEMA_CHECK_E2E: 'true'
@@ -287,18 +317,41 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: schema-check-logs
+          name: schema-check-logs-${{ matrix.part }}
           path: |
             engine/target/schema-check/*.log
             engine/target/cucumber-reports/
 
   # ─── Product acceptance (006-devarch-monorepo) ─────────────────
   acceptance:
-    name: Product acceptance
+    name: Product acceptance (${{ matrix.features }} ${{ matrix.tags }})
     needs: changes
     if: ${{ needs.changes.outputs.acceptance == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # 014 BUG-011: one shard per group of features so each fits the 20-minute area-job limit; the clean-clone
+    # scenarios 006 TS-006/TS-007 run in their own job (acceptance-clean-clone).
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - features: '006'
+            tags: 'not @TS-006 and not @TS-007 and not @TS-011 and not @TS-021'
+          - features: '006'
+            tags: '@TS-021'
+          # TS-011 runs `make clean`: alone, so it never removes the build other scenarios use.
+          - features: '006'
+            tags: '@TS-011'
+          - features: '014'
+            tags: 'not @TS-003'
+          - features: '007'
+            tags: ''
+          - features: '010'
+            tags: ''
+          - features: '011'
+            tags: ''
+          - features: '012,013'
+            tags: ''
     steps:
       - uses: actions/checkout@v4
         with:
@@ -326,10 +379,17 @@ jobs:
       - name: Build the product
         run: make build
 
+      # Some scenarios run the engine tests offline (mvn -o, 006 TS-020/TS-023): `make build` skips the tests, so
+      # download the test dependencies and surefire providers first (014 BUG-011).
+      - name: Prime the Maven repository for offline test runs
+        working-directory: engine
+        run: mvn -B -q test -Dtest=ProductLayoutTest   # a real test, so surefire resolves its JUnit 5 provider
+
       - name: Acceptance scenarios (clean-clone build+test runs in its own job)
         env:
           DEVARCH_E2E: 'true'
-          ACCEPTANCE_TAGS: 'not @TS-006 and not @TS-007'
+          ACCEPTANCE_FEATURES: ${{ matrix.features }}
+          ACCEPTANCE_TAGS: ${{ matrix.tags }}
         run: make test-acceptance
 
   # Browser end-to-end scenarios of 007 (@e2e, Playwright/Chromium; research D11). It depends on the web and the
@@ -374,12 +434,23 @@ jobs:
         run: make test-e2e-browser
 
   # Clean clone + make build && make test (TS-006/TS-007, user decision A3): own job, 45 minutes,
-  # only on pushes to main and dev-arch release tags.
+  # only on pushes to main and dev-arch release tags. 014 BUG-011: each clean-clone scenario (006 TS-006/TS-007, 014
+  # TS-003) runs a full make test (~35-40 min on the hosted runner): one per matrix entry, each within 45 minutes.
   acceptance-clean-clone:
-    name: Product acceptance - clean clone build & test
+    name: Product acceptance - clean clone build & test (${{ matrix.features }} ${{ matrix.scenario }})
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/dev-arch-v')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - features: '006'
+            scenario: '@TS-006'
+          - features: '006'
+            scenario: '@TS-007'
+          - features: '014'
+            scenario: '@TS-003'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -410,7 +481,8 @@ jobs:
       - name: Clean clone build and test scenarios
         env:
           DEVARCH_E2E: 'true'
-          ACCEPTANCE_TAGS: '@TS-006 or @TS-007'
+          ACCEPTANCE_TAGS: ${{ matrix.scenario }}
+          ACCEPTANCE_FEATURES: ${{ matrix.features }}
         run: make test-acceptance
 
   # ─── Container image (012-install-doctor-docker) ──────────────────

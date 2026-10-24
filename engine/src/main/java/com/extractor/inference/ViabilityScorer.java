@@ -10,8 +10,9 @@ import java.util.stream.Collectors;
 public class ViabilityScorer {
 
     /**
-     * Locale of the Spanish rationale text, fixed so the output does not depend on the JVM default locale
-     * (BUG-008, principle IV): decimal comma on every machine.
+     * Locale of the Spanish rationale text, fixed so the output does not
+     * depend on the JVM default locale (BUG-008, principle IV): decimal
+     * comma on every machine.
      */
     private static final Locale TEXT_LOCALE = Locale.forLanguageTag("es");
     private final List<Cluster> allClusters;
