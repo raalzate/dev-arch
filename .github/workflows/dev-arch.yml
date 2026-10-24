@@ -383,7 +383,7 @@ jobs:
       # download the test dependencies and surefire providers first (014 BUG-011).
       - name: Prime the Maven repository for offline test runs
         working-directory: engine
-        run: mvn -B -q test -Dtest=NoSuchTest -Dsurefire.failIfNoSpecifiedTests=false
+        run: mvn -B -q test -Dtest=ProductLayoutTest   # a real test, so surefire resolves its JUnit 5 provider
 
       - name: Acceptance scenarios (clean-clone build+test runs in its own job)
         env:
