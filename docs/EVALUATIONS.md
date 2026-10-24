@@ -121,8 +121,8 @@ Integridad de las pruebas: los escenarios BDD de las features 001–014 están b
 
 ## 6. Integración continua
 
-Primera ejecución completa en GitHub Actions tras el traslado a este repositorio (`main`, 2026-10-24). Cada job de
-área tiene un límite de 20 minutos; los clones limpios, 45.
+Primera ejecución completa en GitHub Actions tras el traslado a este repositorio (`main`, commit `2aa2786`,
+2026-10-24): **todos los jobs en verde**. Cada job de área tiene un límite de 20 minutos; los clones limpios, 45.
 
 | Job | Duración |
 |---|---:|
@@ -135,8 +135,8 @@ Primera ejecución completa en GitHub Actions tras el traslado a este repositori
 | Imagen Docker (build, salud, doctor, análisis de demo) | 3 min |
 | Distribución por plataforma (linux-x64, osx-arm64, osx-x64, win-x64) | 1 min cada una |
 | Clon limpio (`make build && make test`) — 006 TS-007 | 14 min |
-| Clon limpio — 006 TS-006 | en curso |
-| Clon limpio — 014 TS-003 | en curso |
+| Clon limpio — 006 TS-006 | 23 min |
+| Clon limpio — 014 TS-003 (producto en la raíz) | 23 min |
 
 Antes de repartirla (BUG-011), la aceptación nunca terminaba dentro de su límite: la CI no se había ejecutado nunca
 en el monorepo de origen, y la primera ejecución real lo destapó.
