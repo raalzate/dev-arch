@@ -64,6 +64,20 @@ them), `LLM_MODEL`, `ENGINE_JAR_PATH` (engine archive, relative to `web/`), `DOT
 
 `make doctor` is still a reserved placeholder (feature 006); use `make check-env` or `npm run doctor`.
 
+### Reproducible .NET analysis (SDK 8)
+
+The .NET analyzer resolves framework and package types with the .NET SDK it finds. `global.json` asks for the
+**.NET 8 SDK** (the one used by CI and the container image) and rolls forward to a newer SDK only when 8 is not
+installed. With a newer SDK alone (e.g. 10) everything builds and runs, but ASP.NET Core types of `net8.0` projects
+may not resolve: the analysis says so with a warning ("unresolved type references") and the .NET regression
+baselines of `make test` will differ. To reproduce the canonical results install the SDK 8 next to yours:
+
+```bash
+curl -fsSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
+bash dotnet-install.sh --channel 8.0 --install-dir "$HOME/.dotnet8"
+export DOTNET_ROOT="$HOME/.dotnet8" PATH="$HOME/.dotnet8:$PATH"   # before make build / make test
+```
+
 ## Docker installation
 
 Requirements: Docker 24+ and Compose v2 (`docker compose version`). Check them with `npm run doctor -- --mode docker`

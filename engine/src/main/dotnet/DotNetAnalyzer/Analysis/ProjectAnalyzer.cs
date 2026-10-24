@@ -81,6 +81,17 @@ public class ProjectAnalyzer
             _userWarnings.AddRange(_reducedFidelityVb.Select(subject => subject + ReducedFidelitySuffix));
         }
 
+        // BUG-009 (014): C# projects loaded by MSBuild whose types do not resolve (missing targeting pack or restore)
+        // are a reduced-resolution analysis; say so in the analysis log instead of degrading silently. Not a user
+        // warning: those are reserved to the reduced-fidelity VB load (009 FR-063, TS-071).
+        if (!usedFallback)
+        {
+            foreach (var warning in ResolutionWarnings.For(compilations))
+            {
+                Console.Error.WriteLine($"[WARN] {warning}");
+            }
+        }
+
         if (compilations.Count == 0)
         {
             Console.Error.WriteLine("[WARN] No compilations could be loaded. Returning empty dependency graph.");

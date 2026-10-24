@@ -16,7 +16,7 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
 
 ## BUG-009 — .NET semantic resolution depends on the installed targeting packs
 
-- **Status**: open — decision of the user needed (changes the locked 1.1.0 .NET baseline)
+- **Status**: fixed (user decision 2026-10-23: option A, pin SDK 8 and regenerate the .NET baselines)
 - **Severity**: high (non-deterministic output across machines; likely the root cause of BUG-007)
 - **Symptom**: `output.json` of `dotnet-ecommerce`: on the CI runner (.NET SDK 8) `extends` is
   `Microsoft.AspNetCore.Mvc.ControllerBase` and `cbo` 3; on the development machine (SDK 10, runtime 8 only) it is
@@ -39,3 +39,18 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
 - **Fix**: `EngineClient.analyze` reports, in order, the phases a completed analysis did not get notified.
 - **Test**: `web/src/server/engine/engine-client-phases.test.ts` with the stub engine `burst` mode (four
   notifications back to back before the answer, five runs). Red before (`[]` in a run), green after.
+
+### BUG-009 resolution
+
+- `global.json`: SDK `8.0.100`, `rollForward: major` — SDK 8 when installed (canonical: CI, container, baselines),
+  a newer SDK otherwise (012 TS-001: a machine with SDK 10 and runtime 8 keeps building and passing the doctor).
+- `ResolutionWarnings` (analyzer): a C# project loaded by MSBuild with unresolved type references is reported as a
+  `[WARN]` line of the analysis log (not a user warning: 009 FR-063/TS-071 reserves those to the VB load) (`ResolutionWarningsTests`, red before, green after). With SDK 10 only, `dotnet-ecommerce` reports
+  225 unresolved references; with SDK 8, 12 (its NuGet packages are not restored, on every machine).
+- Baselines `baseline-v1.1.0` and `baseline-v1.2.0` of `dotnet-ecommerce` regenerated under SDK 8
+  (`RegressionBaselineCaptureTest`; v1.1.0 derived with the same contract-metadata difference as before). The new
+  `output.json` equals the output of the GitHub Actions runner (Linux, SDK 8). No other project changed.
+- Golden file `Fixtures/Golden/SampleProject.golden.json` of 009 TS-070 regenerated under SDK 8 with its capture
+  switch (`VB009_WRITE_GOLDEN=1`): only `ControllerBase` resolution and the `cbo` of two components change;
+  `CodeIssuesSample.golden.json` is unchanged.
+- `docs/INSTALL.md`: "Reproducible .NET analysis (SDK 8)".
