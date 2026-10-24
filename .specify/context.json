@@ -2,13 +2,10 @@
   "tdd_determination": "mandatory",
   "planview": {
     "nodeClassifications": {
-      "CLI": "client",
-      "MCP analyze_project": "server",
-      "AnalysisService": "server",
-      "DotNetBridgeAnalyzer": "server",
-      "dotnet-analyzer": "server",
-      "ProjectAnalyzer": "server",
-      "VbProjectContext": "storage"
+      "Claude Code": "client",
+      "dev-arch-mcp.mjs": "client",
+      "dev-arch web (Next.js :9002)": "server",
+      "Engine (JAR)": "server"
     }
   },
   "checklist_reviewed_at": "2026-10-09T14:14:22Z"
