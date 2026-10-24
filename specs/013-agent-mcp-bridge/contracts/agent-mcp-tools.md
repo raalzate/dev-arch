@@ -2,7 +2,8 @@
 
 Servidor `dev-arch` (nombre MCP), versión = `VERSION` del producto. Transporte HTTP streamable sin estado, respuestas
 JSON. Autorización: `Authorization: Bearer <DEVARCH_API_TOKEN>` cuando el servidor tiene token (401 sin él).
-Cada resultado: `content: [{type:"text", text: <JSON con claves en orden fijo>}]` + `structuredContent` igual al JSON.
+Cada resultado: `content: [{type:"text", text: <JSON con claves en orden fijo>}]` (sin `structuredContent`: las
+herramientas no declaran `outputSchema`).
 Errores: `isError: true` y texto `{"error":{"code","message","action"}}`.
 
 | Herramienta | Entrada | Salida (completado) |
@@ -12,7 +13,7 @@ Errores: `isError: true` y texto `{"error":{"code","message","action"}}`.
 | `list_analyses` | `limit?` (1..200, def. 20) | `{ analyses: AnalysisRef[] }` en el orden del historial de la web |
 | `get_summary` | `analysis_id` | `AnalysisSummary` |
 | `get_proposals` | `analysis_id` | `{ proposals: ProposalView[] }` |
-| `get_findings` | `analysis_id`, `min_severity?` (`CRITICAL`\|`ERROR`\|`WARNING`\|`INFO`), `group_by?` (def. `severity`) | `FindingsView` |
+| `get_findings` | `analysis_id`, `min_severity?` (`CRITICAL`\|`ERROR`\|`WARNING`\|`INFO`), `group_by?` (`severity`\|`pattern`, def. `severity`) | `FindingsView` |
 | `get_plan` | `analysis_id` | `PlanView` |
 | `get_document` | `analysis_id`, `document` (`graph`\|`architecture`\|`contracts`) | documento tal como `GET /api/analyses/{id}/{doc}` |
 | `get_inference_parameters` | — | `{ parameters: InferenceParameter[] }` |

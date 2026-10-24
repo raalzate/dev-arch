@@ -18,20 +18,19 @@ Sin persistencia nueva. Entidades de intercambio:
 
 ## AnalysisSummary (`summary` en `analyze_project`/`get_analysis` completados y `get_summary`)
 
-Proyección de `Summary` de `lib/modernization/summary.ts`: `technology`, `components`, `loc`, `edges`,
-`external_dependencies`, `endpoints`, `severity` {CRITICAL,ERROR,WARNING,INFO}, `components_with_secrets`,
-`sensitive_proposals`, `tables`, `proposals`, `top_candidates` [{name, viability, components}],
-`top_risks` [{id, layer, issues}].
+El objeto `Summary` de `lib/modernization/summary.ts` tal cual (sin proyección propia): `profile`, `components`,
+`loc`, `edges`, `externalDependencies`, `endpoints`, `severity`, `componentsWithSecrets`, `sensitiveProposals`,
+`tables`, `proposals`, `candidates` (3 primeras propuestas), `risky` (8 componentes de mayor riesgo).
 
 ## ProposalView (`get_proposals`)
 
-Orden de `orderProposals`; por propuesta: `index`, `name`, `viability`, `cohesion`, `external_coupling`,
-`tables` [], `sensitive`, `components` [{id, role}].
+`{ proposals }`: las propuestas del documento de arquitectura en el orden de `orderProposals`, sin proyección
+(`id`, `name`, `viability`, `components`, `metrics` {`cohesion_avg`, `external_coupling`, …}, `tables`, …).
 
 ## FindingsView (`get_findings`)
 
-`min_severity`, `group_by` (`severity` \| `component` \| `type`), `total`, `groups` [{key, count, items
-[{component, severity, type, message, line?}]}] — de `allIssues` + `groupIssues`.
+`min_severity`, `group_by` (`severity` \| `pattern`, los modos de la web), `total`, `groups` [{key, count, issues}]
+— de `allIssues` + `groupIssues`.
 
 ## PlanView (`get_plan`)
 
