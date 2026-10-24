@@ -3,6 +3,7 @@
 // runner, the environment and the engine process probe.
 import { execFile } from 'node:child_process';
 import path from 'node:path';
+import { AGENT_MCP_BRIDGE, AGENT_MCP_ENDPOINT, AGENT_TOOL_NAMES } from '../agent-mcp/catalog';
 import type { Env } from '../config';
 
 export type DoctorStatus = 'OK' | 'WARN' | 'FAIL';
@@ -38,6 +39,8 @@ export interface HealthBody {
     mcpProcess: 'running' | 'idle';
   };
   checks: DoctorCheck[];
+  /** Agent MCP endpoint (013 FR-020). */
+  agentMcp: { endpoint: string; bridge: string; tools: number };
 }
 
 /** Doctor checks that describe the running web (no build tools, no Docker, no port: the server holds it). */
@@ -111,6 +114,7 @@ export function toHealth(report: DoctorReport, pid: number | null): { status: nu
       mcpProcess: pid ? 'running' : 'idle',
     },
     checks: report.checks,
+    agentMcp: { endpoint: AGENT_MCP_ENDPOINT, bridge: AGENT_MCP_BRIDGE, tools: AGENT_TOOL_NAMES.length },
   };
   return { status: report.status === 'FAIL' ? 503 : 200, body };
 }
