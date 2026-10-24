@@ -13,6 +13,8 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
 - **Fix**: fixed Spanish locale (`es`) for the rationale text; `Locale.ROOT` for the metrics debug log.
 - **Test**: `engine/src/test/java/com/extractor/determinism/LocaleIndependenceTest.java` (same architecture under
   `en-US` and `es-CO` default locales; decimal comma in the rationale). Red before the fix, green after.
+- **Gate**: the first version added two Checkstyle line-length violations (4591 > 4589, caught by 012 TS-037 on CI);
+  wrapped back to 4589.
 
 ## BUG-009 — .NET semantic resolution depends on the installed targeting packs
 
