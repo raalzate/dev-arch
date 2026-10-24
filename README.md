@@ -5,10 +5,27 @@
 <p align="center"><b>Análisis estático determinista para modernizar sistemas legacy Java y .NET<br>— la base de verdad sobre la que la IA puede refactorizar sin inventar.</b></p>
 
 <p align="center">
+  <a href="https://github.com/raalzate/dev-arch/actions/workflows/dev-arch.yml"><img src="https://github.com/raalzate/dev-arch/actions/workflows/dev-arch.yml/badge.svg?branch=main" alt="CI"></a>
+  <img src="https://img.shields.io/badge/version-1.2.0-2B59C3" alt="Versión 1.2.0">
+  <img src="https://img.shields.io/badge/contrato-schema%201.0.0-2B59C3" alt="Contrato schema 1.0.0">
+  <a href="docs/EVALUATIONS.md#1-determinismo-y-reproducibilidad"><img src="https://img.shields.io/badge/salida-determinista-2E7D32" alt="Salida determinista"></a>
+  <a href="docs/EVALUATIONS.md#4-batería-de-pruebas"><img src="https://img.shields.io/badge/cobertura%20web-97%25-2E7D32" alt="Cobertura web 97%"></a>
+  <a href="docs/EVALUATIONS.md"><img src="https://img.shields.io/badge/evaluaciones-ver-6A1B9A" alt="Evaluaciones"></a>
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17-E76F00?logo=openjdk&logoColor=white" alt="Java 17">
+  <img src="https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white" alt=".NET 8">
+  <img src="https://img.shields.io/badge/C%23%20%C2%B7%20VB.NET-Roslyn-512BD4" alt="C# y VB.NET con Roslyn">
+  <img src="https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs&logoColor=white" alt="Next.js 15">
+  <a href="docs/AGENTS-MCP.md"><img src="https://img.shields.io/badge/MCP-Claude%20Code-D97757" alt="MCP para Claude Code"></a>
+  <a href="#b-instalación-con-docker"><img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker Compose"></a>
+</p>
+
+<p align="center">
   <img src="docs/images/step-1-summary.png" width="900" alt="Resumen del análisis de un sistema .NET legacy">
 </p>
 
-<p align="center"><a href="#instalación"><b>Instalación</b></a> · <a href="#la-tesis">La tesis</a> · <a href="#qué-muestra">Qué muestra</a> · <a href="docs/AGENTS-MCP.md">Conectar un agente</a></p>
+<p align="center"><a href="#instalación"><b>Instalación</b></a> · <a href="#la-tesis">La tesis</a> · <a href="#qué-muestra">Qué muestra</a> · <a href="docs/AGENTS-MCP.md">Conectar un agente</a> · <a href="docs/EVALUATIONS.md">Evaluaciones</a></p>
 
 ---
 
@@ -35,8 +52,8 @@ REST, los secretos expuestos y los problemas de código. Sobre ese grafo aplica 
 pesos y umbrales explícitos (cohesión, acoplamiento, datos compartidos) para proponer microservicios con su
 viabilidad.
 
-- **Reproducible:** misma entrada, misma salida, byte a byte (lo verifican las pruebas de contrato en cada
-  ejecución de la CI).
+- **Reproducible:** misma entrada, misma salida, byte a byte, también entre máquinas (lo verifican las pruebas de
+  contrato en cada ejecución de la CI; ver [evaluaciones](docs/EVALUATIONS.md#1-determinismo-y-reproducibilidad)).
 - **Explicable:** cada propuesta trae sus métricas, sus señales y su justificación; nada es una caja negra.
 - **Contrato versionado:** las salidas cumplen un esquema JSON versionado (`schema/1.0.0`) que consumen la web,
   el CLI y los agentes por igual.
@@ -177,7 +194,8 @@ críticos"*. Instancias remotas con token y conexión solo por HTTP: [docs/AGENT
 
 Más detalle: [instalación completa y solución de problemas](docs/INSTALL.md) ·
 [conexión de agentes (MCP)](docs/AGENTS-MCP.md) · [arquitectura](docs/ARCHITECTURE.md) ·
-[modernización continua](docs/CONTINUOUS-MODERNIZATION.md) · [contrato JSON](docs/SCHEMA.md)
+[modernización continua](docs/CONTINUOUS-MODERNIZATION.md) · [contrato JSON](docs/SCHEMA.md) ·
+[evaluaciones](docs/EVALUATIONS.md)
 
 ## Cómo está hecho
 
