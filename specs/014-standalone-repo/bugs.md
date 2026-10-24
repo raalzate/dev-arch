@@ -74,3 +74,15 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
   - `schema`: matrix `schema-check` | `scenarios`.
   - `engine-java`: matrix `tests` | `static-analysis`; `mvn verify` skips the 005 runner (run by the schema job).
   - `acceptance-clean-clone`: matrix `@TS-006` | `@TS-007` of feature 006, 45 minutes each.
+
+## BUG-012 — The agent bridge stays silent when launched through a symbolic link
+
+- **Status**: fixed
+- **Severity**: high for affected users (Claude Code shows the server as failed; no error printed)
+- **Symptom**: local clean-clone run: 013 TS-009 "bridge did not answer initialize" (macOS temporary folder);
+  passes on the Linux CI runner.
+- **Root cause**: the bridge ran `main()` only when `path.resolve(argv[1])` equals the module path, but Node
+  resolves the module through symbolic links (`/var` → `/private/var` on macOS, links in `~`).
+- **Fix**: compare real paths (`realpathSync`) in the entry-point check of `web/public/dev-arch-mcp.mjs`.
+- **Test**: `web/src/server/agent-mcp/bridge-symlink.test.ts` (`--version` through a link: empty before, version
+  after); 013 TS-009 green locally with the real engine.
