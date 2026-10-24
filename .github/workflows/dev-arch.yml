@@ -324,7 +324,7 @@ jobs:
 
   # ─── Product acceptance (006-devarch-monorepo) ─────────────────
   acceptance:
-    name: Product acceptance (${{ matrix.features }})
+    name: Product acceptance (${{ matrix.features }} ${{ matrix.tags }})
     needs: changes
     if: ${{ needs.changes.outputs.acceptance == 'true' }}
     runs-on: ubuntu-latest
@@ -335,8 +335,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - features: '006,014'
-            tags: 'not @TS-006 and not @TS-007'
+          - features: '006'
+            tags: 'not @TS-006 and not @TS-007 and not @TS-021'
+          - features: '006'
+            tags: '@TS-021'
+          - features: '014'
+            tags: 'not @TS-003'
           - features: '007'
             tags: ''
           - features: '010'
@@ -421,17 +425,23 @@ jobs:
         run: make test-e2e-browser
 
   # Clean clone + make build && make test (TS-006/TS-007, user decision A3): own job, 45 minutes,
-  # only on pushes to main and dev-arch release tags. 014 BUG-011: each scenario runs a full make test (~35-40 min
-  # on the hosted runner), so the two run in parallel, one per matrix entry, each within the 45 minutes.
+  # only on pushes to main and dev-arch release tags. 014 BUG-011: each clean-clone scenario (006 TS-006/TS-007, 014
+  # TS-003) runs a full make test (~35-40 min on the hosted runner): one per matrix entry, each within 45 minutes.
   acceptance-clean-clone:
-    name: Product acceptance - clean clone build & test (${{ matrix.scenario }})
+    name: Product acceptance - clean clone build & test (${{ matrix.features }} ${{ matrix.scenario }})
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/dev-arch-v')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        scenario: ['@TS-006', '@TS-007']
+        include:
+          - features: '006'
+            scenario: '@TS-006'
+          - features: '006'
+            scenario: '@TS-007'
+          - features: '014'
+            scenario: '@TS-003'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -463,7 +473,7 @@ jobs:
         env:
           DEVARCH_E2E: 'true'
           ACCEPTANCE_TAGS: ${{ matrix.scenario }}
-          ACCEPTANCE_FEATURES: '006'
+          ACCEPTANCE_FEATURES: ${{ matrix.features }}
         run: make test-acceptance
 
   # ─── Container image (012-install-doctor-docker) ──────────────────
