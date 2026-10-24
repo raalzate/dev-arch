@@ -343,6 +343,19 @@ For repeated runs (CI, watching multiple repos):
 - **Batch script** — `scripts/triage-proposals.sh <archJson>` emits a CSV of `(id,name,viability,size,cohesion,coupling,recommendation)`.
 - **Risk extractor** — `scripts/risk-report.sh <graphJson> <archJson>` emits sensitive components + ERROR-severity issues + sensitive proposals (NB: argument order is graph first).
 
+
+## Alternative: the dev-arch server for agents
+
+Besides the engine MCP server (stdio, tools above), dev-arch exposes an agent endpoint that works with a server in a
+container or on another machine: the agent sends the project folder (`analyze_project`) and reads the same analysis
+by parts (`get_summary`, `get_proposals`, `get_findings`, `get_plan`, `get_document`), lists the history
+(`list_analyses`) and recomputes proposals (`get_inference_parameters`, `reinfer_proposals`). Every result carries
+the link to open the analysis in the dev-arch web. Setup: `docs/AGENTS-MCP.md` of
+[raalzate/dev-arch](https://github.com/raalzate/dev-arch).
+
+The engine server also offers `reinfer_architecture` and `score_proposal` (configurable inference) when started with
+`STATIC_INFERENCE_INFERENCE_TOOLS=true`.
+
 ## Responsible decision principles
 
 1. **No extraction without evidence** — every recommendation cites a JSON attribute path.

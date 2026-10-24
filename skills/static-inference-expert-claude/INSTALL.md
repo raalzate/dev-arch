@@ -1,6 +1,6 @@
 # Install — `static-inference-expert-claude` skill
 
-Drop this skill into a downstream project that wants to consume the `static-inference` MCP.
+Drop this skill into a downstream project that wants to consume the dev-arch analysis engine (`static-inference` MCP).
 
 ## 1. Copy the skill folder
 
@@ -27,36 +27,28 @@ Layout afterwards:
 
 ## 2. Obtain the analyzer artifacts
 
-Build once inside the `static-inference` repo (use the Maven wrapper if `mvn` is not on PATH):
+The engine lives in [`raalzate/dev-arch`](https://github.com/raalzate/dev-arch). Build it once (JDK 17, Maven, and
+the .NET SDK 8 for .NET projects; `npm run doctor` lists what is missing):
 
 ```bash
-# inside the static-inference repo
-./mvnw clean package -DskipTests          # produces target/java-dependency-extractor.jar
-# or: mvn clean package -DskipTests
-
-# .NET support (only needed to analyze .NET/C# projects)
-dotnet publish src/main/dotnet/DotNetAnalyzer/DotNetAnalyzer.csproj \
-  -c Release -r osx-arm64 --self-contained -p:PublishSingleFile=true -o target
-# replace -r with: osx-x64 | linux-x64 | win-x64
+git clone https://github.com/raalzate/dev-arch.git && cd dev-arch
+make build-engine     # engine/target/java-dependency-extractor.jar + engine/target/dotnet-analyzer
 ```
 
-Distribute the `target/` folder to consumers (or copy just the binaries to a shared path):
+Distribute `engine/target/java-dependency-extractor.jar` and, for .NET projects, `engine/target/dotnet-analyzer`
+(plus its folder) to a shared path. The engine finds the .NET analyzer next to the JAR or through
+`DOTNET_ANALYZER_PATH`.
 
-```
-target/
-├── java-dependency-extractor.jar        # main analyzer JAR
-├── java-dependency-extractor-1.0.0.jar  # versioned copy (same content)
-└── dotnet-analyzer                      # .NET bridge binary (platform-specific)
-```
-
-Both JARs are identical — use `java-dependency-extractor.jar` for stable references.
+> **No local JDK?** Run dev-arch as a server (`docker compose -f docker/compose.yaml up -d`) and connect the agent
+> to it instead: the agent sends the project folder and receives the same analysis plus the summary, proposals,
+> findings and plan of the web. See [docs/AGENTS-MCP.md](https://github.com/raalzate/dev-arch/blob/main/docs/AGENTS-MCP.md).
 
 ## 3. Register the MCP server
 
 Copy the template from the analyzer repo as a starting point:
 
 ```bash
-cp /path/to/static-inference/mcp-config.example.json /your-project/.mcp.json
+cp /path/to/dev-arch/.mcp.json /your-project/.mcp.json
 # then edit the JAR path
 ```
 
