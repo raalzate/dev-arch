@@ -74,7 +74,8 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
   - `schema`: matrix `schema-check` | `scenarios`.
   - `engine-java`: matrix `tests` | `static-analysis`; `mvn verify` skips the 005 runner (run by the schema job).
   - `acceptance-clean-clone`: one entry per clean-clone scenario (006 TS-006, 006 TS-007, 014 TS-003), 45 minutes
-    each; the acceptance shards exclude them, and 006 TS-021 (one schema-check per front) has its own shard.
+    each; the acceptance shards exclude them, 006 TS-021 (one schema-check per front) has its own shard, and 006
+    TS-011 (`make clean`) runs alone so it never removes the build the other scenarios use.
 
 ## BUG-012 — The agent bridge stays silent when launched through a symbolic link
 

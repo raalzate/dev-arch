@@ -336,9 +336,12 @@ jobs:
       matrix:
         include:
           - features: '006'
-            tags: 'not @TS-006 and not @TS-007 and not @TS-021'
+            tags: 'not @TS-006 and not @TS-007 and not @TS-011 and not @TS-021'
           - features: '006'
             tags: '@TS-021'
+          # TS-011 runs `make clean`: alone, so it never removes the build other scenarios use.
+          - features: '006'
+            tags: '@TS-011'
           - features: '014'
             tags: 'not @TS-003'
           - features: '007'
