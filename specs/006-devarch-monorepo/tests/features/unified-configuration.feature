@@ -25,25 +25,26 @@ Feature: Unified development configuration and governance
 
   @TS-038 @FR-026 @FR-012 @SC-003 @P3 @validation
   Scenario Outline: Ignore rules exclude generated artifacts and keep required files versionable
-    Given the product ignore rules applied below the monorepo global rules
+    Given the product ignore rules
     When the path "<path>" is checked
     Then it is <status>
 
     Examples:
       | path                                                       | status      |
-      | apps/dev-arch/engine/target/java-dependency-extractor.jar | ignored     |
-      | apps/dev-arch/web/engine-dist/engine.jar                  | ignored     |
-      | apps/dev-arch/web/.next/build-manifest.json               | ignored     |
-      | apps/dev-arch/node_modules/zod/package.json               | ignored     |
-      | apps/dev-arch/package-lock.json                           | not ignored |
-      | apps/dev-arch/specs/006-devarch-monorepo/spec.md          | not ignored |
-      | apps/dev-arch/.specify/context.json                       | not ignored |
+      | engine/target/java-dependency-extractor.jar | ignored     |
+      | web/engine-dist/engine.jar                  | ignored     |
+      | web/.next/build-manifest.json               | ignored     |
+      | node_modules/zod/package.json               | ignored     |
+      | package-lock.json                           | not ignored |
+      | specs/006-devarch-monorepo/spec.md          | not ignored |
+      | .specify/context.json                       | not ignored |
 
-  @TS-039 @FR-026 @P3 @validation
-  Scenario: The monorepo global ignore rules are not modified
-    Given the monorepo global ignore rules on the main branch
-    When they are compared with the feature branch
-    Then they are identical
+  # DEPRECATED: the monorepo global ignore rules belong to maestria-ia, not to this repository (014-standalone-repo, re-testify approved by the user 2026-10-23)
+  # @TS-039 @FR-026 @P3 @validation
+  # Scenario: The monorepo global ignore rules are not modified
+  # Given the monorepo global ignore rules on the main branch
+  # When they are compared with the feature branch
+  # Then they are identical
 
   @TS-040 @FR-026 @FR-028 @P3 @contract
   Scenario: A single set of editor rules and agent instructions lives at the product root

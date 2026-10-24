@@ -37,7 +37,7 @@ Feature: Existing synchronous analysis clients keep working
 
   @TS-076 @FR-027 @SC-012 @P1 @validation
   Scenario: Locked scenarios, hashes and test assertions of features 001 to 006 are unchanged
-    When the product is compared with the 006 baseline tag "dev-arch-006-baseline"
+    When the product at the closing commit "616381ce1875f1ff0a2ae9db177ee60a12884eec" of feature 007 is compared with the 006 baseline tag "dev-arch-006-baseline"
     Then no ".feature" file or "context.json" assertion hash of features 001 to 006 has changed, except the scenario "TS-042" of 006 re-testified and recorded in its specification
     And no test assertion of features 001 to 006 has changed, ignoring project and build files, documentation and comment or whitespace changes in test code
     And every assertion integrity hash of features 001 to 006 verifies

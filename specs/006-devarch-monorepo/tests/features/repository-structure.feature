@@ -13,18 +13,19 @@ Feature: Single product with the engine history preserved
 
   @TS-001 @FR-001 @FR-005 @FR-006 @P1 @acceptance
   Scenario: The product folder contains the agreed areas and governance
-    Given a clean clone of the monorepo on the feature branch
+    Given a clean clone of the repository on the feature branch
     When the product folder is listed
     Then it contains the directories "web", "engine", "schema", "skills", "docs" and "docker"
     And it contains "CONSTITUTION.md", "PREMISE.md" and the directory "specs" at its root
-    And every other root entry belongs to the allowed governance, version, configuration, orchestration or acceptance-test entries
+    And every other root entry belongs to the allowed governance, documentation, version, configuration, continuous-integration, orchestration or acceptance-test entries
 
-  @TS-002 @FR-002 @SC-004 @P1 @acceptance
-  Scenario: Every engine commit is reachable from the engine area history
-    Given the main branch of the original Static Inference repository
-    When its commits are looked up in the monorepo
-    Then 100% of them are reachable from the history of the engine area
-    And the history of the engine shared analysis service includes the commit that released version 1.2.0
+  # DEPRECATED: the engine history was imported into the maestria-ia monorepo; the standalone repository keeps the product history only (014-standalone-repo, re-testify approved by the user 2026-10-23)
+  # @TS-002 @FR-002 @SC-004 @P1 @acceptance
+  # Scenario: Every engine commit is reachable from the engine area history
+  # Given the main branch of the original Static Inference repository
+  # When its commits are looked up in the monorepo
+  # Then 100% of them are reachable from the history of the engine area
+  # And the history of the engine shared analysis service includes the commit that released version 1.2.0
 
   @TS-003 @FR-004 @SC-003 @P1 @acceptance
   Scenario: No analyzer binaries are versioned in the product
@@ -33,11 +34,12 @@ Feature: Single product with the engine history preserved
     Then none is found
     And the vendored analyzer archive and the stale web entrypoints output are no longer tracked
 
-  @TS-004 @FR-007 @P1 @acceptance
-  Scenario: Previous working copies outside the product stay untouched
-    Given the previous working copies of the engine and the web outside the product folder
-    When the feature changes are compared against the monorepo main branch
-    Then no file under those working copies is added, modified or deleted
+  # DEPRECATED: the previous working copies lived in the maestria-ia monorepo, outside this repository (014-standalone-repo, re-testify approved by the user 2026-10-23)
+  # @TS-004 @FR-007 @P1 @acceptance
+  # Scenario: Previous working copies outside the product stay untouched
+  # Given the previous working copies of the engine and the web outside the product folder
+  # When the feature changes are compared against the monorepo main branch
+  # Then no file under those working copies is added, modified or deleted
 
   @TS-005 @FR-005 @SC-005 @P1 @contract
   Scenario: Imported specifications keep their content and integrity anchors
@@ -48,7 +50,7 @@ Feature: Single product with the engine history preserved
 
   @TS-042 @FR-003 @P1 @contract
   Scenario: The web is relocated intact into the web area by this feature
-    Given the web files imported into the monorepo before this feature
+    Given the web files imported into the repository before this feature
     When they are compared with the files of the web area at the 006 baseline tag "dev-arch-006-baseline"
     Then every source, documentation and configuration file is present with its relative path preserved
     And only the analysis route, the web manifest and the newly added engine resolution files differ

@@ -22,7 +22,7 @@ Feature: Quality guards stay intact
 
   @TS-033 @FR-007 @FR-031 @SC-008 @P1 @validation
   Scenario: No locked artifact or existing test of features 001 to 010 changed
-    When the product is compared with the delivery commit "3b32def8d5d7223df3afdf20a4dc88ac35c971fc" of feature 010
+    When the product at the closing commit "b64722a15602" of feature 011 is compared with the delivery commit "69c3f8e192ac" of feature 010
     Then no ".feature" file, "context.json" or specification file of features 001 to 010 was modified or deleted
     And no existing test source file was modified or deleted
     And every assertion integrity hash of features 001 to 010 verifies

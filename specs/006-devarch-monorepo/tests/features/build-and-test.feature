@@ -7,13 +7,13 @@
 
 @US-002
 Feature: Build and test the whole product from a clean clone
-  As a developer who just cloned the monorepo
+  As a developer who just cloned the repository
   I want one command to build the product and one command to test it
   So that I know in minutes whether the product is healthy
 
   @TS-006 @FR-008 @FR-009 @FR-010 @SC-001 @SC-003 @P1 @acceptance @slow
   Scenario: Clean clone builds and tests green
-    Given a clean clone of the monorepo on the feature branch
+    Given a clean clone of the repository on the feature branch
     And JDK 17, the .NET SDK and Node 20 are available
     When "make build" is executed from the product root
     And "make test" is executed from the product root

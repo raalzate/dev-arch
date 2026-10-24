@@ -9,7 +9,7 @@
 Feature: Continuous integration per area
   As a maintainer
   I want each change to trigger only the checks of the affected area
-  So that CI is fast and does not affect the other monorepo projects
+  So that CI is fast and only runs the checks of the changed areas
 
   @TS-025 @FR-023 @SC-008 @P2 @contract
   Scenario Outline: Changed paths trigger only the checks of their area
@@ -19,10 +19,10 @@ Feature: Continuous integration per area
 
     Examples:
       | path                                                        | checks                                      |
-      | apps/dev-arch/web/src/app/page.tsx                          | web                                         |
-      | apps/dev-arch/engine/src/main/java/com/extractor/Foo.java   | engine-java, schema                         |
-      | apps/dev-arch/engine/src/main/dotnet/DotNetAnalyzer/Foo.cs  | engine-dotnet, schema                       |
-      | apps/dev-arch/schema/1.0.0/common.schema.json               | schema, engine-java, engine-dotnet, web     |
+      | web/src/app/page.tsx                                        | web                                         |
+      | engine/src/main/java/com/extractor/Foo.java                 | engine-java, schema                         |
+      | engine/src/main/dotnet/DotNetAnalyzer/Foo.cs                | engine-dotnet, schema                       |
+      | schema/1.0.0/common.schema.json                             | schema, engine-java, engine-dotnet, web     |
 
   @TS-026 @FR-024 @SC-008 @P2 @contract
   Scenario: Changes outside the product trigger no dev-arch check

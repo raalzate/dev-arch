@@ -13,7 +13,7 @@ Feature: Feature 012 is strictly additive and keeps every quality gate
 
   @TS-036 @FR-027 @SC-006 @P1 @validation
   Scenario: No locked artifact or existing test of features 001 to 011 changed
-    When the product is compared with the closing commit of feature 011
+    When the product at the closing commit "b5cec37b9b24" of feature 012 is compared with the closing commit "b64722a15602" of feature 011
     Then no ".feature" file, "context.json" or specification file of features 001 to 011 was modified or deleted
     And no existing step definition or test source file was modified or deleted
     And the product root entries and the workspaces are unchanged
