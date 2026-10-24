@@ -301,6 +301,11 @@ jobs:
         if: matrix.part == 'schema-check'
         run: make schema-check
 
+      # In the schema-check part `make schema-check` builds the .NET analyzer; this part builds it itself.
+      - name: Publish the .NET analyzer for the 005 scenarios
+        if: matrix.part == 'scenarios'
+        run: bash scripts/engine-build.sh --dotnet-only
+
       - name: BDD scenarios of 005 (incl. end-to-end schema-check divergences)
         if: matrix.part == 'scenarios'
         working-directory: engine
