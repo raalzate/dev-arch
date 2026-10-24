@@ -132,6 +132,10 @@ export class EngineClient {
         hooks.onPhase(PHASES[i]);
       }
     };
+    // BUG-014: once the engine process is up, the analysis is in its first phase. Reporting it now keeps the page
+    // from waiting for the first progress notification, which can come after a fast analysis ends; the engine's
+    // own "detection" notification is then deduplicated.
+    reach(0);
     try {
       const result = await this.call(client, req, hooks, reach);
       // BUG-010: the MCP SDK dispatches notifications on a later microtask but handles the answer at once, so the
