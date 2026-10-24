@@ -8,6 +8,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ViabilityScorer {
+
+    /**
+     * Locale of the Spanish rationale text, fixed so the output does not depend on the JVM default locale
+     * (BUG-008, principle IV): decimal comma on every machine.
+     */
+    private static final Locale TEXT_LOCALE = Locale.forLanguageTag("es");
     private final List<Cluster> allClusters;
     private final Map<String, Component> componentMap;
     /** Viability parameters (008). */
@@ -230,7 +236,7 @@ public class ViabilityScorer {
 
         // Add code quality metrics summary first
         if (qualityMetrics.componentsWithCbo > 0) {
-            rationale.add(String.format("📊 Métricas de Calidad: CBO promedio %.1f (acoplamiento entre objetos), " +
+            rationale.add(String.format(TEXT_LOCALE, "📊 Métricas de Calidad: CBO promedio %.1f (acoplamiento entre objetos), " +
                                        "LCOM promedio %.2f (cohesión de métodos: 0=alta, 1=baja)",
                                        qualityMetrics.avgCbo, qualityMetrics.avgLcom));
         }
@@ -238,39 +244,39 @@ public class ViabilityScorer {
         // Cohesion analysis with detailed explanations
         double cohesionPercent = Math.round(cohesionAdj * 100);
         if (cohesionAdj >= cuts.cohesionGood()) {
-            rationale.add("✅ Alta cohesión interna (" + String.format("%.0f%%", cohesionPercent) + 
+            rationale.add("✅ Alta cohesión interna (" + String.format(TEXT_LOCALE, "%.0f%%", cohesionPercent) + 
                          ") - componentes bien relacionados que trabajan juntos hacia un objetivo común");
         } else if (cohesionAdj >= cuts.cohesionFair()) {
-            rationale.add("⚠️ Cohesión moderada (" + String.format("%.0f%%", cohesionPercent) + 
+            rationale.add("⚠️ Cohesión moderada (" + String.format(TEXT_LOCALE, "%.0f%%", cohesionPercent) + 
                          ") - componentes parcialmente relacionados; considerar refactorización para agrupar responsabilidades más claramente");
         } else {
-            rationale.add("❌ Baja cohesión (" + String.format("%.0f%%", cohesionPercent) + 
+            rationale.add("❌ Baja cohesión (" + String.format(TEXT_LOCALE, "%.0f%%", cohesionPercent) + 
                          ") - componentes poco relacionados que no comparten un propósito claro");
         }
         
         // Coupling analysis with detailed explanations
         double couplingPercent = Math.round(externalCoupling * 100);
         if (externalCoupling < cuts.couplingGood()) {
-            rationale.add("✅ Bajo acoplamiento externo (" + String.format("%.0f%%", couplingPercent) + 
+            rationale.add("✅ Bajo acoplamiento externo (" + String.format(TEXT_LOCALE, "%.0f%%", couplingPercent) + 
                          ") - buena independencia y facilidad de mantenimiento");
         } else if (externalCoupling < cuts.couplingFair()) {
-            rationale.add("⚠️ Acoplamiento moderado (" + String.format("%.0f%%", couplingPercent) + 
+            rationale.add("⚠️ Acoplamiento moderado (" + String.format(TEXT_LOCALE, "%.0f%%", couplingPercent) + 
                          ") - algunas dependencias externas; considerar aplicar patrones como facades o abstracciones para reducir acoplamiento");
         } else {
-            rationale.add("❌ Alto acoplamiento externo (" + String.format("%.0f%%", couplingPercent) + 
+            rationale.add("❌ Alto acoplamiento externo (" + String.format(TEXT_LOCALE, "%.0f%%", couplingPercent) + 
                          ") - fuertemente acoplado a otros módulos, dificultando la extracción independiente");
         }
         
         // CBO-specific analysis
         if (qualityMetrics.componentsWithCbo > 0) {
             if (qualityMetrics.avgCbo <= cuts.cboGood()) {
-                rationale.add("✅ CBO bajo (" + String.format("%.1f", qualityMetrics.avgCbo) + 
+                rationale.add("✅ CBO bajo (" + String.format(TEXT_LOCALE, "%.1f", qualityMetrics.avgCbo) + 
                              ") - acoplamiento entre clases controlado, fácil de mantener");
             } else if (qualityMetrics.avgCbo <= cuts.cboFair()) {
-                rationale.add("⚠️ CBO moderado (" + String.format("%.1f", qualityMetrics.avgCbo) + 
+                rationale.add("⚠️ CBO moderado (" + String.format(TEXT_LOCALE, "%.1f", qualityMetrics.avgCbo) + 
                              ") - acoplamiento moderado; revisar dependencias innecesarias entre clases");
             } else {
-                rationale.add("❌ CBO alto (" + String.format("%.1f", qualityMetrics.avgCbo) + 
+                rationale.add("❌ CBO alto (" + String.format(TEXT_LOCALE, "%.1f", qualityMetrics.avgCbo) + 
                              ") - acoplamiento excesivo entre clases, dificulta mantenimiento y testing");
             }
         }
@@ -278,13 +284,13 @@ public class ViabilityScorer {
         // LCOM-specific analysis
         if (qualityMetrics.componentsWithLcom > 0) {
             if (qualityMetrics.avgLcom <= cuts.lcomGood()) {
-                rationale.add("✅ LCOM bajo (" + String.format("%.2f", qualityMetrics.avgLcom) + 
+                rationale.add("✅ LCOM bajo (" + String.format(TEXT_LOCALE, "%.2f", qualityMetrics.avgLcom) + 
                              ") - alta cohesión de métodos, clases con responsabilidad única bien definida");
             } else if (qualityMetrics.avgLcom <= cuts.lcomFair()) {
-                rationale.add("⚠️ LCOM moderado (" + String.format("%.2f", qualityMetrics.avgLcom) + 
+                rationale.add("⚠️ LCOM moderado (" + String.format(TEXT_LOCALE, "%.2f", qualityMetrics.avgLcom) + 
                              ") - cohesión de métodos moderada; algunas clases podrían dividirse en clases más pequeñas");
             } else {
-                rationale.add("❌ LCOM alto (" + String.format("%.2f", qualityMetrics.avgLcom) + 
+                rationale.add("❌ LCOM alto (" + String.format(TEXT_LOCALE, "%.2f", qualityMetrics.avgLcom) + 
                              ") - baja cohesión de métodos, clases con múltiples responsabilidades que deberían dividirse");
             }
         }
@@ -318,19 +324,19 @@ public class ViabilityScorer {
             }
             
             if (externalCoupling >= cuts.couplingFair()) {
-                reasons.add("• El alto acoplamiento externo (" + String.format("%.0f%%", couplingPercent) + ") significa que este módulo " +
+                reasons.add("• El alto acoplamiento externo (" + String.format(TEXT_LOCALE, "%.0f%%", couplingPercent) + ") significa que este módulo " +
                            "depende fuertemente de otros componentes del sistema. Extraerlo como módulo independiente requeriría " +
                            "replicar o exponer demasiada funcionalidad de otros módulos, creando interfaces complejas y frágiles.");
             }
             
             if (qualityMetrics.avgCbo > cuts.cboFair()) {
-                reasons.add("• CBO promedio alto (" + String.format("%.1f", qualityMetrics.avgCbo) + ") indica que las clases están " +
+                reasons.add("• CBO promedio alto (" + String.format(TEXT_LOCALE, "%.1f", qualityMetrics.avgCbo) + ") indica que las clases están " +
                            "acopladas a muchas otras clases del sistema. Esto dificulta definir límites claros del módulo y " +
                            "aumenta el riesgo de cambios en cascada.");
             }
             
             if (qualityMetrics.avgLcom > cuts.lcomFair()) {
-                reasons.add("• LCOM promedio alto (" + String.format("%.2f", qualityMetrics.avgLcom) + ") sugiere que las clases tienen " +
+                reasons.add("• LCOM promedio alto (" + String.format(TEXT_LOCALE, "%.2f", qualityMetrics.avgLcom) + ") sugiere que las clases tienen " +
                            "múltiples responsabilidades no relacionadas. Antes de extraer como módulo, se debería refactorizar " +
                            "para separar estas responsabilidades.");
             }
