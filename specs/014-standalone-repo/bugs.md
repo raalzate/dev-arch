@@ -91,10 +91,16 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
 - **Test**: `web/src/server/agent-mcp/bridge-symlink.test.ts` (`--version` through a link: empty before, version
   after); 013 TS-009 green locally with the real engine.
 
-## Observation — 007 browser scenario "the page shows the analysis phase while it runs" (timing)
+## BUG-014 — A fast analysis never showed a running phase in the web (was "Observation" above)
 
-- **Status**: observed once (PR #3, commit 3db034f); passed on the previous runs of the same job.
-- On a fast runner the demo analysis can finish between two status polls of the page, so the page only records
-  `completed`. Not related to the changes of 014 (the web polling and the phase reporting while running are
-  unchanged; BUG-010 only adds the phases a completed analysis missed). If it recurs, the analysis of the scenario
-  needs to be long enough for one poll (locked 007 scenario: change the demo input, not the assertion).
+- **Status**: fixed
+- **Severity**: medium (the page jumped from "starting" to "completed"; 007 browser scenario failed on fast runners)
+- **Symptom**: PR #3: "the page shows the analysis phase while it runs" failed twice on the same commit (the job took
+  10 minutes instead of 15: a faster runner); the page recorded only `completed`.
+- **Root cause**: the job phase came only from the engine progress notifications; with a warm engine the demo
+  analysis ends before the page's first polls see one (the page polls every 500 ms).
+- **Fix**: `EngineClient.analyze` reports `detection` as soon as the engine process is up, before sending the
+  analysis (the engine's own notification is deduplicated, so the event log keeps one entry per phase, and 007's
+  "an analysis is running" still means the engine process is running).
+- **Test**: `web/src/server/jobs/job-runner-phase.test.ts` (stub engine without notifications: the running job showed
+  `writing` only, now `detection`); 007 TS-013 browser scenario green locally with the real engine.
