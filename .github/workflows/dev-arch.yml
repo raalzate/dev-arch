@@ -1,7 +1,8 @@
 name: dev-arch - Build, Test & Release
 
 # CI of dev-arch (006-devarch-monorepo contracts/ci-workflow.md; 014-standalone-repo: own repository, product at the
-# root). Only changes to the product areas trigger it; inside, each area job only runs when its paths change.
+# root). Only changes to the product areas trigger it; inside, each area job only runs when its paths change. A
+# change to this workflow runs every area job (014 BUG-011).
 on:
   push:
     branches: [main]
@@ -40,21 +41,25 @@ jobs:
               - 'engine/src/test/resources/**'
               - 'schema/**'
               - 'VERSION'
+              - '.github/workflows/dev-arch.yml'
             engine-dotnet:
               - 'engine/src/main/dotnet/**'
               - 'engine/src/test/dotnet/**'
               - 'schema/**'
               - 'VERSION'
+              - '.github/workflows/dev-arch.yml'
             web:
               - 'web/**'
               - 'schema/**'
               - 'package.json'
               - 'package-lock.json'
               - 'VERSION'
+              - '.github/workflows/dev-arch.yml'
             schema:
               - 'schema/**'
               - 'engine/src/**'
               - 'scripts/schema-check.sh'
+              - '.github/workflows/dev-arch.yml'
             acceptance:
               - 'Makefile'
               - 'scripts/**'
@@ -74,6 +79,7 @@ jobs:
               - 'web/src/app/api/health/**'
               - 'web/src/server/health/**'
               - 'web/next.config.ts'
+              - '.github/workflows/dev-arch.yml'
 
   # ─── Java engine (Maven) ───────────────────────────────────────
   engine-java:
