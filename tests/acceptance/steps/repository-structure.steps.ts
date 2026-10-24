@@ -9,24 +9,28 @@ import { git, gitOk, revList, rootEntries, trackedFiles } from '../support/git.t
 import { assertionHash } from '../support/iikit-hash.ts';
 import type { DevArchWorld } from '../support/world.ts';
 
-const ENGINE_PREFIX = `${PRODUCT_REL}/engine`;
+/** Engine area. Its import commit is found by the `git-subtree-dir: <...>/engine` line `git subtree add` recorded. */
+const ENGINE_PREFIX = 'engine';
+const ENGINE_IMPORT_GREP = '^git-subtree-dir: .*engine$';
 const ANALYSIS_SERVICE = 'src/main/java/com/extractor/service/AnalysisService.java';
 const PREVIOUS_SPECS = ['001', '002', '003', '004', '005'];
 
 interface SubtreeImport {
-  /** Monorepo commit before the engine import (web imported as-is). */
+  /** Commit before the engine import (web imported as-is). */
   mainline: string;
-  /** Engine origin commit imported. */
+  /** Commit holding the imported engine origin under engine/ (014: the import commit itself). */
   split: string;
 }
 
-/** Engine subtree import recorded by `git subtree add` in the history of the checkout under test. */
+/**
+ * Engine subtree import recorded by `git subtree add` in the history of the checkout under test. 014-standalone-repo:
+ * the extraction kept the import commit (and its message) but not the engine origin history, so the commit before
+ * the import is its first parent and the imported origin is the import commit itself, under engine/.
+ */
 function subtreeImport(repo: string): SubtreeImport {
-  const body = git(['log', '--format=%B', `--grep=git-subtree-dir: ${ENGINE_PREFIX}`, 'HEAD'], repo);
-  const mainline = /git-subtree-mainline: ([0-9a-f]{40})/.exec(body)?.[1];
-  const split = /git-subtree-split: ([0-9a-f]{40})/.exec(body)?.[1];
-  assert.ok(mainline && split, `no git subtree import of ${ENGINE_PREFIX} found in the history`);
-  return { mainline, split };
+  const commit = git(['log', '--format=%H', '-1', `--grep=${ENGINE_IMPORT_GREP}`, 'HEAD'], repo);
+  assert.ok(commit, `no git subtree import of ${ENGINE_PREFIX} found in the history`);
+  return { mainline: git(['rev-parse', `${commit}^1`], repo), split: commit };
 }
 
 /** Engine version declared by the pom.xml of an engine commit (empty when absent). */
@@ -64,7 +68,7 @@ Then(
 );
 
 Then(
-  'every other root entry belongs to the allowed governance, version, configuration, orchestration or acceptance-test entries',
+  'every other root entry belongs to the allowed governance, documentation, version, configuration, continuous-integration, orchestration or acceptance-test entries',
   function (this: DevArchWorld) {
     const entries = this.data.entries as { name: string; type: string }[];
     const unexpected = entries
@@ -142,7 +146,7 @@ Then(
   function (this: DevArchWorld) {
     const tracked = new Set(this.data.tracked as string[]);
     for (const stale of ['java-dependency-extractor.jar', 'output_entrypoints.json']) {
-      for (const where of [PRODUCT_REL, `${PRODUCT_REL}/web`]) {
+      for (const where of [PRODUCT_REL, `web`]) {
         assert.ok(!tracked.has(`${where}/${stale}`), `${where}/${stale} is still tracked`);
       }
     }
@@ -178,17 +182,18 @@ Given('the specifications 001 to 005 of the original engine repository', functio
   const origin = engineOriginRepo();
   const repo = origin ?? layout.monorepoRoot;
   const ref = origin ? 'main' : subtreeImport(layout.monorepoRoot).split;
-  const specs = rootEntries(repo, ref, 'specs').filter((e) => PREVIOUS_SPECS.some((n) => e.name.startsWith(`${n}-`)));
+  const dir = origin ? 'specs' : 'engine/specs';
+  const specs = rootEntries(repo, ref, dir).filter((e) => PREVIOUS_SPECS.some((n) => e.name.startsWith(`${n}-`)));
   assert.equal(specs.length, PREVIOUS_SPECS.length, `specs 001-005 not found in the origin (${ref})`);
-  this.data.originSpecs = Object.fromEntries(specs.map((e) => [e.name, git(['rev-parse', `${ref}:specs/${e.name}`], repo)]));
+  this.data.originSpecs = Object.fromEntries(specs.map((e) => [e.name, git(['rev-parse', `${ref}:${dir}/${e.name}`], repo)]));
 });
 
 When('they are compared with the specifications at the product root', function (this: DevArchWorld) {
   const specs = this.data.originSpecs as Record<string, string>;
   this.data.productSpecs = Object.fromEntries(
     Object.keys(specs).map((name) => {
-      const ok = gitOk(['cat-file', '-e', `HEAD:${PRODUCT_REL}/specs/${name}`], layout.monorepoRoot);
-      return [name, ok ? git(['rev-parse', `HEAD:${PRODUCT_REL}/specs/${name}`], layout.monorepoRoot) : 'missing'];
+      const ok = gitOk(['cat-file', '-e', `HEAD:specs/${name}`], layout.monorepoRoot);
+      return [name, ok ? git(['rev-parse', `HEAD:specs/${name}`], layout.monorepoRoot) : 'missing'];
     }),
   );
 });
@@ -204,7 +209,7 @@ Then('every assertion integrity hash in their context files still verifies', fun
   this.cleanup.push(dir);
   let verified = 0;
   for (const name of Object.keys(this.data.originSpecs as Record<string, string>)) {
-    const base = `${PRODUCT_REL}/specs/${name}`;
+    const base = `specs/${name}`;
     const context = JSON.parse(git(['show', `HEAD:${base}/context.json`], repo));
     const expected: string | undefined = context?.testify?.assertion_hash;
     if (!expected) continue; // no testify phase for this feature (e.g. 004)
@@ -231,10 +236,10 @@ const NOT_RELOCATED = new Set(['java-dependency-extractor.jar', 'output_entrypoi
 const ALLOWED_CHANGED = new Set(['src/app/api/analyze/route.ts', 'package.json']);
 const ENGINE_RESOLUTION_DIR = 'src/server/engine/';
 
-Given('the web files imported into the monorepo before this feature', function (this: DevArchWorld) {
+Given('the web files imported into the repository before this feature', function (this: DevArchWorld) {
   const repo = layout.monorepoRoot;
   const { mainline } = subtreeImport(repo);
-  const files = trackedFiles(repo, mainline, PRODUCT_REL).map((f) => f.slice(PRODUCT_REL.length + 1));
+  const files = trackedFiles(repo, mainline, PRODUCT_REL).map((f) => f);
   this.data.webBefore = files.filter((f) => !NOT_RELOCATED.has(f));
   this.data.mainline = mainline;
   assert.ok((this.data.webBefore as string[]).includes('src/app/api/analyze/route.ts'), 'not the web import');
@@ -247,11 +252,11 @@ When('they are compared with the files of the web area at the 006 baseline tag {
     `the baseline tag ${tag} is missing (see docs/BASELINES.md; fetch it with: git fetch origin tag ${tag})`);
   const ref = `${tag}^{commit}`;
   const before = this.data.webBefore as string[];
-  const after = trackedFiles(repo, ref, `${PRODUCT_REL}/web`).map((f) => f.slice(`${PRODUCT_REL}/web/`.length));
+  const after = trackedFiles(repo, ref, `web`).map((f) => f.slice(`web/`.length));
   const blob = (r: string, p: string) => git(['rev-parse', `${r}:${p}`], repo);
   this.data.missing = before.filter((f) => !after.includes(f));
   this.data.changed = before.filter(
-    (f) => after.includes(f) && blob(this.data.mainline as string, `${PRODUCT_REL}/${f}`) !== blob(ref, `${PRODUCT_REL}/web/${f}`),
+    (f) => after.includes(f) && blob(this.data.mainline as string, `${f}`) !== blob(ref, `web/${f}`),
   );
   this.data.added = after.filter((f) => !before.includes(f));
 });

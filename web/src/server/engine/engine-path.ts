@@ -28,7 +28,7 @@ export function resolveEngine(
       jarPath,
       message:
         `Engine not built: ${jarPath} was not found. ` +
-        'Run `make build` from apps/dev-arch (or set ENGINE_JAR_PATH to an engine archive).',
+        'Run `make build` from the repository root (or set ENGINE_JAR_PATH to an engine archive).',
     };
   }
   const javaHome = env.JAVA_HOME?.trim();

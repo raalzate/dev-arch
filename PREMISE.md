@@ -1,37 +1,46 @@
-# Static Inference MCP Server Premise
+# dev-arch Premise
 
 ## What
 
-Static Inference es un motor de análisis estático para proyectos Java que extrae grafos de dependencias, infiere descomposición en microservicios mediante clustering, genera contratos OpenAPI desde controllers REST, y calcula métricas de calidad de código (CBO, LCOM). Actualmente funciona como CLI y el objetivo es exponerlo como un servidor MCP (Model Context Protocol) para que agentes LLM puedan invocar sus capacidades de análisis de forma programática.
+dev-arch es una plataforma de modernización de sistemas legacy Java y .NET basada en **inferencia determinista**. Su
+motor analiza estáticamente el proyecto completo (Spoon para Java; Roslyn para C# y VB.NET), construye el grafo
+real de dependencias, detecta capas, tablas, contratos REST, secretos y problemas de código, e infiere propuestas
+de extracción de microservicios con su viabilidad y un plan por etapas. Se usa desde una web (recorrido de cinco
+pasos), desde la línea de comandos y la CI, y desde agentes de IA por MCP (Claude Code envía el proyecto y recibe
+el análisis).
 
 ## Who
 
-- Arquitectos de software que necesitan evaluar la viabilidad de descomponer monolitos Java en microservicios
-- Desarrolladores que trabajan con agentes LLM (Claude Code, Copilot, etc.) y quieren análisis estático integrado en su flujo conversacional
-- Equipos de modernización de aplicaciones legacy Java/EJB
+- Arquitectos y equipos de modernización que deben decidir qué extraer de un monolito y en qué orden
+- Desarrolladores que refactorizan con agentes de IA y necesitan una fuente de verdad objetiva del estado del código
+- Responsables de calidad que quieren un guardrail medible de principios y buenas prácticas en cada cambio
 
 ## Why
 
-Las herramientas de análisis estático tradicionales generan reportes estáticos que requieren interpretación manual. Al exponer Static Inference como servidor MCP, los agentes LLM pueden consumir directamente los resultados del análisis (grafos de dependencia, propuestas de microservicios, contratos API, métricas) y ofrecer recomendaciones contextualizadas en lenguaje natural. Esto reduce la barrera de entrada para análisis arquitectónico y permite integración en flujos de trabajo asistidos por IA.
+Los modelos de IA generativa pueden refactorizar, pero cuando describen el estado de un sistema grande estiman,
+cambian de respuesta entre ejecuciones y pueden inventar. Una modernización segura necesita apalancarse en un
+modelo de inferencia determinista que diga cómo está el proyecto sin inventar —misma entrada, misma salida— y que,
+ejecutado en cada cambio, actúe como guardrail: los hallazgos críticos no aumentan, el acoplamiento no crece, la
+cohesión y la viabilidad no bajan. Esa combinación —IA que ejecuta, análisis determinista que mide y verifica—
+hace posible la modernización continua.
 
 ## Domain
 
-- **Análisis estático de código**: Inspección de código fuente sin ejecución, usando AST (Abstract Syntax Trees) via Spoon
-- **Descomposición en microservicios**: Clustering de componentes por responsabilidad de negocio, acoplamiento y cohesión
-- **Model Context Protocol (MCP)**: Protocolo estándar para exponer herramientas (tools) y recursos (resources) a agentes LLM via transporte stdio/SSE
-- **Métricas de calidad**: CBO (Coupling Between Objects), LCOM (Lack of Cohesion of Methods), viabilidad de descomposición
+- **Análisis estático de código**: AST completo sin ejecución (Spoon, Roslyn), grafo de dependencias y métricas
+- **Descomposición en microservicios**: clustering por cohesión, acoplamiento y datos compartidos con umbrales
+  explícitos y ajustables
+- **Model Context Protocol (MCP)**: herramientas para agentes (stdio en el motor; HTTP y puente stdio en la web)
+- **Modernización continua**: análisis repetible y comparable como guardrail de calidad
 
 ## Scope
 
 **Dentro del alcance:**
-- Refactoring del core para desacoplar la lógica de análisis del CLI
-- Implementación de servidor MCP con transporte stdio
-- Exposición de tools: análisis completo, grafo de dependencias, propuesta de arquitectura, contratos API, métricas por componente
-- Exposición de resources: configuración y documentación de algoritmos
-- Empaquetado como fat JAR con doble modo (CLI y MCP)
+- Análisis de Java, C# y VB.NET (incluido .NET Framework 4.8 legacy) con contrato JSON versionado
+- Web de modernización (resumen, mapa, propuestas, hallazgos, plan, historial y comparación)
+- Servidor MCP del motor y servidor MCP para agentes en la web, con puente para enviar carpetas locales
+- Instalación local, contenedor Docker/Compose y diagnóstico de requisitos
 
 **Fuera del alcance:**
-- Análisis de lenguajes distintos a Java
-- Transporte SSE/HTTP para el servidor MCP (solo stdio en primera iteración)
-- UI web o dashboard visual
-- Modificación de los algoritmos de clustering o inferencia existentes
+- Generar o reescribir código automáticamente (lo hace el agente de IA; dev-arch mide y verifica)
+- Análisis dinámico o en tiempo de ejecución
+- Decisiones de negocio: las propuestas son inferencias estructurales con su evidencia

@@ -10,7 +10,7 @@ Container area of the dev-arch product (012-install-doctor-docker). Full guide: 
 | `smoke-test.sh` | CI smoke test: healthy container, `doctor --mode docker`, analysis of `engine/test-for-demo/java-standar` |
 
 ```bash
-cd apps/dev-arch
+cd dev-arch   # repository root
 docker compose -f docker/compose.yaml up -d
 bash docker/smoke-test.sh
 ```

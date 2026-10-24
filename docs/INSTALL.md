@@ -9,7 +9,7 @@ Before either route, run the doctor: it lists every requirement with `OK`, `WARN
 required version, and the install command for your operating system.
 
 ```bash
-cd apps/dev-arch
+git clone https://github.com/raalzate/dev-arch.git && cd dev-arch
 npm run doctor                 # same as: npx dev-arch doctor   (Node 20+ is the only prerequisite)
 npm run doctor -- --fix        # also show the install commands (they are never executed)
 npm run doctor -- --json       # machine-readable report (CI, health checks)
@@ -70,7 +70,7 @@ Requirements: Docker 24+ and Compose v2 (`docker compose version`). Check them w
 (needs Node) or simply `docker compose version`.
 
 ```bash
-cd apps/dev-arch
+cd dev-arch   # repository root
 docker compose -f docker/compose.yaml up -d          # build (first time) and start the all-in-one web
 docker compose -f docker/compose.yaml ps             # STATUS shows (healthy) once GET /api/health answers 200
 open http://localhost:9002
@@ -80,7 +80,7 @@ docker compose -f docker/compose.yaml down           # stop (the analyses stay i
 - **Image**: `docker/Dockerfile` builds the engine (Maven, JDK 17), the .NET analyzer (.NET 8 SDK, for the target
   architecture) and the web (Node 20, standalone output) in separate stages; the final image only has the JRE 17,
   the .NET 8 runtime and Node 20, runs as a non-root user and declares a health check on `/api/health`.
-  Build it alone with `docker build -f docker/Dockerfile -t dev-arch .` (from `apps/dev-arch`).
+  Build it alone with `docker build -f docker/Dockerfile -t dev-arch .` (from the repository root).
 - **Variables**: put them in `docker/.env` (read by Compose) or export them: `GEMINI_API_KEY`,
   `GOOGLE_GENAI_API_KEY`, `LLM_MODEL`, `DEVARCH_API_TOKEN`, `JAVA_TOOL_OPTIONS` (default `-Xmx2g`),
   `DEV_ARCH_MEM_LIMIT` (default `4g`), `DEV_ARCH_PORT` (default `9002`), `DEV_ARCH_IMAGE` (default `dev-arch:local`).

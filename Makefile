@@ -1,5 +1,5 @@
 # dev-arch product commands (006-devarch-monorepo, contracts/make-targets.md).
-# Run from apps/dev-arch. Honors JAVA_HOME (JDK 17), DOTNET_ROOT, MVN_ARGS, DEVARCH_E2E,
+# Run from the repository root. Honors JAVA_HOME (JDK 17), DOTNET_ROOT, MVN_ARGS, DEVARCH_E2E,
 # SCHEMA_CHECK_SKIP_BUILD and SCHEMA_CHECK_VERBOSE.
 
 SHELL := /bin/bash

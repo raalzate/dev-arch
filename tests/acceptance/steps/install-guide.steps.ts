@@ -72,19 +72,20 @@ Then('every requirement has an install hint for each package manager of the plat
 
 // --- TS-036 -----------------------------------------------------------------------------------------------------
 
-/** Closing commit of feature 011 (T027/T028 recorded), the base of this feature. */
-export const DELIVERY_011_COMMIT = '8bd71efef545c921358600873eb5bb46b4ec9bcd';
+/** Closing commit of feature 011 (T027/T028 recorded), the base of this feature (014: commit of the own repository). */
+export const DELIVERY_011_COMMIT = 'b64722a15602';
 
-When('the product is compared with the closing commit of feature 011', function (this: DevArchWorld) {
+// 014-standalone-repo: bounded to the range of feature 012 (closing of 011 -> closing of 012).
+When('the product at the closing commit {string} of feature 012 is compared with the closing commit {string} of feature 011', function (this: DevArchWorld, closing: string, base: string) {
   const repo = layout.monorepoRoot;
-  const base = DELIVERY_011_COMMIT;
-  assert.ok(gitOk(['cat-file', '-e', `${base}^{commit}`], repo), `commit ${base} of feature 011 is not available`);
-  const diff = git(['diff', '--name-status', '--no-renames', `${base}`, 'HEAD', '--', PRODUCT_REL], repo);
+  for (const c of [base, closing]) assert.ok(gitOk(['cat-file', '-e', `${c}^{commit}`], repo), `commit ${c} is not available`);
+  const diff = git(['diff', '--name-status', '--no-renames', `${base}`, closing, '--', PRODUCT_REL], repo);
   this.data.diff011 = diff.split('\n').filter(Boolean).map((l) => {
     const [status, file] = l.split('\t');
-    return { status, file: file.slice(PRODUCT_REL.length + 1) };
+    return { status, file: file };
   });
   this.data.base011 = base;
+  this.data.closing = closing;
 });
 
 type Change = { status: string; file: string };
@@ -107,10 +108,11 @@ Then('no existing step definition or test source file was modified or deleted', 
 
 Then('the product root entries and the workspaces are unchanged', function (this: DevArchWorld) {
   const repo = layout.monorepoRoot;
-  const entries = (ref: string) => git(['ls-tree', '--name-only', `${ref}:${PRODUCT_REL}`], repo).split('\n').sort();
-  assert.deepEqual(entries('HEAD'), entries(this.data.base011 as string));
-  const ws = (ref: string) => (JSON.parse(git(['show', `${ref}:${PRODUCT_REL}/package.json`], repo)) as { workspaces: string[] }).workspaces;
-  assert.deepEqual(ws('HEAD'), ws(this.data.base011 as string));
+  const entries = (ref: string) => git(['ls-tree', '--name-only', `${ref}^{tree}`], repo).split('\n').sort();
+  const at = (this.data.closing as string | undefined) ?? 'HEAD';
+  assert.deepEqual(entries(at), entries(this.data.base011 as string));
+  const ws = (ref: string) => (JSON.parse(git(['show', `${ref}:package.json`], repo)) as { workspaces: string[] }).workspaces;
+  assert.deepEqual(ws(at), ws(this.data.base011 as string));
 });
 
 // --- TS-037 -----------------------------------------------------------------------------------------------------

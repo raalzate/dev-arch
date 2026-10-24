@@ -1,4 +1,4 @@
-# dev-arch with Docker Compose (012-install-doctor-docker). Run from apps/dev-arch:
+# dev-arch with Docker Compose (012-install-doctor-docker). Run from the repository root:
 #   docker compose -f docker/compose.yaml up -d                     default profile: all-in-one web on :9002
 #   docker compose -f docker/compose.yaml --profile dev up web-dev  dev profile: mounted sources, hot reload on :9003
 # Variables come from the environment or docker/.env (GEMINI_API_KEY, GOOGLE_GENAI_API_KEY, LLM_MODEL, ...).

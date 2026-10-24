@@ -5,6 +5,11 @@ sends the project folder it is working on, waits for the analysis and receives t
 proposals, the findings and the modernization plan. Every analysis sent by an agent is a normal analysis of the
 server: it appears in the web history, and each result carries a link (`/?analysis=<id>`) that opens it in the web.
 
+![Claude Code using dev-arch over MCP](images/agent-claude-code.png)
+
+*Real `claude -p` session: the agent sends the folder, receives proposals and findings, and the link to the same
+analysis in the web.*
+
 There are two ways to connect:
 
 | Connection | Use it when | Sends local folders |
@@ -26,7 +31,7 @@ claude mcp add dev-arch -- node ~/.dev-arch-mcp.mjs --url http://127.0.0.1:9002
 ```
 
 From a checkout of the repository you can point at the file directly:
-`claude mcp add dev-arch -- node <repo>/apps/dev-arch/web/public/dev-arch-mcp.mjs`.
+`claude mcp add dev-arch -- node <dev-arch checkout>/web/public/dev-arch-mcp.mjs`.
 
 ### Remote instance with an API token
 

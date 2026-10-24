@@ -284,7 +284,7 @@ Then('the output contains {string}', function (this: DevArchWorld, message: stri
 
 Given('the product package manifest', function (this: DevArchWorld) {
   const repo = layout.monorepoRoot;
-  this.data.manifest = JSON.parse(git(['show', `HEAD:${PRODUCT_REL}/package.json`], repo));
+  this.data.manifest = JSON.parse(git(['show', `HEAD:package.json`], repo));
   this.data.tracked = trackedFiles(repo, 'HEAD', PRODUCT_REL);
 });
 
@@ -295,15 +295,15 @@ Then('it declares the workspaces {string} and {string}', function (this: DevArch
 
 Then('a single dependency lock file is tracked at the product root', function (this: DevArchWorld) {
   const locks = (this.data.tracked as string[]).filter((f) => /(^|\/)(package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml)$/.test(f))
-    .filter((f) => !f.startsWith(`${PRODUCT_REL}/engine/test-for-demo/`));
-  assert.deepEqual(locks, [`${PRODUCT_REL}/package-lock.json`]);
+    .filter((f) => !f.startsWith(`engine/test-for-demo/`));
+  assert.deepEqual(locks, [`package-lock.json`]);
   const lock = JSON.parse(readFileSync(path.join(layout.productRoot, 'package-lock.json'), 'utf8'));
   assert.ok(lock.packages?.['web'] && lock.packages?.['schema'], 'the lock file does not cover both workspaces');
 });
 
 Then('no lock file is tracked inside {string} or {string}', function (this: DevArchWorld, a: string, b: string) {
   const inside = (this.data.tracked as string[]).filter(
-    (f) => (f.startsWith(`${PRODUCT_REL}/${a}/`) || f.startsWith(`${PRODUCT_REL}/${b}/`)) && /lock/i.test(path.posix.basename(f)),
+    (f) => (f.startsWith(`${a}/`) || f.startsWith(`${b}/`)) && /lock/i.test(path.posix.basename(f)),
   );
   assert.deepEqual(inside, []);
 });

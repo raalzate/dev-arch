@@ -106,9 +106,9 @@ Then('the server working directory contains no {string} or {string}', function (
 //     removed (string literals respected) and whitespace is normalised; deleting it always counts;
 //   - any other test file (data, fixtures, expected outputs, .vb code) counts on any content difference.
 
-const RESTRUCT_FEATURE = 'apps/dev-arch/specs/006-devarch-monorepo/tests/features/repository-structure.feature';
-const RESTRUCT_STEPS = 'apps/dev-arch/tests/acceptance/steps/repository-structure.steps.ts';
-const CONTEXT_006 = 'apps/dev-arch/specs/006-devarch-monorepo/context.json';
+const RESTRUCT_FEATURE = 'specs/006-devarch-monorepo/tests/features/repository-structure.feature';
+const RESTRUCT_STEPS = 'tests/acceptance/steps/repository-structure.steps.ts';
+const CONTEXT_006 = 'specs/006-devarch-monorepo/context.json';
 
 /** Project and build files and documentation: test infrastructure whose changes are not assertion changes. */
 const INFRASTRUCTURE = /(\.(csproj|vbproj|props|targets|sln|md)|(^|\/)(pom\.xml|package\.json))$/i;
@@ -157,19 +157,23 @@ function assertionContent(file: string, text: string): string {
   return C_STYLE_CODE.test(file) ? withoutComments(text).replace(/\s+/g, ' ').trim() : text;
 }
 
-When('the product is compared with the 006 baseline tag {string}', function (this: DevArchWorld, tag: string) {
+// 014-standalone-repo: bounded to the range of feature 007 (baseline tag -> closing commit of 007), so later features
+// (e.g. the move to the repository root) do not count as changes made by 007.
+When('the product at the closing commit {string} of feature 007 is compared with the 006 baseline tag {string}', function (this: DevArchWorld, closing: string, tag: string) {
   const repo = layout.monorepoRoot;
+  assert.ok(gitOk(['cat-file', '-e', `${closing}^{commit}`], repo), `closing commit ${closing} of feature 007 is not available`);
   assert.ok(gitOk(['rev-parse', '--verify', '--quiet', `refs/tags/${tag}^{commit}`], repo),
     `the baseline tag ${tag} is missing (see docs/BASELINES.md; fetch it with: git fetch origin tag ${tag})`);
-  const rel = (p: string) => `apps/dev-arch/${p}`;
-  const changed = (paths: string[]) => git(['diff', '--name-only', '--no-renames', '--diff-filter=MD', `${tag}`, '--', ...paths], repo)
+  const rel = (p: string) => p;
+  const changed = (paths: string[]) => git(['diff', '--name-only', '--no-renames', '--diff-filter=MD', `${tag}`, closing, '--', ...paths], repo)
     .split('\n').filter(Boolean);
   this.data.baselineTag = tag;
+  this.data.closing007 = closing;
   this.data.lockedChanges = {
     specs: changed(['001', '002', '003', '004', '005', '006'].map((n) => rel(`specs/${n}-*`)))
       .filter((f) => f.endsWith('.feature') || f.endsWith('context.json')),
     tests: changed([rel('engine/src/test'), rel('tests/acceptance'), rel('schema/test'), rel('web/src')])
-      .filter((f) => !f.includes('/web/src/') || f.endsWith('.test.ts')),
+      .filter((f) => !f.startsWith('web/src/') || f.endsWith('.test.ts')),
   };
 });
 
@@ -179,13 +183,13 @@ Then('no {string} file or {string} assertion hash of features 001 to 006 has cha
   const tag = this.data.baselineTag as string;
   const c = this.data.lockedChanges as { specs: string[]; tests: string[] };
   const atTag = (f: string) => git(['show', `${tag}:${f}`], repo);
-  const now = (f: string) => readFileSync(path.join(repo, f), 'utf8').replace(/\n$/, '');
+  const now = (f: string) => git(['show', `${this.data.closing007 as string}:${f}`], repo);
   const unexpectedSpecs = c.specs.filter((f) => f !== RESTRUCT_FEATURE && f !== CONTEXT_006);
   assert.deepEqual(unexpectedSpecs, [], 'locked .feature/context.json files of 001-006 changed');
   if (c.specs.includes(RESTRUCT_FEATURE)) {
     assert.equal(withoutTs042Scenario(now(RESTRUCT_FEATURE)), withoutTs042Scenario(atTag(RESTRUCT_FEATURE)),
       'repository-structure.feature changed outside TS-042');
-    const spec = now('apps/dev-arch/specs/006-devarch-monorepo/spec.md');
+    const spec = now('specs/006-devarch-monorepo/spec.md');
     assert.match(spec, /re-testify[^\n]*\n\n- Q:[^\n]*TS-042/, 'the re-testify of TS-042 is not recorded in the 006 specification');
   }
 });
@@ -195,10 +199,10 @@ Then('no test assertion of features 001 to 006 has changed, ignoring project and
   const tag = this.data.baselineTag as string;
   const c = this.data.lockedChanges as { specs: string[]; tests: string[] };
   const atTag = (f: string) => git(['show', `${tag}:${f}`], repo);
-  const now = (f: string) => readFileSync(path.join(repo, f), 'utf8').replace(/\n$/, '');
+  const now = (f: string) => git(['show', `${this.data.closing007 as string}:${f}`], repo);
   const changedAssertions = c.tests
     .filter((f) => f !== RESTRUCT_STEPS && !INFRASTRUCTURE.test(f))
-    .filter((f) => !existsSync(path.join(repo, f)) || assertionContent(f, now(f)) !== assertionContent(f, atTag(f)));
+    .filter((f) => !gitOk(['cat-file', '-e', `${this.data.closing007 as string}:${f}`], repo) || assertionContent(f, now(f)) !== assertionContent(f, atTag(f)));
   assert.deepEqual(changedAssertions, [], 'test assertions of 001-006 were modified or deleted');
   if (c.tests.includes(RESTRUCT_STEPS)) {
     assert.equal(beforeTs042Section(now(RESTRUCT_STEPS)), beforeTs042Section(atTag(RESTRUCT_STEPS)),

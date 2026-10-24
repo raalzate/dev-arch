@@ -223,7 +223,7 @@ Then('the job {string} runs on changes of the container or doctor files, on main
   const changes = stepsOf(job(wf, 'changes')).find((s) => String(s.uses ?? '').startsWith('dorny/paths-filter@'));
   const filters = parse(String(changes?.with?.filters ?? '')) as Record<string, string[]>;
   assert.ok(filters.docker, 'no docker paths filter');
-  for (const p of ['apps/dev-arch/docker/**', 'apps/dev-arch/scripts/doctor/**']) assert.ok(filters.docker.includes(p), `docker filter lacks ${p}`);
+  for (const p of ['docker/**', 'scripts/doctor/**']) assert.ok(filters.docker.includes(p), `docker filter lacks ${p}`);
   const outputs = (wf.jobs.changes as { outputs?: Record<string, string> }).outputs ?? {};
   assert.ok(outputs.docker, 'changes job does not output docker');
 });
@@ -296,7 +296,7 @@ Then('the build context ignore file of the image excludes {string}, {string}, {s
 
 // "Given the web build configuration" is the 011 step (quality-web.steps.ts): it loads this.data.nextConfig.
 
-Then('the standalone output and the monorepo tracing root are enabled only when {string} is {string}', function (this: DevArchWorld, variable: string, value: string) {
+Then('the standalone output and the workspace tracing root are enabled only when {string} is {string}', function (this: DevArchWorld, variable: string, value: string) {
   const src = this.data.nextConfig as string;
   const guard = `process.env.${variable} === '${value}'`;
   assert.ok(src.includes(guard), `no ${guard}`);

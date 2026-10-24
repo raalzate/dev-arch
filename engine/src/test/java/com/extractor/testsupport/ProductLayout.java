@@ -11,9 +11,9 @@ import java.util.stream.Stream;
 /**
  * Locates the directories of the dev-arch product for the engine tests (006-devarch-monorepo, research D3).
  * <p>
- * Since 006 the engine lives in {@code <monorepo>/apps/dev-arch/engine} while the contract ({@code schema/}),
- * the specifications, the governance documents and the skills live one level up, at the product root, and the
- * CI workflow lives at the monorepo root. Tests only change <em>where</em> they look for files through this
+ * Since 006 the engine lives in {@code <product>/engine} while the contract ({@code schema/}), the
+ * specifications, the governance documents and the skills live one level up, at the product root (014: the root of
+ * the dev-arch repository), next to the CI workflow. Tests only change <em>where</em> they look for files through this
  * class, never what they assert.
  * <p>
  * Rules (each root): explicit system property &gt; upward search from the working directory &gt; error naming
@@ -30,7 +30,7 @@ public final class ProductLayout {
 
     /** System property overriding the engine root (Maven base directory). */
     public static final String ENGINE_ROOT_PROPERTY = "engine.root";
-    /** System property overriding the product root ({@code apps/dev-arch}). */
+    /** System property overriding the product root (the repository root). */
     public static final String PRODUCT_ROOT_PROPERTY = "product.root";
     /** System property overriding the CI workflow file. */
     public static final String CI_WORKFLOW_PROPERTY = "devarch.ci.workflow";

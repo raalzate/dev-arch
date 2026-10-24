@@ -1,4 +1,5 @@
-// Product layout for the 006-devarch-monorepo acceptance scenarios (data-model.md, ProductLayout).
+// Product layout for the acceptance scenarios (006 data-model.md ProductLayout; 014-standalone-repo: the product is
+// the root of its own repository, so the repository root and the product root are the same directory).
 // DEVARCH_MONOREPO_ROOT points the scenarios at another checkout (e.g. the pre-feature commit for the RED run).
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -7,7 +8,11 @@ import path from 'node:path';
 // installed tile is plain CommonJS .js and would break under it).
 const here = __dirname;
 
-export const PRODUCT_REL = 'apps/dev-arch';
+/** Product folder relative to the repository root: the root itself since 014 (git pathspec "."). */
+export const PRODUCT_REL = '.';
+
+/** Repository path of a product file (014: identity, kept so the steps read the same as before). */
+export const productPath = (p: string): string => p;
 
 /** The six areas of the product (FR-001). */
 export const AREAS = ['web', 'engine', 'schema', 'skills', 'docs', 'docker'] as const;
@@ -36,6 +41,9 @@ export const ALLOWED_ROOT_ENTRIES: Record<string, string> = {
   scripts: 'orchestration',
   'cucumber.mjs': 'acceptance-test',
   tests: 'acceptance-test',
+  'README.md': 'documentation',
+  LICENSE: 'documentation',
+  '.github': 'continuous-integration',
 };
 
 export interface Layout {
@@ -48,7 +56,7 @@ export interface Layout {
 }
 
 export function layoutOf(monorepoRoot: string): Layout {
-  const productRoot = path.join(monorepoRoot, PRODUCT_REL);
+  const productRoot = monorepoRoot;
   return {
     monorepoRoot,
     productRoot,
@@ -61,7 +69,7 @@ export function layoutOf(monorepoRoot: string): Layout {
 
 function defaultMonorepoRoot(): string {
   if (process.env.DEVARCH_MONOREPO_ROOT) return path.resolve(process.env.DEVARCH_MONOREPO_ROOT);
-  return path.resolve(here, '..', '..', '..', '..', '..');
+  return path.resolve(here, '..', '..', '..');
 }
 
 /** Layout of the checkout under test. */

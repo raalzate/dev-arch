@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Smoke test of the dev-arch container (012-install-doctor-docker, CI job "docker").
-# Run from apps/dev-arch after `docker compose -f docker/compose.yaml up -d`:
+# Run from the repository root after `docker compose -f docker/compose.yaml up -d`:
 #   1. waits until the container reports healthy (HEALTHCHECK -> GET /api/health)
 #   2. runs the doctor on the host in docker mode (FAIL fails the smoke test)
 #   3. analyzes engine/test-for-demo/java-standar through POST /api/analyses and checks the graph has components

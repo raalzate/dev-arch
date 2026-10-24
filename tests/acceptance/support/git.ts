@@ -36,7 +36,7 @@ export function trackedFiles(repo: string, commit: string, dir: string): string[
 
 /** Root entry names of a directory at a commit. */
 export function rootEntries(repo: string, commit: string, dir: string): { name: string; type: string }[] {
-  const out = git(['ls-tree', '-z', `${commit}:${dir}`], repo);
+  const out = git(['ls-tree', '-z', dir === '.' ? `${commit}^{tree}` : `${commit}:${dir}`], repo);
   return out
     .split('\0')
     .filter(Boolean)

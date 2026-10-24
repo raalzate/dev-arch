@@ -7,7 +7,7 @@ import { cleanClone } from '../support/git.ts';
 import type { DevArchWorld } from '../support/world.ts';
 
 /** Clean clone (objects only); steps that need files call checkoutClone(). */
-Given('a clean clone of the monorepo on the feature branch', function (this: DevArchWorld) {
+Given('a clean clone of the repository on the feature branch', function (this: DevArchWorld) {
   const { dir, commit } = cleanClone(layout.monorepoRoot, false);
   this.monorepo = dir;
   this.product = path.join(dir, PRODUCT_REL);

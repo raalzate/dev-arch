@@ -1,7 +1,5 @@
-# dev-arch product ignore rules (006-devarch-monorepo, research D10).
-# Single ignore file for web, engine and schema. It sits below the monorepo
-# global .gitignore, which is never modified; the negations here only apply
-# inside apps/dev-arch.
+# dev-arch product ignore rules (006-devarch-monorepo, research D10; 014: root of
+# the dev-arch repository). Single ignore file for web, engine and schema.
 
 # ---------------------------------------------------------------- generated
 # Maven / engine build output and acceptance-test scratch dirs

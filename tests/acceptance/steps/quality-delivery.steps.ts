@@ -78,7 +78,7 @@ Then('it declares a {string} target that runs the three coverage reports and the
 Then('the job {string} uploads an artifact named {string} containing {string}', function (this: DevArchWorld, name: string, artifact: string, report: string) {
   const step = stepsOf(job(workflow(this), name)).find((s) => String(s.uses ?? '').startsWith('actions/upload-artifact@') && s.with?.name === artifact);
   assert.ok(step, `${name} uploads no artifact ${artifact}`);
-  assert.ok(String(step.with?.path ?? '').includes(`apps/dev-arch/${report}`), `${artifact} path: ${step.with?.path}`);
+  assert.ok(String(step.with?.path ?? '').includes(report), `${artifact} path: ${step.with?.path}`);
 });
 
 // --- TS-020 / TS-021 / TS-022 -------------------------------------------------------------------------------
@@ -227,15 +227,16 @@ Then('it republishes its .NET analyzer when the freshness check does not answer 
 
 // --- TS-033 / TS-034 ----------------------------------------------------------------------------------------
 
-When('the product is compared with the delivery commit {string} of feature 010', function (this: DevArchWorld, sha: string) {
+// 014-standalone-repo: bounded to the range of feature 011 (delivery of 010 -> closing commit of 011).
+When('the product at the closing commit {string} of feature 011 is compared with the delivery commit {string} of feature 010', function (this: DevArchWorld, closing: string, sha: string) {
   const repo = layout.monorepoRoot;
-  assert.ok(gitOk(['cat-file', '-e', `${sha}^{commit}`], repo), `commit ${sha} not available`);
-  const changed = (paths: string[]) => git(['diff', '--name-only', '--no-renames', '--diff-filter=MD', sha, 'HEAD', '--', ...paths], repo)
+  for (const c of [sha, closing]) assert.ok(gitOk(['cat-file', '-e', `${c}^{commit}`], repo), `commit ${c} not available`);
+  const changed = (paths: string[]) => git(['diff', '--name-only', '--no-renames', '--diff-filter=MD', sha, closing, '--', ...paths], repo)
     .split('\n').filter(Boolean);
-  const rel = (p: string) => `apps/dev-arch/${p}`;
+  const rel = (p: string) => p;
   this.data.changedSpecs = changed(['001', '002', '003', '004', '005', '006', '007', '008', '009', '010'].map((n) => rel(`specs/${n}-*`)));
   this.data.changedTests = changed([rel('engine/src/test'), rel('tests/acceptance'), rel('schema/test'), rel('web/src')])
-    .filter((f) => !f.includes('/web/src/') || f.endsWith('.test.ts'))
+    .filter((f) => !f.startsWith('web/src/') || f.endsWith('.test.ts'))
     .filter((f) => !/\.(csproj|props|targets)$/.test(f));
 });
 

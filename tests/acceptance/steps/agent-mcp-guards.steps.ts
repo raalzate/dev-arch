@@ -7,18 +7,19 @@ import { git, gitOk } from '../support/git.ts';
 import { layout, PRODUCT_REL } from '../support/layout.ts';
 import type { DevArchWorld } from '../support/world.ts';
 
-/** Closing commit of feature 012 (T017-T019 verified on a clean clone), the base of this feature. */
-export const DELIVERY_012_COMMIT = '22e8471';
+/** Closing commit of feature 012 (T017-T019 verified on a clean clone), the base of this feature (014: own repository). */
+export const DELIVERY_012_COMMIT = 'b5cec37b9b24';
 
 type Change = { status: string; file: string };
 
-When('the product is compared with the closing commit of feature 012', function (this: DevArchWorld) {
+// 014-standalone-repo: bounded to the range of feature 013 (closing of 012 -> closing of 013).
+When('the product at the closing commit {string} of feature 013 is compared with the closing commit {string} of feature 012', function (this: DevArchWorld, closing: string, base: string) {
   const repo = layout.monorepoRoot;
-  assert.ok(gitOk(['cat-file', '-e', `${DELIVERY_012_COMMIT}^{commit}`], repo), `commit ${DELIVERY_012_COMMIT} of feature 012 is not available`);
-  const diff = git(['diff', '--name-status', '--no-renames', DELIVERY_012_COMMIT, 'HEAD', '--', PRODUCT_REL], repo);
+  for (const c of [base, closing]) assert.ok(gitOk(['cat-file', '-e', `${c}^{commit}`], repo), `commit ${c} is not available`);
+  const diff = git(['diff', '--name-status', '--no-renames', base, closing, '--', PRODUCT_REL], repo);
   const changes = diff.split('\n').filter(Boolean).map((l) => {
     const [status, file] = l.split('\t');
-    return { status, file: file.slice(PRODUCT_REL.length + 1) };
+    return { status, file: file };
   });
   // The shared 012 step "no existing step definition or test source file was modified or deleted" reads diff011.
   this.data.diff011 = changes;
@@ -86,7 +87,7 @@ When('the engine MCP server lists its tools', async function (this: DevArchWorld
 
 Then('they are exactly the tools of the engine before feature 013', function (this: DevArchWorld) {
   const repo = layout.monorepoRoot;
-  const listed = git(['ls-tree', '--name-only', `${DELIVERY_012_COMMIT}:${PRODUCT_REL}/schema/1.0.0/mcp`], repo)
+  const listed = git(['ls-tree', '--name-only', `${DELIVERY_012_COMMIT}:schema/1.0.0/mcp`], repo)
     .split('\n').filter((f) => f.endsWith('.response.schema.json')).map((f) => f.replace('.response.schema.json', '')).sort();
   const tools = this.data.engineTools as { default: string[]; optIn: string[] };
   assert.deepEqual(tools.optIn, listed);
