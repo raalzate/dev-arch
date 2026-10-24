@@ -90,3 +90,11 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
 - **Fix**: compare real paths (`realpathSync`) in the entry-point check of `web/public/dev-arch-mcp.mjs`.
 - **Test**: `web/src/server/agent-mcp/bridge-symlink.test.ts` (`--version` through a link: empty before, version
   after); 013 TS-009 green locally with the real engine.
+
+## Observation — 007 browser scenario "the page shows the analysis phase while it runs" (timing)
+
+- **Status**: observed once (PR #3, commit 3db034f); passed on the previous runs of the same job.
+- On a fast runner the demo analysis can finish between two status polls of the page, so the page only records
+  `completed`. Not related to the changes of 014 (the web polling and the phase reporting while running are
+  unchanged; BUG-010 only adds the phases a completed analysis missed). If it recurs, the analysis of the scenario
+  needs to be long enough for one poll (locked 007 scenario: change the demo input, not the assertion).
