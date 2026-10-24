@@ -8,6 +8,8 @@
   <img src="docs/images/step-1-summary.png" width="900" alt="Resumen del análisis de un sistema .NET legacy">
 </p>
 
+<p align="center"><a href="#instalación"><b>Instalación</b></a> · <a href="#la-tesis">La tesis</a> · <a href="#qué-muestra">Qué muestra</a> · <a href="docs/AGENTS-MCP.md">Conectar un agente</a></p>
+
 ---
 
 ## La tesis
@@ -95,31 +97,87 @@ El recorrido de la web responde cinco preguntas, siempre sobre el mismo análisi
 
 Lenguajes: **Java** (Maven/Gradle, Spring, JEE), **C#** y **VB.NET** (incluido .NET Framework 4.8 legacy).
 
-## Inicio rápido
+## Instalación
+
+Hay dos formas de instalar dev-arch. Elige una:
+
+| | **A. Local** (desarrollo) | **B. Docker** (solo usarlo) |
+|---|---|---|
+| Necesitas | JDK 17, Maven 3.6+, .NET SDK 8 (con runtime 8), Node 20+ | Docker 24+ con Compose v2 (o Podman) |
+| Tiempo | ~5 min de compilación | ~5 min la primera vez (construye la imagen) |
+| Para | modificar el código, correr las pruebas | analizar proyectos y conectar agentes |
+
+En ambos casos empieza clonando el repositorio:
 
 ```bash
-git clone https://github.com/raalzate/dev-arch.git && cd dev-arch
-npm run doctor        # revisa JDK 17, Maven, .NET 8, Node 20+ y te dice cómo instalar lo que falte
-make build            # motor Java + analizador .NET + web
-make dev              # web en http://localhost:9002
+git clone https://github.com/raalzate/dev-arch.git
+cd dev-arch
 ```
 
-Solo con Docker:
+### A. Instalación local
+
+**1. Revisa los requisitos.** El diagnóstico lista cada requisito con `OK`, `WARN` o `FAIL`, la versión detectada y el
+comando de instalación para tu sistema operativo (solo necesita Node 20+):
 
 ```bash
-docker compose -f docker/compose.yaml up -d    # http://127.0.0.1:9002
+npm run doctor            # diagnóstico
+npm run doctor -- --fix   # además muestra los comandos para instalar lo que falte (no ejecuta nada)
 ```
 
-Conectar Claude Code (o cualquier agente MCP):
+> **.NET SDK 8:** el repositorio fija el SDK 8 (`global.json`) para que el análisis .NET sea reproducible. Si solo
+> tienes un SDK más nuevo, todo compila y funciona, pero instala el 8 junto al tuyo para obtener exactamente los
+> mismos resultados que la CI ([cómo](docs/INSTALL.md#reproducible-net-analysis-sdk-8)).
+
+**2. Compila** el motor Java, el analizador .NET y la web:
+
+```bash
+make build
+```
+
+**3. Arranca la web:**
+
+```bash
+make dev                  # http://localhost:9002
+```
+
+### B. Instalación con Docker
+
+```bash
+docker compose -f docker/compose.yaml up -d     # construye la imagen y arranca en http://127.0.0.1:9002
+docker compose -f docker/compose.yaml ps        # debe aparecer "healthy"
+```
+
+Para detenerlo: `docker compose -f docker/compose.yaml down`. Con Podman, usa `podman compose` con los mismos
+argumentos. La imagen trae el motor y el runtime .NET; los proyectos .NET se analizan en modo de resolución
+reducida (no incluye el SDK).
+
+### Comprueba que funciona
+
+```bash
+curl http://127.0.0.1:9002/api/health    # "status": "OK" o "WARN"; "FAIL" indica qué falta
+```
+
+Abre **http://127.0.0.1:9002**, sube el ZIP de un proyecto Java o .NET (o prueba con un proyecto de ejemplo:
+`cd engine/test-for-demo && zip -r ~/java-standar.zip java-standar`) y recorre los cinco pasos.
+
+Opcional: las funciones de IA de la web (documentación generada) usan `GEMINI_API_KEY`. El análisis estático, el
+recorrido y el MCP funcionan sin ella.
+
+### Conecta Claude Code (o cualquier agente MCP)
+
+Con dev-arch en marcha (local o Docker), descarga el puente y regístralo una vez:
 
 ```bash
 curl -fsSo ~/.dev-arch-mcp.mjs http://127.0.0.1:9002/dev-arch-mcp.mjs
 claude mcp add dev-arch -- node ~/.dev-arch-mcp.mjs --url http://127.0.0.1:9002
 ```
 
-Guías: [instalación](docs/INSTALL.md) · [conexión de agentes (MCP)](docs/AGENTS-MCP.md) ·
-[arquitectura](docs/ARCHITECTURE.md) · [modernización continua](docs/CONTINUOUS-MODERNIZATION.md) ·
-[contrato JSON](docs/SCHEMA.md)
+Luego, dentro de Claude Code: *"Analiza este proyecto con dev-arch y dame las propuestas y los hallazgos
+críticos"*. Instancias remotas con token y conexión solo por HTTP: [docs/AGENTS-MCP.md](docs/AGENTS-MCP.md).
+
+Más detalle: [instalación completa y solución de problemas](docs/INSTALL.md) ·
+[conexión de agentes (MCP)](docs/AGENTS-MCP.md) · [arquitectura](docs/ARCHITECTURE.md) ·
+[modernización continua](docs/CONTINUOUS-MODERNIZATION.md) · [contrato JSON](docs/SCHEMA.md)
 
 ## Cómo está hecho
 
