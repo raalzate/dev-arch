@@ -54,3 +54,21 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
   switch (`VB009_WRITE_GOLDEN=1`): only `ControllerBase` resolution and the `cbo` of two components change;
   `CodeIssuesSample.golden.json` is unchanged.
 - `docs/INSTALL.md`: "Reproducible .NET analysis (SDK 8)".
+
+## BUG-011 — CI area jobs exceed the 20-minute limit on the hosted runner
+
+- **Status**: fixed (pending confirmation on the GitHub Actions run of the fix)
+- **Severity**: high (the "Product acceptance" job never finished; schema-check and Engine Java at 15–20 min)
+- **Symptom**: first runs of the workflow on the own repository: "Product acceptance" cancelled at 20 min in every
+  run, "Contract - schema-check" 15–20 min, "Engine Java" 19 min, "clean clone build & test" cancelled at 45 min.
+  The workflow had never run before the move (the monorepo was never pushed).
+- **Root cause**: the acceptance job ran every scenario with `DEVARCH_E2E=true` (30–40 min); the 005 Cucumber
+  runner, which re-runs every suite, ran both in the schema job and inside `mvn verify` of Engine Java; the clean
+  clone job ran two full `make test` in sequence. Also latent: `not @TS-006 and not @TS-007` excluded the TS-006/TS-007
+  of 007 and 011 too (scenario ids are per feature).
+- **Fix** (job ids, area conditions and limits unchanged: 006 TS-025/TS-030, user decision A3):
+  - `acceptance`: matrix of feature groups (`ACCEPTANCE_FEATURES`, new filter of `cucumber.mjs`); the clean-clone
+    exclusion applies to 006 only.
+  - `schema`: matrix `schema-check` | `scenarios`.
+  - `engine-java`: matrix `tests` | `static-analysis`; `mvn verify` skips the 005 runner (run by the schema job).
+  - `acceptance-clean-clone`: matrix `@TS-006` | `@TS-007` of feature 006, 45 minutes each.
