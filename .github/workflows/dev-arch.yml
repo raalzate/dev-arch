@@ -379,6 +379,12 @@ jobs:
       - name: Build the product
         run: make build
 
+      # Some scenarios run the engine tests offline (mvn -o, 006 TS-020/TS-023): `make build` skips the tests, so
+      # download the test dependencies and surefire providers first (014 BUG-011).
+      - name: Prime the Maven repository for offline test runs
+        working-directory: engine
+        run: mvn -B -q test -Dtest=NoSuchTest -Dsurefire.failIfNoSpecifiedTests=false
+
       - name: Acceptance scenarios (clean-clone build+test runs in its own job)
         env:
           DEVARCH_E2E: 'true'
