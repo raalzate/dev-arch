@@ -1,6 +1,6 @@
 # Skills
 
-Distributable agent skills shipped with the `static-inference` analyzer. One skill per supported AI agent — same analysis logic, agent-specific install paths and MCP config format.
+Distributable agent skills shipped with the dev-arch analysis engine (`static-inference`, [raalzate/dev-arch](https://github.com/raalzate/dev-arch)). One skill per supported AI agent — same analysis logic, agent-specific install paths and MCP config format.
 
 | Skill | Agent | Install path | MCP config |
 |-------|-------|-------------|------------|
