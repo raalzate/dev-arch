@@ -35,6 +35,7 @@ export const ALLOWED_ROOT_ENTRIES: Record<string, string> = {
   '.gitignore': 'configuration',
   '.editorconfig': 'configuration',
   '.mcp.json': 'configuration',
+  'global.json': 'configuration',
   'package.json': 'configuration',
   'package-lock.json': 'configuration',
   Makefile: 'orchestration',
