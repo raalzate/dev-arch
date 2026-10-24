@@ -17,6 +17,7 @@ import { compareAnalyses, type Comparison } from '@/lib/modernization/compare';
 import { isDefault, toInferenceConfig, type MinViability } from '@/lib/modernization/inference';
 import { exportPlanJson, planToMarkdown } from '@/lib/modernization/markdown';
 import { buildPlan, type ScoreLike } from '@/lib/modernization/plan';
+import { linkedAnalysisId, withoutAnalysisParam } from '@/lib/analysis-link';
 import { STEPS, type AnalysisView, type StepId } from '@/lib/modernization/sections';
 import { technologyProfile, technologyLabel } from '@/lib/modernization/technology';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -152,7 +153,13 @@ export default function SoftwareArchitectureAnalyzer() {
   }, [handleAuth, toast]);
 
   useEffect(() => {
-    // Resume the analysis that was active before a reload (007 FR-007) and list the recent ones.
+    // A link /?analysis=<id> (013, agent tools) opens that analysis; otherwise resume the analysis that was active
+    // before a reload (007 FR-007). Then list the recent ones.
+    const linked = linkedAnalysisId(window.location.search);
+    if (linked) {
+      setActiveJobId(linked);
+      window.history.replaceState(null, '', withoutAnalysisParam(window.location.href));
+    }
     const jobId = getActiveJobId();
     if (jobId) void followAnalysis(jobId);
     void refreshHistory();

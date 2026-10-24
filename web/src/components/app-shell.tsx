@@ -1,13 +1,14 @@
 "use client";
 
 // Application shell of the modernization flow (010 FR-008, FR-010, FR-015): top bar (product, project, technology,
-// analysis status, history, new analysis, theme), a 3 px stripe in the technology accent and the numbered step rail.
+// analysis status, history, new analysis, theme) with top spacing and the brand mark (013), a 3 px stripe in the technology accent and the numbered step rail.
 import React, { useRef } from 'react';
 import { History } from 'lucide-react';
 import { PHASE_LABELS, STATUS_LABELS, type AnalysisStatus } from '@/lib/analyses-client';
 import { STEPS, type StepId } from '@/lib/modernization/sections';
 import type { TechnologyProfile } from '@/lib/modernization/technology';
 import { ACCENT_VAR, TechBadge } from './badges';
+import { BrandMark } from './brand-mark';
 import ThemeToggle from './theme-toggle';
 
 export function StatusCluster({ status }: { status: AnalysisStatus }) {
@@ -37,9 +38,12 @@ export function TopBar({
   upload: React.ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-card print:hidden">
+    <header data-testid="top-bar" className="sticky top-0 z-30 border-b border-border bg-card pt-3 print:hidden">
       <div className="flex h-[52px] items-center gap-3 px-4">
-        <span className="text-md font-semibold tracking-tight">dev-arch</span>
+        <span className="flex items-center gap-2">
+          <BrandMark className="h-6 w-6 shrink-0" />
+          <span className="text-md font-semibold tracking-tight">dev-arch</span>
+        </span>
         {project && (
           <>
             <span aria-hidden className="text-muted-foreground">/</span>
