@@ -25,7 +25,7 @@ Cada proyecto de demostración se analizó dos veces con el motor (CLI) y se com
 | `legacy-erp` | Java legacy (Spoon) | idénticas |
 | `dotnet-ecommerce` | .NET C# (Roslyn) | idénticas |
 | `dotnet-legacy-clinic` | .NET C# (Roslyn) | idénticas |
-| `dotnet-unstructured` | .NET C# sin solución en la raíz | idénticas (ver hallazgo BUG-013) |
+| `dotnet-unstructured` | .NET C# sin solución en la raíz | idénticas |
 
 Además, la CI verifica en cada cambio que dos ejecuciones sean byte a byte iguales
 (`SchemaVersionContractTest.twoRunsAreByteIdentical`) y que la salida coincida con las líneas base versionadas
@@ -60,9 +60,10 @@ Motor de `main`, SDK .NET 8, MacBook (Apple Silicon). Tiempos de la CLI, incluid
 | `dotnet-legacy-clinic` | 19 | 899 | 14 | 15 | 5 | 0 / 0 / 5 | 10 / 10 / 71 / 90 | 0 | 7,1–8,0 s |
 | `dotnet-unstructured`¹ | 19 | 741 | 4 | 4 | — | — | 0 / 0 / 1 / 2 | — | <1 s |
 
-¹ Con detección automática el motor no lo reconoce (ver BUG-013) y devuelve 0 componentes; la fila muestra el
-resultado indicando el lenguaje (`language=dotnet` en la web o en el MCP), en modo de resolución reducida porque no
-tiene solución ni proyecto en la raíz.
+¹ Su proyecto está en una subcarpeta (`Api/`). Por diseño (feature 008), la detección automática mira solo la raíz
+salvo que se active la búsqueda anidada con la configuración de inferencia `{"detection": {"maxDepth": 1}}`: sin
+ella el tipo es `UNKNOWN` y el análisis sale vacío (con un aviso). La fila muestra el resultado del analizador .NET
+sobre la carpeta, en modo de resolución reducida porque no hay solución ni proyecto en la raíz.
 
 Lectura: el sistema clínico legacy concentra 20 hallazgos críticos o de error y ninguna propuesta viable sin
 refactorizar (las 5 son de viabilidad baja). Es justo el caso en que la IA debe refactorizar primero y el análisis
@@ -153,7 +154,7 @@ en el monorepo de origen, y la primera ejecución real lo destapó.
 | BUG-010 | Fases de progreso perdidas cuando llegan junto con la respuesta | corregido |
 | BUG-011 | Jobs de CI fuera de su límite de tiempo | corregido (matrices) |
 | BUG-012 | Puente MCP mudo al lanzarse por un enlace simbólico | corregido |
-| BUG-013 | La detección automática de lenguaje solo mira la raíz del proyecto | **abierto**: indicar el lenguaje como alternativa |
+| — | La detección automática solo mira la raíz del proyecto | **por diseño** (008): búsqueda anidada opcional con `detection.maxDepth` (TS-048 la verifica) |
 | BUG-014 | Un análisis rápido no mostraba fase "en ejecución" en la web | corregido |
 
 Detalle de cada uno (síntoma, causa, corrección y prueba): [`specs/014-standalone-repo/bugs.md`](../specs/014-standalone-repo/bugs.md).
