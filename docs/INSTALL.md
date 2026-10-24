@@ -98,6 +98,12 @@ Limitation: the image has the .NET runtime but not the .NET SDK, so the analyzer
 falls back to its ad-hoc workspace (reduced semantic accuracy for .NET projects compared with a local installation
 that has the SDK). Java analysis is identical.
 
+## Connecting a coding agent (MCP)
+
+Claude Code and other MCP agents can send a project to dev-arch and receive the analysis. See
+[AGENTS-MCP.md](AGENTS-MCP.md) for the one-command registration (local, container or remote with a token) and
+the available tools.
+
 ## Troubleshooting
 
 | Symptom | Check |
