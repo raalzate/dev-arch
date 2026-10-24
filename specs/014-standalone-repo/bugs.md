@@ -28,3 +28,14 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
   report reduced fidelity with a warning when a targeting pack is missing, and regenerate the .NET baselines in the
   canonical environment (approval required: changes locked expected outputs); (B) keep the development-machine
   baseline and make CI use the same SDK (hides the reduced resolution).
+
+## BUG-010 — Analysis phases lost when the progress arrives with the answer (007 flake)
+
+- **Status**: fixed
+- **Severity**: medium (the web may miss the last phases; flaky `engine-client.test.ts` on CI)
+- **Symptom**: CI run 2 of PR #1: "starts lazily, reports phases in order…" got `['detection']`.
+- **Root cause**: the MCP SDK dispatches notifications on a later microtask but handles the response at once and
+  removes the progress handler; notifications in the same stdout chunk as the answer are dropped.
+- **Fix**: `EngineClient.analyze` reports, in order, the phases a completed analysis did not get notified.
+- **Test**: `web/src/server/engine/engine-client-phases.test.ts` with the stub engine `burst` mode (four
+  notifications back to back before the answer, five runs). Red before (`[]` in a run), green after.

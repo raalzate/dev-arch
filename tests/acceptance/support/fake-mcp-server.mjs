@@ -4,6 +4,7 @@
 // FAKE_ENGINE_CONTROL (so a scenario can change it between calls without restarting the web):
 //   delayMs        total time of an analysis (spread over the four phases)
 //   phases         send progress notifications when the client asks for them (default true)
+//   burst          send the four progress notifications back to back, right before the answer (014 BUG-010)
 //   warnings       warning templates; "{projectPath}" is replaced by the analyzed path
 //   stderr         lines written to stderr before answering
 //   fail           error message template returned with isError (after stderr)
@@ -74,6 +75,13 @@ server.registerTool(
     const phases = ['detection', 'extraction', 'inference', 'writing'];
     const delay = Number(ctl.delayMs ?? 0);
     for (let i = 0; i < phases.length; i++) {
+      if (token !== undefined && ctl.phases !== false && ctl.burst) {
+        void extra.sendNotification({
+          method: 'notifications/progress',
+          params: { progressToken: token, progress: i + 1, total: 4, message: phases[i] },
+        });
+        continue;
+      }
       if (token !== undefined && ctl.phases !== false) {
         await extra.sendNotification({
           method: 'notifications/progress',
