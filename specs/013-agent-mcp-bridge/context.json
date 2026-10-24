@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "d0515d64a5004dc81c2f34d6ca90b71e37b38ec525e91a6f8537eeaafc60c9ca",
+    "generated_at": "2026-10-24T00:33:05Z",
+    "features_dir": "specs/013-agent-mcp-bridge/tests/features",
+    "file_count": 6
+  }
+}
