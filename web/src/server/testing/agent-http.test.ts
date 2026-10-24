@@ -62,8 +62,8 @@ export class BridgeClient {
   private pending = new Map<number, (msg: any) => void>();
   readonly stderr: string[] = [];
 
-  constructor(args: string[], env: Record<string, string | undefined> = {}) {
-    this.child = spawn(process.execPath, [BRIDGE, ...args], { env: { ...process.env, NODE_OPTIONS: '', ...env } });
+  constructor(args: string[], env: Record<string, string | undefined> = {}, script = BRIDGE) {
+    this.child = spawn(process.execPath, [script, ...args], { env: { ...process.env, NODE_OPTIONS: '', ...env } });
     this.child.stdout.on('data', (d: Buffer) => {
       this.buffer += d.toString();
       let nl: number;
