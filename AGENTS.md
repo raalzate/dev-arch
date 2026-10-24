@@ -13,11 +13,3 @@
 > aplican a `web/`, `engine/` y `schema/`. Los comandos del producto se ejecutan desde aquí (`make build`,
 > `make test`, `make dev`; JDK 17 vía `JAVA_HOME`).
 
-## iikit scripts in the monorepo
-
-iikit scripts resolve the project with `git rev-parse --show-toplevel`, which returns the
-maestria-ia root. Before running any iikit script or `/iikit-*` skill from `apps/dev-arch`:
-
-```bash
-source scripts/iikit-env.sh   # git rev-parse --show-toplevel -> apps/dev-arch
-```

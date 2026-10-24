@@ -43,9 +43,9 @@
       "external_dependencies": [],
       "package_dependencies": [],
       "code_issues": [],
-      "extends": "ControllerBase",
+      "extends": "Microsoft.AspNetCore.Mvc.ControllerBase",
       "implements": [],
-      "cbo": 5,
+      "cbo": 2,
       "lcom": 0,
       "complexity_max": 2,
       "complexity_avg": 1.3333333333333333
@@ -108,7 +108,7 @@
       "package_dependencies": [],
       "code_issues": [],
       "implements": [],
-      "cbo": 1,
+      "cbo": 0,
       "lcom": 0
     },
     {
@@ -133,7 +133,7 @@
       "package_dependencies": [],
       "code_issues": [],
       "implements": [],
-      "cbo": 2,
+      "cbo": 1,
       "lcom": 0,
       "complexity_max": 1,
       "complexity_avg": 1
@@ -162,7 +162,7 @@
       "implements": [
         "SampleProject.Repositories.IOrderRepository"
       ],
-      "cbo": 4,
+      "cbo": 3,
       "lcom": 0,
       "complexity_max": 1,
       "complexity_avg": 1
@@ -189,7 +189,7 @@
       "package_dependencies": [],
       "code_issues": [],
       "implements": [],
-      "cbo": 2,
+      "cbo": 1,
       "lcom": 0,
       "complexity_max": 1,
       "complexity_avg": 1
@@ -218,7 +218,7 @@
       "implements": [
         "SampleProject.Services.IOrderService"
       ],
-      "cbo": 4,
+      "cbo": 3,
       "lcom": 0,
       "complexity_max": 1,
       "complexity_avg": 1

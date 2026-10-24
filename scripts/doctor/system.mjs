@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/** Product root (apps/dev-arch): two levels above scripts/doctor/. */
+/** Product root (the repository root): two levels above scripts/doctor/. */
 export const PRODUCT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const EXEC_TIMEOUT_MS = 60_000;

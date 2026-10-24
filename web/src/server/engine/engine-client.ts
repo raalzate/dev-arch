@@ -126,13 +126,19 @@ export class EngineClient {
     const client = await this.ensureStarted();
     this.inFlight.set(req.jobId, hooks);
     let last = -1;
+    const reach = (i: number) => {
+      if (i > last) {
+        last = i;
+        hooks.onPhase(PHASES[i]);
+      }
+    };
     try {
-      return await this.call(client, req, hooks, (i) => {
-        if (i > last) {
-          last = i;
-          hooks.onPhase(PHASES[i]);
-        }
-      });
+      const result = await this.call(client, req, hooks, reach);
+      // BUG-010: the MCP SDK dispatches notifications on a later microtask but handles the answer at once, so the
+      // progress of the same stdout chunk is dropped once the answer removed its handler. A completed analysis went
+      // through every phase: report the missing ones, in order.
+      for (let i = last + 1; i < PHASES.length; i++) reach(i);
+      return result;
     } finally {
       // stdout (the response) and stderr are separate pipes: lines written just before the answer can arrive after
       // it. Keep the hooks attached until stderr has been quiet briefly so they reach the analysis log (007 FR-031).

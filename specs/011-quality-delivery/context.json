@@ -1,7 +1,7 @@
 {
   "testify": {
-    "assertion_hash": "f0224a6302f2c555fb0c6ca8f3454675f436f5590ca0df046233c07ad49f21e6",
-    "generated_at": "2026-10-10T16:04:03Z",
+    "assertion_hash": "e71482d02fce1fa644e76f9d89669fb43fff1c7d4f48c42e547db891752534a9",
+    "generated_at": "2026-10-24T01:28:03Z",
     "features_dir": "specs/011-quality-delivery/tests/features",
     "file_count": 7
   }

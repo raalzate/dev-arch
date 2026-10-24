@@ -1,0 +1,680 @@
+name: dev-arch - Build, Test & Release
+
+# CI of dev-arch (006-devarch-monorepo contracts/ci-workflow.md; 014-standalone-repo: own repository, product at the
+# root). Only changes to the product areas trigger it; inside, each area job only runs when its paths change.
+on:
+  push:
+    branches: [main]
+    tags: ['dev-arch-v*']
+    paths: ['engine/**', 'web/**', 'schema/**', 'scripts/**', 'tests/**', 'specs/**', 'docker/**', 'skills/**', 'docs/**', 'Makefile', 'VERSION', 'package.json', 'package-lock.json', 'cucumber.mjs', '.github/workflows/dev-arch.yml']
+  pull_request:
+    branches: [main]
+    paths: ['engine/**', 'web/**', 'schema/**', 'scripts/**', 'tests/**', 'specs/**', 'docker/**', 'skills/**', 'docs/**', 'Makefile', 'VERSION', 'package.json', 'package-lock.json', 'cucumber.mjs', '.github/workflows/dev-arch.yml']
+
+
+jobs:
+  # ─── Area detection ────────────────────────────────────────────
+  changes:
+    name: Detect changed areas
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      engine-java: ${{ steps.filter.outputs.engine-java }}
+      engine-dotnet: ${{ steps.filter.outputs.engine-dotnet }}
+      web: ${{ steps.filter.outputs.web }}
+      schema: ${{ steps.filter.outputs.schema }}
+      acceptance: ${{ steps.filter.outputs.acceptance }}
+      docker: ${{ steps.filter.outputs.docker }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Filter paths per area
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            engine-java:
+              - 'engine/pom.xml'
+              - 'engine/src/main/java/**'
+              - 'engine/src/test/java/**'
+              - 'engine/src/test/resources/**'
+              - 'schema/**'
+              - 'VERSION'
+            engine-dotnet:
+              - 'engine/src/main/dotnet/**'
+              - 'engine/src/test/dotnet/**'
+              - 'schema/**'
+              - 'VERSION'
+            web:
+              - 'web/**'
+              - 'schema/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'VERSION'
+            schema:
+              - 'schema/**'
+              - 'engine/src/**'
+              - 'scripts/schema-check.sh'
+            acceptance:
+              - 'Makefile'
+              - 'scripts/**'
+              - 'tests/acceptance/**'
+              - 'specs/006-*/tests/**'
+              - 'specs/007-*/tests/**'
+              - 'specs/011-*/tests/**'
+              - 'specs/012-*/tests/**'
+              - 'specs/013-*/tests/**'
+              - 'specs/014-*/tests/**'
+              - 'package.json'
+              - 'cucumber.mjs'
+              - '.github/workflows/dev-arch.yml'
+            docker:
+              - 'docker/**'
+              - 'scripts/doctor/**'
+              - 'web/src/app/api/health/**'
+              - 'web/src/server/health/**'
+              - 'web/next.config.ts'
+
+  # ─── Java engine (Maven) ───────────────────────────────────────
+  engine-java:
+    name: Engine Java - Build, Test & Analysis
+    needs: changes
+    if: ${{ needs.changes.outputs.engine-java == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Single product version
+        run: make version-check
+
+      # 011-quality-delivery (FR-010): the legacy .NET scenarios of 002/003 run in mvn verify, not skipped.
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish the .NET analyzer for the engine tests
+        run: bash scripts/engine-build.sh --dotnet-only
+
+      - name: Build & run tests
+        working-directory: engine
+        run: mvn -B verify
+
+      - name: Run SpotBugs analysis
+        working-directory: engine
+        run: |
+          mvn -B compile
+          mvn -B com.github.spotbugs:spotbugs-maven-plugin:4.8.3.1:check \
+            -Dspotbugs.excludeFilterFile=spotbugs-exclude.xml
+
+      - name: Run Checkstyle
+        working-directory: engine
+        run: |
+          mvn -B checkstyle:check \
+            -Dcheckstyle.config.location=sun_checks.xml \
+            -Dcheckstyle.violationSeverity=warning \
+            -Dcheckstyle.maxAllowedViolations=4763  # baseline 2026-10-08: ratchet down, never up
+
+      - name: Upload test and analysis reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-java-reports
+          path: |
+            engine/target/surefire-reports/
+            engine/target/spotbugsXml.xml
+            engine/target/checkstyle-result.xml
+
+      - name: Upload Java coverage (JaCoCo)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-java-coverage
+          path: engine/target/site/jacoco
+
+      - name: Coverage summary
+        if: always()
+        run: bash scripts/coverage.sh summary | grep '^\[coverage\] java' >> "$GITHUB_STEP_SUMMARY" || true
+
+  # ─── .NET analyzer (C# / VB.NET) ───────────────────────────────
+  engine-dotnet:
+    name: Engine .NET - Build, Test & Analysis
+    needs: changes
+    if: ${{ needs.changes.outputs.engine-dotnet == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build
+        run: dotnet build engine/src/main/dotnet/DotNetAnalyzer/DotNetAnalyzer.csproj -c Release
+
+      - name: Run tests
+        run: |
+          dotnet test engine/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj \
+            --filter "Category!=Corpus" \
+            --collect "XPlat Code Coverage" \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory ./dotnet-test-results
+
+      - name: Collect .NET coverage
+        if: always()
+        run: |
+          mkdir -p engine/target/coverage/dotnet
+          find dotnet-test-results -name coverage.cobertura.xml -exec cp --parents {} engine/target/coverage/dotnet/ \;
+
+      - name: Upload .NET coverage (coverlet)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-dotnet-coverage
+          path: engine/target/coverage/dotnet
+
+      - name: Run dotnet format check
+        run: |
+          dotnet format engine/src/main/dotnet/DotNetAnalyzer/DotNetAnalyzer.csproj \
+            --verify-no-changes --verbosity diagnostic
+
+      - name: Install analysis tools
+        run: dotnet tool install --global security-scan
+
+      - name: Run security scan (report-only, SARIF uploaded)
+        run: |
+          security-scan engine/src/main/dotnet/DotNetAnalyzer/DotNetAnalyzer.csproj \
+            --export=dotnet-security-report.sarif || true
+
+      - name: Upload test and analysis reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-dotnet-reports
+          path: |
+            dotnet-test-results/
+            dotnet-security-report.sarif
+
+  # ─── Web (Next.js) ─────────────────────────────────────────────
+  web:
+    name: Web - Test & Build
+    needs: changes
+    if: ${{ needs.changes.outputs.web == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install the product workspace
+        run: npm ci
+
+      # 011-quality-delivery (FR-005): type check and lint are blocking, then the unit tests with the coverage gate.
+      - name: Web type check
+        run: npm run typecheck -w web
+
+      - name: Web lint
+        run: npm run lint -w web
+
+      - name: Web tests (coverage gate)
+        run: npm run coverage -w web
+
+      - name: Upload web coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-coverage
+          path: web/coverage
+
+      - name: Web build
+        run: npm run build -w web
+
+  # ─── Output contract (005-json-schema-contract) ────────────────
+  schema:
+    name: Contract - schema-check
+    needs: changes
+    if: ${{ needs.changes.outputs.schema == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Verify Java, .NET and generated types against the contract
+        run: make schema-check
+
+      - name: BDD scenarios of 005 (incl. end-to-end schema-check divergences)
+        working-directory: engine
+        env:
+          SCHEMA_CHECK_E2E: 'true'
+        run: mvn -B test -Dtest=RunSchemaContractFeaturesTest
+
+      - name: Upload schema-check logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-check-logs
+          path: |
+            engine/target/schema-check/*.log
+            engine/target/cucumber-reports/
+
+  # ─── Product acceptance (006-devarch-monorepo) ─────────────────
+  acceptance:
+    name: Product acceptance
+    needs: changes
+    if: ${{ needs.changes.outputs.acceptance == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Build the product
+        run: make build
+
+      - name: Acceptance scenarios (clean-clone build+test runs in its own job)
+        env:
+          DEVARCH_E2E: 'true'
+          ACCEPTANCE_TAGS: 'not @TS-006 and not @TS-007'
+        run: make test-acceptance
+
+  # Browser end-to-end scenarios of 007 (@e2e, Playwright/Chromium; research D11). It depends on the web and the
+  # engine, so it is not an area job: the compound condition keeps the 006 area checks (TS-025/TS-030) unchanged.
+  e2e-browser:
+    name: Browser end-to-end (Playwright)
+    needs: changes
+    if: ${{ needs.changes.outputs.web == 'true' || needs.changes.outputs.engine-java == 'true' || needs.changes.outputs.engine-dotnet == 'true' || needs.changes.outputs.acceptance == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Build the product
+        run: make build
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser scenarios
+        run: make test-e2e-browser
+
+  # Clean clone + make build && make test (TS-006/TS-007, user decision A3): own job, 45 minutes,
+  # only on pushes to main and dev-arch release tags.
+  acceptance-clean-clone:
+    name: Product acceptance - clean clone build & test
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/dev-arch-v')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install the product workspace
+        run: npm ci
+
+      - name: Clean clone build and test scenarios
+        env:
+          DEVARCH_E2E: 'true'
+          ACCEPTANCE_TAGS: '@TS-006 or @TS-007'
+        run: make test-acceptance
+
+  # ─── Container image (012-install-doctor-docker) ──────────────────
+  # Builds the all-in-one image with Compose, smoke-tests it (healthy, doctor --mode docker, analysis of the Java
+  # demo) and publishes it to GHCR on dev-arch tags. Compound condition: not an area job (006 TS-025/TS-030).
+  docker:
+    name: Docker image - build, smoke test & publish
+    needs: changes
+    if: ${{ needs.changes.outputs.docker == 'true' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/dev-arch-v'))) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 20 (doctor on the host)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build the image
+        run: docker compose -f docker/compose.yaml build web
+
+      - name: Start the default profile
+        run: docker compose -f docker/compose.yaml up -d web
+
+      - name: Smoke test (health, doctor --mode docker, Java demo analysis)
+        run: bash docker/smoke-test.sh
+
+      - name: Container logs
+        if: always()
+        run: docker compose -f docker/compose.yaml logs --tail 300 web || true
+
+      - name: Stop
+        if: always()
+        run: docker compose -f docker/compose.yaml down -v || true
+
+      - name: Log in to GHCR
+        if: ${{ startsWith(github.ref, 'refs/tags/dev-arch-v') }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish the image to GHCR
+        if: ${{ startsWith(github.ref, 'refs/tags/dev-arch-v') }}
+        run: |
+          image="ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/dev-arch"
+          version="$(tr -d '[:space:]' < VERSION)"
+          docker tag dev-arch:local "${image}:${version}"
+          docker tag dev-arch:local "${image}:latest"
+          docker push "${image}:${version}"
+          docker push "${image}:latest"
+
+  # ─── Release distribution (main with engine changes, or dev-arch tag) ──
+  # 011-quality-delivery (FR-019): a dev-arch tag must name the product VERSION before anything is built.
+  release-version-check:
+    name: Release - tag matches VERSION
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/dev-arch-v') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag against VERSION
+        run: bash scripts/release-check.sh "${GITHUB_REF_NAME}"
+
+  # 011-quality-delivery (FR-021): the product skills, packaged in the same GitHub release as the engine bundles.
+  release-skills:
+    name: Release - packaged skills
+    needs: [release-version-check]
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/dev-arch-v') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package the skills
+        run: |
+          mkdir -p dist
+          zip -r "dist/dev-arch-skills-${GITHUB_REF_NAME}.zip" skills
+          (cd dist && sha256sum "dev-arch-skills-${GITHUB_REF_NAME}.zip" > "dev-arch-skills-${GITHUB_REF_NAME}.sha256")
+
+      - name: Publish to the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            dist/dev-arch-skills-${{ github.ref_name }}.zip
+            dist/dev-arch-skills-${{ github.ref_name }}.sha256
+
+  release:
+    name: Build & Publish Distribution (${{ matrix.rid }})
+    needs: [changes, engine-java, engine-dotnet, release-version-check]
+    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/dev-arch-v') || (github.ref == 'refs/heads/main' && (needs.changes.outputs.engine-java == 'true' || needs.changes.outputs.engine-dotnet == 'true'))) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: linux-x64
+            archive: tar.gz
+            ext: ''
+          - rid: osx-arm64
+            archive: tar.gz
+            ext: ''
+          - rid: osx-x64
+            archive: tar.gz
+            ext: ''
+          - rid: win-x64
+            archive: zip
+            ext: '.exe'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release tag
+        id: rel
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/dev-arch-v* ]]; then
+            TAG="${GITHUB_REF_NAME}"
+            PRERELEASE=false
+          else
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            TAG="dev-arch-main-${GITHUB_RUN_NUMBER}-${SHORT_SHA}"
+            PRERELEASE=true
+          fi
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          DIST_NAME="dev-arch-engine-${TAG}-${{ matrix.rid }}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "prerelease=${PRERELEASE}" >> "$GITHUB_OUTPUT"
+          echo "dist_name=${DIST_NAME}" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_TAG=${TAG}" >> "$GITHUB_ENV"
+          echo "PRODUCT_VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "DIST_NAME=${DIST_NAME}" >> "$GITHUB_ENV"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build the engine (Java fat jar)
+        run: make build-engine
+
+      - name: Stage distribution layout
+        run: |
+          mkdir -p "dist/${DIST_NAME}/bin"
+          cp engine/target/java-dependency-extractor.jar "dist/${DIST_NAME}/bin/"
+
+      # Framework-dependent: a single-file bundle cannot load MSBuild and always
+      # degrades to roslyn-fallback (BUG-005).
+      - name: Publish .NET analyzer (framework-dependent)
+        run: |
+          dotnet publish engine/src/main/dotnet/DotNetAnalyzer/DotNetAnalyzer.csproj \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            --self-contained false \
+            -p:DebugType=None \
+            -p:DebugSymbols=false \
+            -o "dist/${DIST_NAME}/bin"
+          echo "--- bin contents ---"
+          ls -la "dist/${DIST_NAME}/bin"
+
+      - name: Generate README.md
+        run: |
+          BIN_DOTNET="bin/dotnet-analyzer${{ matrix.ext }}"
+          cat > "dist/${DIST_NAME}/README.md" <<EOF
+          # dev-arch engine ${PRODUCT_VERSION} (${RELEASE_TAG})
+
+          Static-analysis engine of dev-arch (Static Inference) that infers microservice
+          dependencies from Java and .NET source code. Build target: \`${{ matrix.rid }}\`.
+
+          ## Contents
+
+          - \`bin/java-dependency-extractor.jar\` — Java analyzer (Spoon-based fat jar)
+          - \`${BIN_DOTNET}\` — .NET analyzer (framework-dependent; launcher + assemblies in \`bin/\`)
+
+          ## Requirements
+
+          - Java analyzer: **JRE/JDK 17+**
+          - .NET analyzer: **.NET 8 runtime**. Install the **.NET 8 SDK** for full
+            project loading via MSBuild; with only the runtime the analyzer falls
+            back to direct source parsing (\`meta.source = roslyn-fallback\`).
+
+          ## Usage
+
+          ### Analyze a Java project
+
+          \`\`\`bash
+          java -jar bin/java-dependency-extractor.jar <project-path> <output-file>
+          \`\`\`
+
+          Generated files:
+          - \`<output-file>\` — full dependency graph
+          - \`<output-file-base>_architecture.json\` — proposed microservice split
+          - \`output_web.json\` — web components (when detected)
+
+          ### Analyze a .NET project
+
+          The .NET analyzer writes the dependency graph to **stdout** — redirect
+          it to a file.
+
+          \`\`\`bash
+          ./${BIN_DOTNET} <path-to-.sln-or-.csproj-or-folder> > graph.json
+          \`\`\`
+
+          ## Verification
+
+          \`\`\`bash
+          sha256sum -c checksums.sha256
+          \`\`\`
+          EOF
+
+      - name: Create archive
+        working-directory: dist
+        run: |
+          chmod +x "${DIST_NAME}/bin/dotnet-analyzer${{ matrix.ext }}" 2>/dev/null || true
+          if [[ "${{ matrix.archive }}" == "zip" ]]; then
+            zip -r "${DIST_NAME}.zip" "${DIST_NAME}"
+            sha256sum "${DIST_NAME}.zip" > "${DIST_NAME}.sha256"
+          else
+            tar -czf "${DIST_NAME}.tar.gz" "${DIST_NAME}"
+            sha256sum "${DIST_NAME}.tar.gz" > "${DIST_NAME}.sha256"
+          fi
+
+      - name: Upload distribution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.rel.outputs.dist_name }}
+          path: |
+            dist/${{ steps.rel.outputs.dist_name }}.${{ matrix.archive }}
+            dist/${{ steps.rel.outputs.dist_name }}.sha256
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.rel.outputs.tag }}
+          name: ${{ steps.rel.outputs.tag }}
+          prerelease: ${{ steps.rel.outputs.prerelease }}
+          files: |
+            dist/${{ steps.rel.outputs.dist_name }}.${{ matrix.archive }}
+            dist/${{ steps.rel.outputs.dist_name }}.sha256
+          generate_release_notes: true

@@ -2,7 +2,7 @@ import path from 'node:path';
 import type {NextConfig} from 'next';
 
 // 012-install-doctor-docker (FR-020): the container image builds with NEXT_OUTPUT=standalone; the npm workspace
-// hoists node_modules to apps/dev-arch, so file tracing starts there. Every other build is unchanged.
+// hoists node_modules to the product root, so file tracing starts there. Every other build is unchanged.
 const standalone = process.env.NEXT_OUTPUT === 'standalone';
 
 // 011-quality-delivery (FR-001): type and lint errors fail the build (no tolerance options).

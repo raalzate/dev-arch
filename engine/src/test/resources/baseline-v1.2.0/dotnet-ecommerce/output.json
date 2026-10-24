@@ -18,13 +18,13 @@
     "external_dependencies" : [ ],
     "package_dependencies" : [ ],
     "code_issues" : [ ],
-    "extends" : "ControllerBase",
+    "extends" : "Microsoft.AspNetCore.Mvc.ControllerBase",
     "implements" : [ ],
     "messaging_type" : null,
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 5,
+    "cbo" : 3,
     "lcom" : 0.0,
     "complexity_max" : 2,
     "complexity_avg" : 1.2
@@ -47,13 +47,13 @@
     "external_dependencies" : [ ],
     "package_dependencies" : [ ],
     "code_issues" : [ ],
-    "extends" : "ControllerBase",
+    "extends" : "Microsoft.AspNetCore.Mvc.ControllerBase",
     "implements" : [ ],
     "messaging_type" : null,
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 5,
+    "cbo" : 3,
     "lcom" : 0.0,
     "complexity_max" : 2,
     "complexity_avg" : 1.2
@@ -256,7 +256,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 2,
+    "cbo" : 0,
     "lcom" : 0.0,
     "complexity_max" : null,
     "complexity_avg" : null
@@ -285,7 +285,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 2,
+    "cbo" : 0,
     "lcom" : 0.0,
     "complexity_max" : null,
     "complexity_avg" : null
@@ -320,7 +320,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 5,
+    "cbo" : 2,
     "lcom" : 0.0,
     "complexity_max" : null,
     "complexity_avg" : null
@@ -396,7 +396,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 3,
+    "cbo" : 1,
     "lcom" : 0.0,
     "complexity_max" : null,
     "complexity_avg" : null
@@ -425,7 +425,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 3,
+    "cbo" : 2,
     "lcom" : 0.0,
     "complexity_max" : 1,
     "complexity_avg" : 1.0
@@ -454,7 +454,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 2,
+    "cbo" : 1,
     "lcom" : 0.0,
     "complexity_max" : 1,
     "complexity_avg" : 1.0
@@ -513,7 +513,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 6,
+    "cbo" : 5,
     "lcom" : 0.5,
     "complexity_max" : 5,
     "complexity_avg" : 1.8333333333333333
@@ -566,7 +566,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 5,
+    "cbo" : 4,
     "lcom" : 0.8285714285714285,
     "complexity_max" : 3,
     "complexity_avg" : 1.625
@@ -595,7 +595,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 2,
+    "cbo" : 1,
     "lcom" : 0.0,
     "complexity_max" : 1,
     "complexity_avg" : 1.0
@@ -624,7 +624,7 @@
     "messaging_role" : null,
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 2,
+    "cbo" : 1,
     "lcom" : 0.0,
     "complexity_max" : 1,
     "complexity_avg" : 1.0
@@ -719,7 +719,7 @@
     "messaging_role" : "publisher",
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 14,
+    "cbo" : 9,
     "lcom" : 0.65,
     "complexity_max" : 19,
     "complexity_avg" : 3.857142857142857
@@ -778,7 +778,7 @@
     "messaging_role" : "publisher",
     "web_type" : null,
     "web_role" : null,
-    "cbo" : 11,
+    "cbo" : 6,
     "lcom" : 0.6666666666666666,
     "complexity_max" : 12,
     "complexity_avg" : 3.0

@@ -150,21 +150,23 @@ Then('they pass', function (this: DevArchWorld) {
 
 const ASSERTION = /\bassert\w*\s*\(|\bAssert\.|\.Should\(\)|\bassume\w*\s*\(|@(Given|When|Then)\(|\[(Fact|Theory)\b|\bexpect\(/;
 
-interface Origin { repo: string; ref: string }
+/** Original engine tree: `base` is the folder of that tree holding the original repository root. */
+interface Origin { repo: string; ref: string; base: string }
 
 function originOf(): Origin {
   const origin = engineOriginRepo();
-  if (origin) return { repo: origin, ref: 'main' };
-  const body = git(['log', '--format=%B', `--grep=git-subtree-dir: ${PRODUCT_REL}/engine`, 'HEAD'], layout.monorepoRoot);
-  const split = /git-subtree-split: ([0-9a-f]{40})/.exec(body)?.[1];
-  assert.ok(split, 'no engine subtree import recorded');
-  return { repo: layout.monorepoRoot, ref: split };
+  if (origin) return { repo: origin, ref: 'main', base: '' };
+  // 014-standalone-repo: the engine origin history was not extracted; the import commit (git subtree add, message
+  // kept by the extraction) holds the imported original repository under engine/.
+  const commit = git(['log', '--format=%H', '-1', '--grep=^git-subtree-dir: .*engine$', 'HEAD'], layout.monorepoRoot);
+  assert.ok(commit, 'no engine subtree import recorded');
+  return { repo: layout.monorepoRoot, ref: commit, base: 'engine/' };
 }
 
 /** Test sources of the original repository and their location in the product. */
 const TEST_ROOTS: [string, string][] = [
-  ['src/test', `${PRODUCT_REL}/engine/src/test`],
-  ['schema/test', `${PRODUCT_REL}/schema/test`],
+  ['src/test', `engine/src/test`],
+  ['schema/test', `schema/test`],
 ];
 
 Given('the engine test sources and the specifications 001 to 005 as imported', function (this: DevArchWorld) {
@@ -172,11 +174,11 @@ Given('the engine test sources and the specifications 001 to 005 as imported', f
 });
 
 When('they are compared with the original engine repository', function (this: DevArchWorld) {
-  const { repo, ref } = this.data.origin as Origin;
+  const { repo, ref, base } = this.data.origin as Origin;
   const assertionDiffs: string[] = [];
   for (const [from, to] of TEST_ROOTS) {
-    for (const file of trackedFiles(repo, ref, from).filter((f) => /\.(java|cs|ts)$/.test(f))) {
-      const target = `${to}/${file.slice(from.length + 1)}`;
+    for (const file of trackedFiles(repo, ref, base + from).filter((f) => /\.(java|cs|ts)$/.test(f))) {
+      const target = `${to}/${file.slice(base.length + from.length + 1)}`;
       assert.ok(gitOk(['cat-file', '-e', `HEAD:${target}`], layout.monorepoRoot), `test source lost: ${target}`);
       const lines = (src: string) => src.split('\n').map((l) => l.trim()).filter((l) => ASSERTION.test(l)).sort();
       const before = lines(git(['show', `${ref}:${file}`], repo));
@@ -187,9 +189,9 @@ When('they are compared with the original engine repository', function (this: De
   this.data.assertionDiffs = assertionDiffs;
   const featureDiffs: string[] = [];
   const contextDiffs: string[] = [];
-  for (const spec of git(['ls-tree', '--name-only', `${ref}:specs`], repo).split('\n').filter((s) => /^00[1-5]-/.test(s))) {
-    for (const file of trackedFiles(repo, ref, `specs/${spec}`)) {
-      const target = `${PRODUCT_REL}/${file}`;
+  for (const spec of git(['ls-tree', '--name-only', `${ref}:${base}specs`], repo).split('\n').filter((s) => /^00[1-5]-/.test(s))) {
+    for (const file of trackedFiles(repo, ref, `${base}specs/${spec}`)) {
+      const target = file.slice(base.length);
       const blob = (r: string, rf: string, p: string) => (gitOk(['cat-file', '-e', `${rf}:${p}`], r) ? git(['rev-parse', `${rf}:${p}`], r) : 'missing');
       const same = blob(repo, ref, file) === blob(layout.monorepoRoot, 'HEAD', target);
       if (file.endsWith('.feature') && !same) featureDiffs.push(target);

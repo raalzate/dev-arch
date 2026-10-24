@@ -10,7 +10,8 @@ import { bashFunction, filesUnder, job, mvn, productFile, stepsOf, workflow } fr
 import type { DevArchWorld } from '../support/world.ts';
 
 /** Last commit of feature 010 (TS-006 "files added after feature 010", TS-033). */
-export const DELIVERY_010 = '3b32def8d5d7223df3afdf20a4dc88ac35c971fc';
+/** Delivery commit of feature 010 (014: commit of the own repository, was 3b32def8 in maestria-ia). */
+export const DELIVERY_010 = '69c3f8e192ac';
 const LEGACY = ['001-mcp-server-local', '002-dotnet-roslyn-analyzer', '003-dotnet-code-issues'];
 const TEST_JAVA = path.join(layout.engineRoot, 'src', 'test', 'java');
 

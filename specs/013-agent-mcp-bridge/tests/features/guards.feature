@@ -13,7 +13,7 @@ Feature: Feature 013 is strictly additive and keeps every quality gate
 
   @TS-033 @FR-022 @SC-005 @P1 @validation
   Scenario: No locked artifact or existing test of features 001 to 012 changed
-    When the product is compared with the closing commit of feature 012
+    When the product at the closing commit "c9100f51c44a" of feature 013 is compared with the closing commit "b5cec37b9b24" of feature 012
     Then no ".feature" file, "context.json" or specification file of features 001 to 012 was modified or deleted
     And no existing step definition or test source file was modified or deleted
     And Compose and the engine sources are unchanged

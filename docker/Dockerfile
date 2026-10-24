@@ -2,7 +2,7 @@
 # dev-arch all-in-one image (012-install-doctor-docker): Next.js web (standalone) + engine.jar + dotnet-analyzer.
 # Generic and provider-neutral: no cloud configuration, publishable to GHCR.
 #
-#   docker build -f docker/Dockerfile -t dev-arch .                  (from apps/dev-arch)
+#   docker build -f docker/Dockerfile -t dev-arch .                  (from the repository root)
 #   docker compose -f docker/compose.yaml up -d                      (profile "default")
 #   docker compose -f docker/compose.yaml --profile dev up web-dev   (profile "dev", target "dev")
 #

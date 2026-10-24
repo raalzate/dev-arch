@@ -59,7 +59,7 @@ export interface HealthDeps {
   now: () => number;
 }
 
-/** scripts/doctor/cli.mjs of the product (DEVARCH_DOCTOR_CLI overrides; the web runs from apps/dev-arch/web). */
+/** scripts/doctor/cli.mjs of the product (DEVARCH_DOCTOR_CLI overrides; the web runs from web/ of the product). */
 export function doctorCliPath(env: Env, cwd: string): string {
   const override = env.DEVARCH_DOCTOR_CLI?.trim();
   return override ? path.resolve(cwd, override) : path.resolve(cwd, '..', 'scripts', 'doctor', 'cli.mjs');

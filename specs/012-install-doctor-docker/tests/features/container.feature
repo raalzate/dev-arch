@@ -39,7 +39,7 @@ Feature: dev-arch runs with Docker only
     And the job "docker" runs on changes of the container or doctor files, on main and on "dev-arch-v*" tags
     And the job "docker" pushes the image to GHCR only on tags
     And the job "docker" is not an area job
-    When a change touches only "apps/dev-arch/web/src/app/page.tsx"
+    When a change touches only "web/src/app/page.tsx"
     Then the triggered checks are exactly "web"
 
   @TS-030 @FR-023 @SC-004 @P1 @contract
@@ -58,4 +58,4 @@ Feature: dev-arch runs with Docker only
   @TS-032 @FR-020 @P2 @contract
   Scenario: The standalone web output is only produced for the image
     Given the web build configuration
-    Then the standalone output and the monorepo tracing root are enabled only when "NEXT_OUTPUT" is "standalone"
+    Then the standalone output and the workspace tracing root are enabled only when "NEXT_OUTPUT" is "standalone"

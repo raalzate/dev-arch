@@ -178,14 +178,14 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.1.2</version>
                 <configuration>
-                    <!-- 006-devarch-monorepo: the engine is apps/dev-arch/engine; contract, specs and CI live above it
+                    <!-- 006-devarch-monorepo / 014-standalone-repo: the engine is engine/ of the repository; contract, specs and CI live above it
                          (test-side ProductLayout, research D3). -->
                     <systemPropertyVariables>
                         <engine.root>${project.basedir}</engine.root>
                         <product.root>${project.basedir}/..</product.root>
                         <schema.dir>${project.basedir}/../schema</schema.dir>
                         <features.dir>${project.basedir}/../specs/005-json-schema-contract/tests/features</features.dir>
-                        <devarch.ci.workflow>${project.basedir}/../../../.github/workflows/dev-arch.yml</devarch.ci.workflow>
+                        <devarch.ci.workflow>${project.basedir}/../.github/workflows/dev-arch.yml</devarch.ci.workflow>
                         <project.version>${project.version}</project.version>
                     </systemPropertyVariables>
                 </configuration>

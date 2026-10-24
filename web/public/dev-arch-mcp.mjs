@@ -16,7 +16,7 @@ import zlib from 'node:zlib';
 export const VERSION = '1.2.0';
 const PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const DEFAULT_URL = 'http://127.0.0.1:9002';
-const START_HINT = 'Start dev-arch (`make dev` in apps/dev-arch, or `docker compose -f docker/compose.yaml up -d`) or fix --url.';
+const START_HINT = 'Start dev-arch (`make dev` at the dev-arch repository root, or `docker compose -f docker/compose.yaml up -d`) or fix --url.';
 
 /** Directories never sent: version control, dependencies and build outputs of Java, .NET and Node, IDE state. */
 export const EXCLUDED_DIRS = new Set([

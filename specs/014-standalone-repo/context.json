@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "2a1f246698b2bc01ff9b8073c8af75c21bd4efef28972ac103c92cc313ae1f66",
+    "generated_at": "2026-10-24T01:28:04Z",
+    "features_dir": "specs/014-standalone-repo/tests/features",
+    "file_count": 4
+  }
+}

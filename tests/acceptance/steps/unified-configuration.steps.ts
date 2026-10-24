@@ -25,7 +25,7 @@ function engineEntry(config: McpConfig): [string, { command: string; args?: stri
 // --- TS-036 / TS-037 ---------------------------------------------------------------------------------
 
 Given('the versioned local MCP server configuration', function (this: DevArchWorld) {
-  assert.ok(gitOk(['cat-file', '-e', `HEAD:${PRODUCT_REL}/.mcp.json`], layout.monorepoRoot), '.mcp.json is not versioned');
+  assert.ok(gitOk(['cat-file', '-e', `HEAD:.mcp.json`], layout.monorepoRoot), '.mcp.json is not versioned');
   this.data.mcpConfig = JSON.parse(readFileSync(path.join(layout.productRoot, '.mcp.json'), 'utf8'));
 });
 
@@ -65,8 +65,7 @@ Then('it answers the MCP initialization with the five analysis tools', function 
 
 // --- TS-038 ------------------------------------------------------------------------------------------
 
-Given('the product ignore rules applied below the monorepo global rules', function (this: DevArchWorld) {
-  assert.ok(existsSync(path.join(layout.monorepoRoot, '.gitignore')), 'no monorepo .gitignore');
+Given('the product ignore rules', function (this: DevArchWorld) {
   assert.ok(existsSync(path.join(layout.productRoot, '.gitignore')), 'no product .gitignore');
 });
 
@@ -106,7 +105,7 @@ Then('they are identical', function (this: DevArchWorld) {
  * Sample projects analyzed by the engine tests (test-for-demo/, test fixtures) carry their own repository
  * files as input data; they are not configuration of the product.
  */
-const SAMPLE_DATA = [`${PRODUCT_REL}/engine/test-for-demo/`, `${PRODUCT_REL}/engine/src/test/`];
+const SAMPLE_DATA = [`engine/test-for-demo/`, `engine/src/test/`];
 const AGENT_FILES = /(^|\/)(AGENTS\.md|CLAUDE\.md|GEMINI\.md|\.cursorrules|copilot-instructions\.md)$/;
 
 Given('the product folder', function (this: DevArchWorld) {
@@ -115,8 +114,9 @@ Given('the product folder', function (this: DevArchWorld) {
 
 Then('exactly one editor configuration and one ignore file exist in the product, both at its root', function (this: DevArchWorld) {
   const tracked = this.data.tracked as string[];
-  assert.deepEqual(tracked.filter((f) => f.endsWith('/.editorconfig')), [`${PRODUCT_REL}/.editorconfig`]);
-  assert.deepEqual(tracked.filter((f) => f.endsWith('/.gitignore')), [`${PRODUCT_REL}/.gitignore`]);
+  const named = (name: string) => tracked.filter((f) => f === name || f.endsWith(`/${name}`));
+  assert.deepEqual(named('.editorconfig'), ['.editorconfig']);
+  assert.deepEqual(named('.gitignore'), ['.gitignore']);
 });
 
 Then('the agent instruction files at the product root reference the iikit rules', function (this: DevArchWorld) {
@@ -130,7 +130,7 @@ Then('the agent instruction files at the product root reference the iikit rules'
 });
 
 Then('no agent instruction file exists inside {string}, {string} or {string}', function (this: DevArchWorld, a: string, b: string, c: string) {
-  const inside = (this.data.tracked as string[]).filter((f) => [a, b, c].some((d) => f.startsWith(`${PRODUCT_REL}/${d}/`)) && AGENT_FILES.test(f));
+  const inside = (this.data.tracked as string[]).filter((f) => [a, b, c].some((d) => f.startsWith(`${d}/`)) && AGENT_FILES.test(f));
   assert.deepEqual(inside, []);
 });
 
