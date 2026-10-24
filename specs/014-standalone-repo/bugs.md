@@ -54,3 +54,11 @@ Found by the first run of the GitHub Actions workflow on the own repository (PR 
   switch (`VB009_WRITE_GOLDEN=1`): only `ControllerBase` resolution and the `cbo` of two components change;
   `CodeIssuesSample.golden.json` is unchanged.
 - `docs/INSTALL.md`: "Reproducible .NET analysis (SDK 8)".
+
+## Note on BUG-007 (006, flaky `SchemaVersionContractTest.twoRunsAreByteIdentical[dotnet-ecommerce]`)
+
+- **Status**: not reproduced since BUG-009; kept open for observation.
+- BUG-009 showed that the .NET semantic resolution of `dotnet-ecommerce` depends on the targeting packs and the
+  restore state that MSBuild finds; a run that loads the project in a different state yields a different graph,
+  which matches the BUG-007 symptom. With the SDK 8 pinned, every local and CI run of this feature produced
+  byte-identical outputs. If it reappears, capture both outputs and the `[WARN] … unresolved type references` lines.
