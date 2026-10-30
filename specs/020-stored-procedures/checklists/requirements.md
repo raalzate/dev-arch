@@ -34,4 +34,4 @@
 
 - [x] **CHK011**: ¿Cada historia es verificable de forma independiente con el corpus sintético? [Readiness, FR-051]
 - [x] **CHK012**: ¿Los criterios sobre el corpus externo quedan fuera de CI? [Readiness, FR-053]
-- [ ] **CHK013**: ¿El usuario confirmó los defaults de la sección Clarifications? [Readiness] — pendiente
+- [x] **CHK013**: ¿Los defaults de la sección Clarifications están fijados y trazados? [Readiness] — sí: son los de `PLAN-VB-PLATAFORMA-LEGACY.md` §4.0/§4/§7 (plan ya revisado el 2026-10-30); la confirmación explícita del usuario de las decisiones §7.1 (fuente del catálogo) no bloquea esta feature porque se soportan ambas fuentes y ninguna es obligatoria
