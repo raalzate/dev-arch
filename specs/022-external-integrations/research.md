@@ -1,0 +1,8 @@
+# Research: 022-external-integrations
+
+- **D1 Referencias de servicio por carpeta**: `Service References/<N>` y `Web References/<N>` son convenciones fijas de Visual Studio; el código generado (`Reference.vb`) está excluido (autogenerado), así que el uso se detecta por el espacio de nombres `<N>.` en el código manual. Alternativa (leer `.svcmap`/`.wsdl` para extraer operaciones) se deja fuera: no cambia la integración detectada y añade parsing de WSDL.
+- **D2 Host en lugar de dirección**: `Uri.Host` descarta esquema, puerto, credenciales, ruta y consulta; cumple FR-005 y evita exponer secretos (010/009). Las claves de configuración se emiten por nombre, nunca por valor.
+- **D3 Lista EOL versionada y embebida**: `schema/eol-dependencies.json` es la fuente única; el analizador la embebe como recurso enlazado (sin copia manual) y `dependencies.eol` añade prefijos. Sin red (principio VI). Entradas iniciales: Enterprise Library ≤ 5 (EOL 2013), ActiveReports 3 (`ActiveReports3`, `ActiveReports.*3`), `Microsoft.ReportViewer.*`, `System.Web.Services` (ASMX).
+- **D4 Proyectos ausentes**: "ausente" = su archivo no está bajo la carpeta analizada (aunque exista en disco): lo analizado es la entrega. Una advertencia por análisis, nombres sin rutas; `project:<Nombre>` en `external_dependencies` por componente del proyecto (dependencia externa desde el punto de vista de la entrega).
+- **D5 Sin bump de contrato**: `api_contracts` cerrado y `schema_version` bloqueado por 005/008 ⇒ anotaciones y cadenas; `EOL_DEPENDENCY` usa `type` abierto (`DEPENDENCY`). La forma rica queda para 1.1.0.
+- **D6 Activación**: `integrations.outbound` y `dependencies.enabled` (`auto|on|off`, auto = VB), transportadas por el `--config` de 020.
