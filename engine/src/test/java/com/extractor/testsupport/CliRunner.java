@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,6 +23,18 @@ public final class CliRunner {
     }
 
     public static Result run(Path workDir, List<String> args) {
+        return run(workDir, args, Map.of());
+    }
+
+    /**
+     * Runs the CLI with extra environment variables (020: {@code DOTNET_ANALYZER_PATH} of a recording wrapper).
+     *
+     * @param workDir working directory
+     * @param args    program arguments
+     * @param env     extra environment variables
+     * @return exit code and outputs
+     */
+    public static Result run(Path workDir, List<String> args, Map<String, String> env) {
         try {
             Files.createDirectories(workDir);
             Path out = Files.createTempFile(workDir, "cli-out", ".txt");
@@ -32,8 +45,10 @@ public final class CliRunner {
             cmd.add(System.getProperty("java.class.path"));
             cmd.add("com.extractor.MicroserviceInferenceMain");
             cmd.addAll(args);
-            Process p = new ProcessBuilder(cmd).directory(workDir.toFile())
-                    .redirectOutput(out.toFile()).redirectError(err.toFile()).start();
+            ProcessBuilder pb = new ProcessBuilder(cmd).directory(workDir.toFile())
+                    .redirectOutput(out.toFile()).redirectError(err.toFile());
+            pb.environment().putAll(env);
+            Process p = pb.start();
             if (!p.waitFor(10, TimeUnit.MINUTES)) {
                 p.destroyForcibly();
                 throw new IllegalStateException("CLI did not finish in 10 minutes: " + args);
