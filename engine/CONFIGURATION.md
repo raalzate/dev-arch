@@ -50,6 +50,8 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `detection.maxDepth` | int | `0` | 0..5 | detección | Profundidad de búsqueda de marcadores (`pom.xml`, `build.gradle[.kts]`, `*.sln`, `*.csproj`, `*.vbproj`) en subcarpetas cuando la raíz no tiene ninguno. 0 = solo raíz (comportamiento 1.2.0). |
 | `clustering.singleDomainRatio` | double | `0.75` | [0,1] | agrupación | Si el dominio más grande supera esta fracción de componentes, el proyecto se agrupa por entidades (proyecto de un solo dominio). |
 | `clustering.largeClusterRatio` | double | `0.5` | [0,1] | agrupación | Si el clúster más grande de la agrupación por responsabilidad supera esta fracción, se recurre a la agrupación por dominio. |
+| `clustering.procedureGrouping` | string | `transitive` | transitive, entity | agrupación | Agrupación por procedimientos (020/023): `transitive` une componentes conectados por procedimientos compartidos; `entity` agrupa por la raíz de la entidad dominante del procedimiento (`AMPsp_PolicyPremium_Read`, `AMPsp_PolicyPremiumDetail_Save` → `Premium`), evitando que un procedimiento concentrador una todo el grafo. |
+| `clustering.attachCallersToTargets` | boolean | `false` | true, false | agrupación | En la agrupación por entidades, un componente sin procedimientos se une al clúster al que más llama (formularios → su controlador) en lugar del primer clúster (023). |
 | `evidence.weights.table` | double | `0.25` | [0,1] | evidencia | Peso del Jaccard de tablas en el `evidenceScore`. |
 | `evidence.weights.call` | double | `0.35` | [0,1] | evidencia | Peso de la densidad de llamadas. |
 | `evidence.weights.token` | double | `0.3` | [0,1] | evidencia | Peso de la similitud de tokens. |
@@ -71,6 +73,8 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `consolidation.significantInfrastructureRatio` | double | `0.3` | [0,1] | consolidación | Fracción de miembros con palabra de infraestructura que marca a un grupo como infraestructura (fase 0). |
 | `consolidation.supportRatio` | double | `0.8` | [0,1] | consolidación | Fracción de miembros con palabra de infraestructura de un clúster de soporte (salvaguarda de soporte). |
 | `consolidation.maxMergedSizeWithoutSimilarity` | int | `40` | >= 0 | consolidación | Tamaño combinado por encima del cual solo se fusiona con similitud de tokens alta. |
+| `consolidation.entityStemMerge` | boolean | `false` | true, false | consolidación | Fusiona clústeres cuyas entidades dominantes de procedimiento comparten raíz (`PolicyPremium`, `PolicyPremiumDetail` → `Premium`, quitando el prefijo común del corpus) hasta `domainMergeMaxSize` (023). |
+| `consolidation.verticalSliceRatio` | double | `0.0` | [0,1] | consolidación | Fracción de las llamadas salientes de un clúster (sin clústeres de soporte) que deben ir a un mismo clúster para fusionarlos como corte vertical (formularios → controladores → adaptadores) (023). 0 desactiva la regla. |
 | `consolidation.highTokenSimilarity` | double | `0.75` | [0,1] | consolidación | Similitud de tokens que levanta la salvaguarda de tamaño. |
 | `consolidation.separationCallDensity` | double | `0.15` | [0,1] | consolidación | Dos candidatos fuertes no se fusionan si la densidad de llamadas es menor que este valor y… |
 | `consolidation.separationTableJaccard` | double | `0.2` | [0,1] | consolidación | …el Jaccard de tablas es menor que este valor. |
@@ -81,6 +85,8 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `viability.weights.cohesion` | double | `0.5` | [0,1] | viabilidad | Peso de la cohesión ajustada en la puntuación. |
 | `viability.weights.coupling` | double | `0.35` | [0,1] | viabilidad | Peso de `1 − acoplamiento externo`. |
 | `viability.weights.data` | double | `0.15` | [0,1] | viabilidad | Peso de la cohesión de datos. |
+| `viability.ignoreSupportCoupling` | boolean | `false` | true, false | viabilidad | Las llamadas a miembros de librerías de soporte no cuentan como acoplamiento externo (023). |
+| `viability.debtWeight` | double | `0.0` | [0,1] | viabilidad | Peso del índice de deuda técnica restado de la puntuación (023); con 0 la puntuación es la de 1.2.0 y la justificación no incluye `Deuda técnica`. |
 | `viability.cohesionBlend.average` | double | `0.7` | [0,1] | viabilidad | Cohesión ajustada = este valor × cohesión media ponderada + … |
 | `viability.cohesionBlend.density` | double | `0.3` | [0,1] | viabilidad | … este valor × densidad interna. |
 | `viability.noTablesDataCohesion` | double | `0.5` | [0,1] | viabilidad | Cohesión de datos de una propuesta sin tablas. |
@@ -105,11 +111,14 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `recommendation.infrastructureKeywords` | string[] | `config, configuration, security, application, exception, error, filter, interceptor, aspect, swagger, openapi, main` | minúsculas | propuestas | Palabras de infraestructura (nombre simple) filtradas de las propuestas. |
 | `recommendation.dataJaccardMode` | enum | `legacy` | legacy, data_cohesion | propuestas | `legacy`: `data_jaccard` fijo; `data_cohesion`: la cohesión de datos de la puntuación (opt-in). |
 | `recommendation.legacyDataJaccard` | double | `0.8` | [0,1] | propuestas | `data_jaccard` emitido en modo `legacy` cuando la propuesta tiene tablas (0.0 sin tablas). |
+| `recommendation.supportNamespaces` | string[] | `(vacía)` | no vacías | propuestas | Segmentos de namespace (`Common`, `Shared`…) cuyos componentes forman librerías de soporte, no propuestas (023). |
+| `recommendation.minReferencingDomains` | int | `0` | >= 0 | propuestas | Dominios distintos desde los que debe recibir llamadas un grupo para ser librería de soporte compartida (023); 0 desactiva la regla. |
 | `naming.infrastructureRatio` | double | `0.8` | [0,1] | nombres | Fracción de miembros con palabra de infraestructura (FQCN) que produce un nombre de infraestructura. |
 | `naming.infrastructureLabels` | map | `config→Configuración, security→Seguridad, auth→Autenticación, swagger→Documentación, email→Notificaciones por Email, notification→Notificaciones, log→Logging, audit→Auditoría, application→Aplicación Principal` | claves en minúsculas | nombres | Palabra de infraestructura → etiqueta del nombre. |
 | `naming.roleKeywords` | string[] | `service, controller, repository, repo, usecase, operations, listener, publisher, adapter, factory, handler, db` | minúsculas | nombres | Palabras de rol de los nombres de negocio; gana la primera (orden declarado). |
 | `naming.excludeTokens` | string[] | `entity, model, data, dto, event, command, query, impl, repository, service, controller, api, rest, http, adapter, port, localevents, rabbit, jpa, repo, dao, operations, listener, publisher, handler, factory, db, activityupdaterimpl, usecase, primaryports, secondaryports, userprofilejpa, tweetcrud, suggestion, suggestions` | no vacías | nombres | Tokens que nunca forman parte de un nombre (comparación exacta). |
 | `naming.minTokenLength` | int | `3` | >= 0 | nombres | Longitud mínima de un token de nombre. |
+| `naming.strategy` | string | `tokens` | tokens, domain | nombres | `tokens`: nombres 1.2.0 por tokens de clase; `domain`: dominio de namespace común a los miembros (sin el prefijo común del grafo, hasta dos segmentos) con la entidad dominante como sufijo (`Componente de Policies · Policy`) (023). |
 | `dataAccess.procedures` | string | `auto` | auto, on, off | extracción | Detección de procedimientos almacenados en el analizador .NET (020): `auto` = solo compilaciones Visual Basic; `on` = todas; `off` = ninguna. |
 | `dataAccess.procedureCatalog` | string | `null` | ruta o null | extracción | Carpeta de scripts `.sql` (`CREATE PROCEDURE`) o archivo `.csv` (`procedimiento,tabla,operación`) que traduce procedimientos a tablas; sin catálogo se emite `sp:<nombre>`. |
 | `dataAccess.catalogMode` | string | `complement` | complement, replace | extracción | `complement` conserva `sp:<nombre>` junto a las tablas; `replace` emite solo tablas (y `sp:` para los no resueltos). |
@@ -121,8 +130,28 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `integrations.outbound` | string | `auto` | auto, on, off | extracción | Integraciones salientes (SOAP/WCF/REST) del analizador .NET (022): `auto` = solo compilaciones Visual Basic. |
 | `dependencies.enabled` | string | `auto` | auto, on, off | extracción | Dependencias externas, proyectos ausentes y fin de vida (022): `auto` = solo compilaciones Visual Basic. |
 | `dependencies.eol` | string[] | `(vacía)` | no vacías | extracción | Prefijos de nombre añadidos a la lista versionada `schema/eol-dependencies.json` (issue `EOL_DEPENDENCY`). |
+| `inference.preset` | string | `auto` | auto, none, legacy-desktop | inferencia | Preset de inferencia (023). `auto` aplica `legacy-desktop` a grafos Visual Basic (`meta.source` = `roslyn-fallback` o ≥ 50 % de componentes con archivo `.vb`); `none` nunca. |
+| `inference.presentationInCohesion` | boolean | `true` | true, false | inferencia | Con `false`, los miembros `Layer:Presentación`/`Layer:Reportes` no cuentan en la cohesión ni en la densidad interna (siguen siendo miembros y consumidores) (023). |
 
 Las reglas internas de puntuación de clústeres (`HighCohesionRule`, `LowCouplingRule`, `SharedDataRule`) no forman parte de la configuración: su resultado no llega a ningún documento de salida.
+
+## Presets (023)
+
+Un preset es una configuración parcial **versionada** que se aplica sobre los valores por defecto y **por debajo** de la configuración explícita: lo que el usuario declara siempre gana. El preset aplicado se registra al final del `summary` de la arquitectura (`Preset de inferencia: legacy-desktop`); sin preset no se añade texto. Archivo: `engine/src/main/resources/static-inference/inference-preset-legacy-desktop.json`.
+
+Valores del preset (parámetro → valor; motivo):
+
+- Pesos de evidencia `table`/`call`/`token`/`event` → 0.4 / 0.3 / 0.2 / 0.1: los procedimientos compartidos y las llamadas pesan más que los tokens de clase.
+- Tamaños de consolidación `domainMergeMaxSize` y `maxMergedSizeWithoutSimilarity` → 120 y `highTokenSimilarity` → 1.0 (la similitud de tokens nunca levanta el tope de tamaño: en el perfil legacy todos los nombres comparten tokens): dominios de escritorio grandes (decenas de formularios).
+- `verticalSliceRatio` de consolidación → 0.6: fusiona formularios → controladores → adaptadores de un mismo dominio.
+- Pesos de viabilidad `cohesion`/`coupling`/`data` → 0.4 / 0.3 / 0.15, umbrales `high`/`medium` → 0.6 / 0.4 y `debtWeight` → 0.15: índice de deuda como tercer factor (`Deuda técnica: 0.000` en la justificación).
+- `presentationInCohesion` de inferencia → false: la presentación no mide cohesión de negocio.
+- `strategy` de nombres → domain: nombres por dominio de namespace y entidad.
+- `singleDomainRatio` de agrupación → 0.25 (un monolito de escritorio en capas se agrupa por entidades y procedimientos, no por namespace técnico), `procedureGrouping` de agrupación → entity y `attachCallersToTargets` → true, `entityStemMerge` de consolidación → true e `ignoreSupportCoupling` de viabilidad → true: cortes verticales por entidad de negocio; las librerías compartidas no penalizan el acoplamiento.
+- `supportNamespaces` → Commons, Shared, Utils, Utilities, Helpers, Generics, WebServices: librerías comunes como soporte (`minReferencingDomains` queda en 0: en un monolito en capas los "dominios" de namespace son técnicos y la regla de fan-in convertiría la capa de negocio en soporte).
+- `entityHeuristic` de acceso a datos → true: entidad dominante de los `sp:` en el nombre.
+
+Índice de deuda por componente: `issues = Σ(CRITICAL 8, ERROR 4, WARNING 2, INFO 0.5)`, `densidad = issues / max(1, loc/100)`, `base = 1 − 1/(1 + densidad/10)`, +0.10 por cada `Dependency:eol:*` (máx. 0.30), +0.10 si `complexity_max > 15`, acotado a [0,1] con tres decimales; por propuesta, media ponderada por LOC. Con `debtWeight > 0` la justificación añade `Deuda técnica: <índice>` y `Mayor deuda: A (x), B (y), C (z)`.
 
 ## Re-inferencia y evaluación de propuestas (modo servidor)
 

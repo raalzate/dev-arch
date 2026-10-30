@@ -27,6 +27,20 @@ public class ViabilityScorer {
     /** Whether presentation members count in cohesion and density (023, FR-010). */
     private final boolean presentationInCohesion;
 
+    /** Members of support libraries, ignored as external coupling when configured (023). */
+    private Set<String> supportMembers = Set.of();
+
+    /**
+     * Declares the support-library members (023, {@code viability.ignoreSupportCoupling}).
+     *
+     * @param members component ids of every support library
+     * @return this scorer
+     */
+    public ViabilityScorer withSupportMembers(final Set<String> members) {
+        this.supportMembers = config.ignoreSupportCoupling() ? Set.copyOf(members) : Set.of();
+        return this;
+    }
+
     public ViabilityScorer(List<Cluster> allClusters, List<Component> allComponents) {
         this(allClusters, allComponents, InferenceConfig.defaults().viability());
     }
@@ -236,7 +250,7 @@ public class ViabilityScorer {
                 for (String called : comp.getCallsOut()) {
                     if (members.contains(called)) {
                         internalCalls++;
-                    } else {
+                    } else if (!supportMembers.contains(called)) {
                         externalCalls++;
                     }
                 }

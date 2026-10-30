@@ -23,6 +23,9 @@ public class MicroserviceRecommendationEngine {
     /** Proposal assembly parameters (008). */
     private final RecommendationConfig recommendation;
 
+    /** Support-library members ignored as external coupling in the metrics (023). */
+    private Set<String> supportMembers = Set.of();
+
     /** Engine with the 1.2.0 parameters. */
     public MicroserviceRecommendationEngine() {
         this(InferenceConfig.defaults());
@@ -135,6 +138,18 @@ public class MicroserviceRecommendationEngine {
         List<ConsolidatedArchitecture.SupportLibrary> supportLibraries = new ArrayList<>();
         Set<String> filteredInfraComponents = new HashSet<>();
         Set<String> assignedComponents = new HashSet<>();
+
+        // 023: support groups are known before scoring so their members can be ignored as coupling.
+        Set<String> supportMembers = new HashSet<>();
+        for (Set<Integer> group : mergedGroups) {
+            if (!group.isEmpty() && isSupportGroup(group, allClusters, byId, allIds)) {
+                for (Cluster c : allClusters) {
+                    if (group.contains(c.getClusterId())) supportMembers.addAll(c.getMembers());
+                }
+            }
+        }
+        scorer.withSupportMembers(supportMembers);
+        this.supportMembers = config.viability().ignoreSupportCoupling() ? supportMembers : Set.of();
 
         int proposalId = 0;
         for (Set<Integer> group : mergedGroups) {
@@ -619,8 +634,16 @@ public class MicroserviceRecommendationEngine {
 
     private ConsolidatedArchitecture.SupportLibrary createSupportLibrary(int id, Set<Integer> clusterIds, List<Cluster> allClusters,
             Map<String, Component> byId, List<String> allIds) {
-        String name = config.naming().domainStrategy() ? nameOf(clusterIds, allClusters, byId, allIds)
-            : MicroserviceNameGenerator.generateName(clusterIds, allClusters, config.naming());
+        String name = MicroserviceNameGenerator.generateName(clusterIds, allClusters, config.naming());
+        if (config.naming().domainStrategy()) {
+            List<String> members = clusterIds.stream()
+                .flatMap(cId -> allClusters.stream().filter(c -> c.getClusterId() == cId).flatMap(c -> c.getMembers().stream()))
+                .distinct().sorted().toList();
+            String domain = DomainNames.domain(members, DomainNames.commonPrefix(allIds));
+            if (domain != null) {
+                name = "Librería de " + domain;
+            }
+        }
         
         List<String> componentNames = clusterIds.stream()
             .flatMap(cId -> allClusters.stream()
@@ -665,7 +688,7 @@ public class MicroserviceRecommendationEngine {
                 for (String called : comp.getCallsOut()) {
                     if (allMembers.contains(called)) {
                         internalCalls++;
-                    } else {
+                    } else if (!supportMembers.contains(called)) {
                         externalCalls++;
                     }
                 }
@@ -675,8 +698,25 @@ public class MicroserviceRecommendationEngine {
         int totalCalls = internalCalls + externalCalls;
         double externalCoupling = totalCalls > 0 ? (double) externalCalls / totalCalls : 0.0;
         
-        int possibleEdges = size * (size - 1);
-        double internalEdgeDensity = possibleEdges > 0 ? (double) internalCalls / possibleEdges : 0.0;
+        // 023 (FR-010): the internal density ignores presentation members when configured.
+        Set<String> densityMembers = PresentationLayer.cohesionMembers(allMembers, componentMap,
+                config.inference().presentationInCohesion());
+        int densityCalls = internalCalls;
+        if (densityMembers.size() != allMembers.size()) {
+            densityCalls = 0;
+            for (String member : densityMembers) {
+                Component comp = componentMap.get(member);
+                if (comp != null && comp.getCallsOut() != null) {
+                    for (String called : comp.getCallsOut()) {
+                        if (densityMembers.contains(called)) {
+                            densityCalls++;
+                        }
+                    }
+                }
+            }
+        }
+        int possibleEdges = densityMembers.size() * (densityMembers.size() - 1);
+        double internalEdgeDensity = possibleEdges > 0 ? (double) densityCalls / possibleEdges : 0.0;
         
         Set<String> allTables = clusters.stream()
             .flatMap(c -> c.getMetrics().getTablesShared().stream())

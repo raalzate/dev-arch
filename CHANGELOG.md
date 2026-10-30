@@ -4,6 +4,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Unreleased]
 
+### Añadido (feature 023, inferencia para el perfil desktop legacy)
+- Preset `legacy-desktop` (`inference.preset`: `auto` lo aplica a grafos Visual Basic) como configuración parcial versionada bajo la configuración explícita; se registra en `summary` (`Preset de inferencia: legacy-desktop`).
+- Cortes verticales (`consolidation.verticalSliceRatio`), presentación fuera de la cohesión (`inference.presentationInCohesion`), nombres por dominio de namespace y entidad (`naming.strategy = domain`), librerías de soporte por namespace y fan-in (`recommendation.supportNamespaces`, `recommendation.minReferencingDomains`).
+- Índice de deuda técnica por componente y propuesta como tercer factor de viabilidad (`viability.debtWeight`; líneas `Deuda técnica` y `Mayor deuda` en `rationale`). Contrato 1.0.0 sin cambios; salidas por defecto byte a byte idénticas.
+
 ### Añadido (feature 010, experiencia de modernización)
 - Web: recorrido de cinco pasos (Resumen, Mapa del sistema, Propuestas, Hallazgos, Plan) con perfil tecnológico
   (Java / .NET · C# / VB.NET) que decide qué secciones se muestran; las secciones vacías no se muestran.

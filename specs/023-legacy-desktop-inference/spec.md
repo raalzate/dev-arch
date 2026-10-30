@@ -43,8 +43,8 @@ Como arquitecto, quiero que la inferencia use una calibración para el perfil de
 
 **Acceptance Scenarios**:
 
-1. **Given** componentes cuyo namespace contiene un segmento de `recommendation.supportNamespaces` (preset: `Common`, `Commons`, `Shared`, `Utils`, `Utilities`), **When** se infiere con el preset, **Then** forman una librería de soporte, no una propuesta
-2. **Given** un componente con `calls_in` desde al menos `recommendation.minReferencingDomains` (preset: 3) dominios distintos, **Then** es librería de soporte
+1. **Given** componentes cuyo namespace contiene un segmento de `recommendation.supportNamespaces` (preset: `Commons`, `Shared`, `Utils`, `Utilities`, `Helpers`, `Generics`, `WebServices`), **When** se infiere con el preset, **Then** forman una librería de soporte, no una propuesta
+2. **Given** un componente con `calls_in` desde al menos `recommendation.minReferencingDomains` (preset: 0, regla apagada) dominios distintos, **Then** es librería de soporte
 3. **Given** la configuración por defecto (lista vacía, mínimo 0), **Then** solo aplica la regla actual por palabras de infraestructura
 
 ---
@@ -71,7 +71,7 @@ Como arquitecto, quiero que la inferencia use una calibración para el perfil de
 ## Requirements *(mandatory)*
 
 - **FR-001**: La configuración MUST ofrecer `inference.preset` ∈ {`auto`, `none`, `legacy-desktop`} (default `auto`) y `inference.presentationInCohesion` (boolean, default `true`); `auto` aplica `legacy-desktop` si `meta.source = roslyn-fallback` o ≥ 50 % de los componentes tienen algún archivo `.vb`.
-- **FR-002**: El preset MUST ser un conjunto versionado de valores en el repositorio aplicado sobre los defaults y por debajo de la configuración explícita del usuario: `evidence.weights` (table 0.40, call 0.30, token 0.20, event 0.10), `consolidation.domainMergeMaxSize` 120, `consolidation.maxMergedSizeWithoutSimilarity` 120, `viability.weights` (cohesion 0.40, coupling 0.30, data 0.15), `viability.debtWeight` 0.15, `inference.presentationInCohesion` false, `naming.strategy` `domain`, `recommendation.supportNamespaces` [Common, Commons, Shared, Utils, Utilities], `recommendation.minReferencingDomains` 3, `dataAccess.entityHeuristic` true.
+- **FR-002**: El preset MUST ser un conjunto versionado de valores en el repositorio aplicado sobre los defaults y por debajo de la configuración explícita del usuario: `evidence.weights` (table 0.40, call 0.30, token 0.20, event 0.10), `consolidation.domainMergeMaxSize` 120, `consolidation.maxMergedSizeWithoutSimilarity` 120, `consolidation.highTokenSimilarity` 1.0, `viability.weights` (cohesion 0.40, coupling 0.30, data 0.15), `viability.thresholds` (high 0.60, medium 0.40), `viability.debtWeight` 0.15, `viability.ignoreSupportCoupling` true, `clustering.singleDomainRatio` 0.25, `clustering.procedureGrouping` entity, `clustering.attachCallersToTargets` true, `consolidation.entityStemMerge` true, `consolidation.verticalSliceRatio` 0.6, `inference.presentationInCohesion` false, `naming.strategy` `domain`, `recommendation.supportNamespaces` [Commons, Shared, Utils, Utilities, Helpers, Generics, WebServices], `recommendation.minReferencingDomains` 0 (la regla de fan-in queda disponible pero apagada en el preset: en un monolito en capas los dominios de namespace son técnicos), `dataAccess.entityHeuristic` true.
 - **FR-003**: El preset aplicado MUST registrarse en el `summary` de la arquitectura (`Preset de inferencia: legacy-desktop`); sin preset no se añade texto.
 - **FR-010**: Con `presentationInCohesion = false`, cohesión y densidad interna MUST excluir los miembros con `Layer:Presentación`/`Layer:Reportes` salvo que fueran todos; tamaño y acoplamiento externo los incluyen.
 - **FR-020**: `naming.strategy` ∈ {`tokens`, `domain`} (default `tokens`); `domain` nombra por el namespace común más largo de los miembros tras quitar el prefijo común del grafo, con hasta dos segmentos; empates por orden ordinal; sufijo ` · <Entidad>` con la heurística de entidad activa; si no hay dominio, se usa `tokens`.
@@ -92,7 +92,7 @@ Como arquitecto, quiero que la inferencia use una calibración para el perfil de
 
 ## Success Criteria *(mandatory)*
 
-- **SC-001**: Referencia (opt-in, grafo producido por 020-022): ≤ 25 propuestas; ≥ 50 % con viabilidad Media o Alta; ninguna con más de 120 componentes; cada propuesta con línea `Deuda técnica`; nombres con dominio reconocible (ningún nombre con dos tokens de clase).
+- **SC-001**: Referencia (opt-in, grafo producido por 020-022): ≤ 25 propuestas; ≥ 50 % con viabilidad Media o Alta; ninguna con más de 120 componentes; cada propuesta con línea `Deuda técnica`; nombres con dominio reconocible (ningún nombre con dos tokens de clase). *Resultado 2026-10-30 (docs/EVALUATIONS.md §11): parcial — 44 propuestas, 2 Media, mayor 152 (clúster residual), deuda y nombres cumplidos; decisión del usuario pendiente sobre escala/umbrales.*
 - **SC-002**: `test-for-demo/*` y líneas base byte a byte idénticas con la configuración por defecto.
 - **SC-003**: Doble corrida byte a byte idéntica.
 - **SC-004**: `meta.schema_version` sigue en `1.0.0`.
@@ -104,6 +104,7 @@ Como arquitecto, quiero que la inferencia use una calibración para el perfil de
 - `debt_score` y `meta.inference_preset` del plan: el contrato 1.0.0 cierra `signals`, `metrics` y `meta`; se exponen en `rationale` y `summary` (texto). Forma rica para 1.1.0 (decisión del usuario).
 - Deuda de arquitectura (018.7, "si el tiempo lo permite") y prompts Genkit (018.5): fuera de esta feature.
 - Preset `auto` usa señales del grafo (fuente, archivos `.vb`), nunca tiempo ni entorno.
+- Implementación (2026-10-30): el preset además fija `clustering.singleDomainRatio` 0.25, `clustering.procedureGrouping` entity, `clustering.attachCallersToTargets` true, `consolidation.entityStemMerge` true, `consolidation.highTokenSimilarity` 1.0, `viability.ignoreSupportCoupling` true y `viability.thresholds` 0.6/0.4 (ver `engine/CONFIGURATION.md`, Presets); todos con valor por defecto igual al comportamiento previo.
 
 ## Assumptions
 

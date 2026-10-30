@@ -12,7 +12,7 @@ import java.util.Map;
  *
  * <p>The domain of a component is its namespace (id without the simple name)
  * minus the prefix common to the whole graph. The domain of a group is the
- * longest segment prefix shared by at least half of its members, up to two
+ * longest segment prefix shared by more than half of its members, up to two
  * segments; ties are broken by ordinal order.</p>
  */
 public final class DomainNames {
@@ -36,6 +36,9 @@ public final class DomainNames {
         List<String> prefix = null;
         for (String id : allIds) {
             List<String> ns = namespace(id);
+            if (ns.isEmpty()) {
+                continue; // components without namespace do not shorten the prefix
+            }
             if (prefix == null) {
                 prefix = new ArrayList<>(ns);
                 continue;
@@ -53,7 +56,8 @@ public final class DomainNames {
             return List.of();
         }
         // A single-component graph keeps its last segment as the domain.
-        if (allIds.size() == 1 && !prefix.isEmpty()) {
+        long qualified = allIds.stream().filter(id -> !namespace(id).isEmpty()).count();
+        if (qualified == 1 && !prefix.isEmpty()) {
             prefix = prefix.subList(0, prefix.size() - 1);
         }
         return List.copyOf(prefix);
@@ -106,7 +110,7 @@ public final class DomainNames {
                     bestCount = e.getValue();
                 }
             }
-            if (best == null || bestCount * 2 < candidates.size()) {
+            if (best == null || bestCount * 2 <= candidates.size()) {
                 break;
             }
             chosen.add(best);

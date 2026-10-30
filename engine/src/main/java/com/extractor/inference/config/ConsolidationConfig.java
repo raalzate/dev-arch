@@ -21,6 +21,13 @@ import java.util.List;
  * @param separationTableJaccard         table Jaccard below which two strong
  *                                       candidates stay apart
  * @param strongCandidate                definition of a strong candidate
+ * @param verticalSliceRatio     share of a cluster's outgoing cross-cluster calls
+ *                               (support clusters excluded) that must target one
+ *                               other cluster to merge them as a vertical slice
+ *                               (023; 0 disables the rule)
+ * @param entityStemMerge        023: merge clusters whose dominant procedure
+ *                               entities share a stem (first token after the
+ *                               corpus-wide common entity prefix)
  * @param infrastructureKeywords         infrastructure words (simple name)
  */
 public record ConsolidationConfig(List<String> genericNames,
@@ -28,7 +35,8 @@ public record ConsolidationConfig(List<String> genericNames,
         double supportRatio, int maxMergedSizeWithoutSimilarity,
         double highTokenSimilarity, double separationCallDensity,
         double separationTableJaccard, StrongCandidate strongCandidate,
-        List<String> infrastructureKeywords) {
+        List<String> infrastructureKeywords, double verticalSliceRatio,
+        boolean entityStemMerge) {
 
     /**
      * Immutable copies of the lists.

@@ -31,6 +31,11 @@ final class InferenceConfigValidator {
                 c.clustering().singleDomainRatio());
         ratio("clustering.largeClusterRatio",
                 c.clustering().largeClusterRatio());
+        List<String> groupings = List.of(ClusteringConfig.TRANSITIVE, ClusteringConfig.ENTITY);
+        if (!groupings.contains(c.clustering().procedureGrouping())) {
+            throw InvalidConfigException.parameter("clustering.procedureGrouping",
+                    "must be one of " + String.join(", ", groupings));
+        }
         evidence(c.evidence());
         consolidation(c.consolidation());
         viability(c.viability());
@@ -163,6 +168,7 @@ final class InferenceConfigValidator {
         ratio(p + "significantInfrastructureRatio",
                 c.significantInfrastructureRatio());
         ratio(p + "supportRatio", c.supportRatio());
+        ratio(p + "verticalSliceRatio", c.verticalSliceRatio());
         nonNegative(p + "maxMergedSizeWithoutSimilarity",
                 c.maxMergedSizeWithoutSimilarity());
         ratio(p + "highTokenSimilarity", c.highTokenSimilarity());

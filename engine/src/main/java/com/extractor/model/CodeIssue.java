@@ -19,7 +19,9 @@ public class CodeIssue {
         BUG_PATTERN,
         CODE_STYLE,
         SECURITY,
-        PERFORMANCE
+        PERFORMANCE,
+        /** End-of-life or risky external dependency (022, rule EOL_DEPENDENCY). */
+        DEPENDENCY
     }
 
     public enum Severity {

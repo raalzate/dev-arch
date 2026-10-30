@@ -4,7 +4,9 @@
   },
   "clustering" : {
     "singleDomainRatio" : 0.75,
-    "largeClusterRatio" : 0.5
+    "largeClusterRatio" : 0.5,
+    "attachCallersToTargets" : false,
+    "procedureGrouping" : "transitive"
   },
   "evidence" : {
     "weights" : {
@@ -42,7 +44,9 @@
       "maxCoupling" : 0.3,
       "minSize" : 3
     },
-    "infrastructureKeywords" : [ "config", "configuration", "security", "application", "exception", "error", "filter", "interceptor", "aspect", "swagger", "openapi", "main" ]
+    "infrastructureKeywords" : [ "config", "configuration", "security", "application", "exception", "error", "filter", "interceptor", "aspect", "swagger", "openapi", "main" ],
+    "verticalSliceRatio" : 0.0,
+    "entityStemMerge" : false
   },
   "viability" : {
     "weights" : {
@@ -69,6 +73,7 @@
       "medium" : 0.5
     },
     "debtWeight" : 0.0,
+    "ignoreSupportCoupling" : false,
     "rationale" : {
       "cohesionGood" : 0.7,
       "cohesionFair" : 0.5,

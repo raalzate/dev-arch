@@ -164,6 +164,32 @@ Initial list: Enterprise Library ≤ 5, ActiveReports 3, ReportViewer, `System.W
 of the referencing project's components, so a partial delivery is not mistaken for a complete system. Setup projects
 (`*.vdproj`) produce the warning `Setup project(s) without support since Visual Studio 2010: X.vdproj`.
 
+## Inference preset for the legacy desktop profile (feature 023)
+
+The Java inference applies the preset **`legacy-desktop`** to Visual Basic graphs (`inference.preset = auto`:
+`meta.source = roslyn-fallback` or at least half of the components have a `.vb` file). The preset is a versioned
+partial configuration (`engine/src/main/resources/static-inference/inference-preset-legacy-desktop.json`) laid over
+the defaults and beneath the user's explicit values; `inference.preset = none` disables it and `legacy-desktop` forces it.
+The applied preset is recorded at the end of the architecture `summary` (`Preset de inferencia: legacy-desktop`).
+
+What the preset changes (see `engine/CONFIGURATION.md`, section *Presets*):
+
+- **Vertical slices** (`consolidation.verticalSliceRatio`): forms → controllers → adapters of one domain merge into one proposal;
+  support clusters (`Shared`, `Utilities`, `WebServices`, …) are excluded from the share.
+- **Presentation out of cohesion** (`inference.presentationInCohesion = false`): `Layer:Presentación` and `Layer:Reportes`
+  members stay members and consumers but do not count in cohesion or internal density.
+- **Domain names** (`naming.strategy = domain`): `Componente de <Domain>[.<Sub>] · <Entity>` from the namespace shared by the
+  members (graph-wide prefix removed) and the dominant `sp:` entity.
+- **Support libraries**: namespaces in `recommendation.supportNamespaces` (the fan-in rule
+  `recommendation.minReferencingDomains` stays available but off in the preset: namespace domains of a layered monolith are technical).
+- **Debt index** (`viability.debtWeight = 0.15`): per component `issues = Σ(CRITICAL 8, ERROR 4, WARNING 2, INFO 0.5)`,
+  `density = issues / max(1, loc/100)`, `base = 1 − 1/(1 + density/10)`, +0.10 per `Dependency:eol:*` (max 0.30),
+  +0.10 when `complexity_max > 15`, bounded to [0, 1]; per proposal, the LOC-weighted mean. The rationale gains
+  `Deuda técnica: 0.000` and `Mayor deuda: A (x), B (y), C (z)`.
+
+Contract 1.0.0 is unchanged: the preset and the debt index live in `summary` and `rationale` text (rich fields are
+deferred to 1.1.0). Without configuration, C# and Java graphs are byte-identical to the previous outputs.
+
 ## Limitations
 
 - SQL is recognized only in string literals and their concatenations; SQL built through variables, `StringBuilder`,

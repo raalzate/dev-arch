@@ -10,8 +10,8 @@
 | `consolidation.domainMergeMaxSize` | int | 50 | 120 |
 | `consolidation.maxMergedSizeWithoutSimilarity` | int | 40 | 120 |
 | `naming.strategy` | tokens\|domain | tokens | domain |
-| `recommendation.supportNamespaces` | string[] | [] | Common, Commons, Shared, Utils, Utilities |
-| `recommendation.minReferencingDomains` | int ≥ 0 | 0 | 3 |
+| `recommendation.supportNamespaces` | string[] | [] | Commons, Shared, Utils, Utilities, Helpers, Generics, WebServices |
+| `recommendation.minReferencingDomains` | int ≥ 0 | 0 | 0 (apagada) |
 | `dataAccess.entityHeuristic` | boolean | false | true |
 ## Índice de deuda
 `issues = Σ w(sev)`, w = CRITICAL 8, ERROR 4, WARNING 2, INFO 0.5; `density = issues / max(1, loc/100)`; `base = 1 − 1/(1 + density/10)`; `eol = min(0.3, 0.1 × #Dependency:eol:*)`; `cc = complexity_max > 15 ? 0.1 : 0`; `score = min(1, base + eol + cc)`, 3 decimales (`Locale.ROOT`). Propuesta: `Σ score×max(loc,1) / Σ max(loc,1)`.

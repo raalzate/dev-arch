@@ -125,6 +125,21 @@ together with a re-lock of TS-028.
 _None yet — 1.0.0 is the first formal version. It describes the v1.1.0 output plus the additive
 `meta.schema_version` (and the new `meta` objects of the architecture and entrypoints documents)._
 
+## `inference-config` — section `inference`, presets and debt index (feature 023, additive)
+
+| Key | Type | Default | Meaning |
+|---|---|---|---|
+| `inference.preset` | `auto` \| `none` \| `legacy-desktop` | `auto` | inference preset; `auto` = `legacy-desktop` for Visual Basic graphs |
+| `inference.presentationInCohesion` | boolean | `true` | `false` = presentation members do not count in cohesion/density |
+| `consolidation.verticalSliceRatio` | [0,1] | `0` | share of outgoing calls to one cluster that merges both (0 = off) |
+| `viability.debtWeight` | [0,1] | `0` | weight of the debt index subtracted from the score |
+| `naming.strategy` | `tokens` \| `domain` | `tokens` | proposal naming strategy |
+| `recommendation.supportNamespaces` | string[] | `[]` | namespace segments of support libraries |
+| `recommendation.minReferencingDomains` | integer ≥ 0 | `0` | calling domains from which a group is a support library |
+
+Output conventions without schema change: `summary` ends with `Preset de inferencia: <name>` when a preset applies;
+`proposals[].rationale` contains `Deuda técnica: <0.000-1.000>` and `Mayor deuda: …` when `viability.debtWeight > 0`.
+
 ## `inference-config` — sections `integrations` and `dependencies` (feature 022, additive)
 
 | Key | Type | Default | Meaning |

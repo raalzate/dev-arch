@@ -217,6 +217,28 @@ y las URL REST llegan por campos (`BaseURL`) inicializados desde `appSettings`; 
 globales e inicializadores) la detección era 1 integración. La prueba opt-in `VbCorpusSmokeTests` ("022 SC-001") fija
 los umbrales (≥ 12 integraciones, ≥ 11 proyectos ausentes, ≥ 3 EOL, sin direcciones).
 
+## 11. Feature 023 (preset `legacy-desktop`, nombres por dominio, soporte, índice de deuda) sobre el corpus de referencia VB
+
+Corrida local 2026-10-30 (macOS, SDK 8, fidelidad reducida, CLI Java `--language=dotnet --config='{"detection":{"maxDepth":3}}'`, preset `auto` → `legacy-desktop`):
+
+| Métrica | Sin preset (`inference.preset = none`) | Con preset `legacy-desktop` | Criterio SC-001 |
+|---|---|---|---|
+| Propuestas | 103 (Alta 2, Media 6, Baja 95) | 44 (Media 2, Baja 42) | ≤ 25 · ≥ 50 % Media/Alta — **no cumplido** |
+| Librerías de soporte | 4 | 16 (WebServices 120+46+28…, Generics 54, Utilities 46, infraestructura 33) | — |
+| Propuesta mayor | 234 componentes | 152 (clúster residual sin arista ni raíz de entidad) | ≤ 120 — **no cumplido** |
+| Línea `Deuda técnica` por propuesta | ninguna | 44 de 44 (0.34–0.80) | todas — cumplido |
+| Nombres | tokens de clase (`Componente de Controllers y Annualbasesalar`) | `Componente de Model.Policies · PolicyPremiumDetail`, `… · PolicyLog`, `… · PolicyMember` | dominio reconocible — cumplido salvo el clúster residual |
+| Doble corrida | idéntica | byte a byte idéntica | cumplido |
+| `test-for-demo/*` | — | byte a byte idénticos (preset no aplica a Java/C#) | cumplido |
+
+Hallazgos:
+
+- El corpus no tiene campo `domain` (el analizador VB no lo emite) y sus namespaces son **capas técnicas** (`Model.Policies` 330, `Common.WebServices` 245, `Win.Policies` 171, `Common.Adapters` 71, `Common.Controllers` 42). La agrupación por dominio inferido produce capas horizontales; el preset fuerza la ruta de entidades (`clustering.singleDomainRatio` 0.25) y agrupa por la **raíz de la entidad de procedimiento** (`clustering.procedureGrouping = entity`: 142 adaptadores → 60 raíces; `AMPsp_Policy*` con prefijo de corpus `Policy`), porque la unión transitiva por procedimientos compartidos colapsa 858 componentes en un grupo por los procedimientos concentradores.
+- Controladores, formularios y clases de modelo se adhieren a su corte vertical por llamadas (`clustering.attachCallersToTargets`: llamadas salientes, luego llamadores, luego raíz en el nombre de la clase), con tope `consolidation.domainMergeMaxSize`; 152 componentes sin aristas ni raíz reconocible quedan en un clúster residual.
+- La similitud de tokens (`highTokenSimilarity`) debía quedar en 1.0: en este perfil todos los nombres comparten tokens y la regla levantaba el tope de tamaño.
+- La viabilidad sigue mayoritariamente **Baja** con métricas honestas: la cohesión interna por llamadas de los cortes es 1–57 % y el acoplamiento entre cortes 33–100 %, aun ignorando las llamadas a soporte (`viability.ignoreSupportCoupling`) y con umbrales 0.6/0.4. El índice de deuda (0.34–0.80) resta 0.05–0.12. Conclusión para la referencia: el monolito es un único dominio (pólizas) en capas; la propuesta útil son cortes por entidad con deuda visible, no microservicios "viables" en la escala original. SC-001 queda registrado como **parcial**; decisión pendiente del usuario (§7 del plan): aceptar la escala o reducir los umbrales/recalibrar la cohesión para el perfil.
+- BUG-010 (022): el modelo Java no aceptaba `code_issues[].type = DEPENDENCY`, por lo que la CLI Java fallaba sobre cualquier grafo VB con dependencias EOL (la medición de 022 se hizo con el analizador .NET directo). Corregido en 023.
+
 ## Cómo reproducir
 
 ```bash
@@ -224,4 +246,5 @@ export DOTNET_ROOT="$HOME/.dotnet8" PATH="$HOME/.dotnet8:$PATH"     # SDK 8 can�
 make build && make test                                              # pruebas y puertas
 DEVARCH_E2E=true make test-acceptance && make test-e2e-browser       # escenarios lentos y navegador
 java -jar engine/target/java-dependency-extractor.jar engine/test-for-demo/java-standar out.json   # un análisis
+java -jar engine/target/java-dependency-extractor.jar "$(realpath engine/test-for-demo/vb-demo-legacy)" out.json --language=dotnet --config=cfg.json  # referencia VB (cfg: {"detection":{"maxDepth":3}})
 ```

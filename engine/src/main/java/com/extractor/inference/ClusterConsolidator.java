@@ -15,6 +15,8 @@ public class ClusterConsolidator {
     private final InferenceConfig config;
 
     private final List<Cluster> clusters;
+    /** Every component of the graph (023: vertical slices). */
+    private final List<Component> allComponents;
     private final InterClusterGraph graph;
     private final Map<Integer, Set<Integer>> mergedGroups;
 
@@ -37,6 +39,7 @@ public class ClusterConsolidator {
         this.infrastructureKeywords =
                 inference.consolidation().infrastructureKeywords();
         this.clusters = clusters;
+        this.allComponents = allComponents;
         this.graph = new InterClusterGraph(clusters, allComponents,
                 inference.evidence());
         this.mergedGroups = new HashMap<>();
@@ -60,6 +63,13 @@ public class ClusterConsolidator {
                 merge(rootA, rootB);
             }
         }
+
+        if (consolidation.entityStemMerge()) {
+            consolidateByEntityStem();
+        }
+        if (consolidation.verticalSliceRatio() > 0) {
+            consolidateVerticalSlices();
+        }
         
         return mergedGroups.values().stream()
             .filter(group -> !group.isEmpty())
@@ -76,6 +86,13 @@ public class ClusterConsolidator {
             singleClusterSet.add(cluster.getClusterId());
             String name = MicroserviceNameGenerator.generateName(singleClusterSet, clusters,
                     config.naming());
+            // 023 (naming.strategy = domain): clusters of the same namespace domain share a name.
+            if (config.naming().domainStrategy()) {
+                String domain = DomainNames.domain(cluster.getMembers(), graphPrefix());
+                if (domain != null && !DomainNames.GLOBAL.equals(domain)) {
+                    name = "Componente de " + domain;
+                }
+            }
             
             if (!genericNames.contains(name)) {
                 nameToClusterIds.computeIfAbsent(name, k -> new ArrayList<>())
@@ -98,6 +115,152 @@ public class ClusterConsolidator {
         }
     }
     
+    /**
+     * Vertical slices (023, preset legacy-desktop): a cluster whose outgoing
+     * cross-cluster calls go mostly (>= {@code consolidation.verticalSliceRatio})
+     * to one other non-support cluster is merged with it, so the forms,
+     * controllers and adapters of one domain end in the same proposal. Support
+     * clusters (infrastructure words or support namespaces) are neither sources
+     * nor targets and do not count in the share. Clusters are visited in id
+     * order; ties go to the lowest target id (deterministic).
+     */
+    private void consolidateVerticalSlices() {
+        Map<String, Integer> clusterOf = new HashMap<>();
+        List<Cluster> ordered = clusters.stream()
+            .sorted(Comparator.comparingInt(Cluster::getClusterId)).toList();
+        for (Cluster c : ordered) {
+            for (String m : c.getMembers()) {
+                clusterOf.putIfAbsent(m, c.getClusterId());
+            }
+        }
+        Map<String, Component> byId = new HashMap<>();
+        for (Component c : allComponents) {
+            byId.putIfAbsent(c.getId(), c);
+        }
+        boolean changed = true;
+        for (int pass = 0; changed && pass < ordered.size(); pass++) {
+            changed = false;
+        for (Cluster source : ordered) {
+            if (isSupport(source.getClusterId()) || inSupportNamespace(source)) continue;
+            Map<Integer, Integer> targets = new TreeMap<>();
+            int total = 0;
+            for (String m : source.getMembers()) {
+                Component comp = byId.get(m);
+                if (comp == null || comp.getCallsOut() == null) continue;
+                for (String called : comp.getCallsOut()) {
+                    Integer target = clusterOf.get(called);
+                    if (target == null || findRoot(target) == findRoot(source.getClusterId())) continue;
+                    Cluster tc = clusterById(target);
+                    if (tc == null || isSupport(target) || inSupportNamespace(tc)) continue;
+                    targets.merge(findRoot(target), 1, Integer::sum);
+                    total++;
+                }
+            }
+            if (total == 0) continue;
+            int best = -1;
+            int bestCount = 0;
+            for (Map.Entry<Integer, Integer> e : targets.entrySet()) {
+                if (e.getValue() > bestCount) {
+                    best = e.getKey();
+                    bestCount = e.getValue();
+                }
+            }
+            if (best < 0 || (double) bestCount / total < consolidation.verticalSliceRatio()) continue;
+            int rootA = findRoot(source.getClusterId());
+            int rootB = findRoot(best);
+            if (rootA == rootB) continue;
+            int totalSize = getTotalSize(mergedGroups.get(rootA)) + getTotalSize(mergedGroups.get(rootB));
+            if (totalSize > consolidation.domainMergeMaxSize()) continue;
+            merge(rootA, rootB);
+            changed = true;
+        }
+        }
+    }
+
+    /**
+     * Entity stems (023, {@code consolidation.entityStemMerge}): the dominant
+     * procedure entity of each non-support cluster is tokenized; when one
+     * first token leads at least half of the entities ({@code Policy}) it is
+     * the corpus prefix and the stem is the next token ({@code Premium});
+     * otherwise the stem is the first token. Clusters with the same stem merge
+     * in id order while the combined size stays within
+     * {@code consolidation.domainMergeMaxSize}.
+     */
+    private void consolidateByEntityStem() {
+        Map<String, Component> byId = new HashMap<>();
+        for (Component c : allComponents) {
+            byId.putIfAbsent(c.getId(), c);
+        }
+        List<Cluster> ordered = clusters.stream()
+            .sorted(Comparator.comparingInt(Cluster::getClusterId)).toList();
+        Map<Integer, List<String>> entityTokens = new LinkedHashMap<>();
+        Map<String, Integer> firstTokenCounts = new HashMap<>();
+        for (Cluster c : ordered) {
+            if (isSupport(c.getClusterId()) || inSupportNamespace(c)) continue;
+            List<Component> members = c.getMembers().stream().map(byId::get)
+                .filter(Objects::nonNull).toList();
+            List<String> tokens = ProcedureEntityHeuristic.tokens(
+                ProcedureEntityHeuristic.dominantEntity(members));
+            if (tokens.isEmpty()) continue;
+            entityTokens.put(c.getClusterId(), tokens);
+            firstTokenCounts.merge(tokens.get(0), 1, Integer::sum);
+        }
+        if (entityTokens.isEmpty()) return;
+        String prefix = null;
+        int prefixCount = 0;
+        for (Map.Entry<String, Integer> e : new TreeMap<>(firstTokenCounts).entrySet()) {
+            if (e.getValue() > prefixCount) {
+                prefix = e.getKey();
+                prefixCount = e.getValue();
+            }
+        }
+        if (prefixCount * 2 < entityTokens.size()) prefix = null;
+        Map<String, Integer> stemRoot = new HashMap<>();
+        for (Map.Entry<Integer, List<String>> e : entityTokens.entrySet()) {
+            List<String> tokens = e.getValue();
+            String stem = tokens.get(0);
+            if (prefix != null && prefix.equals(tokens.get(0)) && tokens.size() > 1) {
+                stem = tokens.get(1);
+            }
+            Integer root = stemRoot.get(stem);
+            if (root == null) {
+                stemRoot.put(stem, findRoot(e.getKey()));
+                continue;
+            }
+            int rootA = findRoot(root);
+            int rootB = findRoot(e.getKey());
+            if (rootA == rootB) continue;
+            int totalSize = getTotalSize(mergedGroups.get(rootA)) + getTotalSize(mergedGroups.get(rootB));
+            if (totalSize > consolidation.domainMergeMaxSize()) continue;
+            merge(rootA, rootB);
+            stemRoot.put(stem, findRoot(rootA));
+        }
+    }
+
+    private List<String> graphPrefix() {
+        return DomainNames.commonPrefix(allComponents.stream().map(Component::getId).sorted().toList());
+    }
+
+    private Cluster clusterById(int id) {
+        return clusters.stream().filter(c -> c.getClusterId() == id).findFirst().orElse(null);
+    }
+
+    /** Whether most members of a cluster live under a support namespace (023, FR-030). */
+    private boolean inSupportNamespace(Cluster cluster) {
+        List<String> support = config.recommendation().supportNamespaces();
+        if (support.isEmpty() || cluster.getMembers().isEmpty()) return false;
+        long count = cluster.getMembers().stream().filter(m -> {
+            String ns = m.contains(".") ? m.substring(0, m.lastIndexOf('.')) : "";
+            for (String segment : ns.split("\\.")) {
+                for (String word : support) {
+                    if (segment.equalsIgnoreCase(word)) return true;
+                }
+            }
+            return false;
+        }).count();
+        return (double) count / cluster.getMembers().size() >= config.recommendation().supportRatio();
+    }
+
     private boolean canMergeSameDomain(int rootA, int rootB) {
         if (isSupport(rootA) && !isSupport(rootB)) return false;
         if (isSupport(rootB) && !isSupport(rootA)) return false;

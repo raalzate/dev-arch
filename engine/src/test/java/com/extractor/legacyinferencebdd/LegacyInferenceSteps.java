@@ -176,7 +176,7 @@ public class LegacyInferenceSteps {
     public void cohesionWithoutPresentation() {
         MicroserviceProposal p = lastProposal;
         assertNotNull(p, "no proposal selected");
-        double without = p.getMetrics().getCohesionAvg();
+        double without = p.getMetrics().getInternalEdgeDensity();
         // Same graph and configuration but counting the presentation members.
         String json = StoredProceduresSteps.lastConfigJson == null ? "{}" : StoredProceduresSteps.lastConfigJson;
         com.fasterxml.jackson.databind.node.ObjectNode tree = (com.fasterxml.jackson.databind.node.ObjectNode)
@@ -188,8 +188,8 @@ public class LegacyInferenceSteps {
         MicroserviceProposal same = with.getProposals().stream()
                 .filter(q -> q.getComponentNames().containsAll(p.getComponentNames()))
                 .findFirst().orElseThrow(() -> new AssertionError("proposal not found when counting presentation"));
-        assertNotEquals(same.getMetrics().getCohesionAvg(), without,
-                "cohesion must differ when presentation members are excluded (" + without + ")");
+        assertNotEquals(same.getMetrics().getInternalEdgeDensity(), without,
+                "internal density must differ when presentation members are excluded (" + without + ")");
     }
 
     private static com.fasterxml.jackson.databind.JsonNode readTree(String json) {
