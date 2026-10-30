@@ -1,8 +1,8 @@
 {
   "testify": {
-    "assertion_hash": "1d72a799d75ea1fe8d24d9f1a28a2d9e20c242c589455bddc73819d572ff23b7",
-    "generated_at": "2026-10-08T13:32:53Z",
+    "assertion_hash": "e83d7b21706e0a80ced909d9380dde0716dd53e259b5291d237cc6084021fe2b",
+    "generated_at": "2026-10-30T13:20:30Z",
     "features_dir": "specs/002-dotnet-roslyn-analyzer/tests/features",
-    "file_count": 12
+    "file_count": 13
   }
 }

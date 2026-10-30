@@ -103,3 +103,10 @@ description: "Task list for 009-vb-legacy-completion"
 ## Implementation Strategy
 
 MVP = Setup + Foundational + US1 + US2 + US3 (criterio de salida "tablas, métricas e issues no vacíos"). Después US4–US8 y Polish.
+
+## Bug Fix Tasks
+
+- [ ] T-B001 [BUG-001] Implement fix for BUG-001 referencing test spec bugfix_BUG-001.feature: guard `SemanticModel.GetOperation` per node in `VbCodeAnalyzer.IsLateBound` so a Roslyn operation-tree failure skips only late-binding detection of that node, with a contextual warning, instead of dropping every issue of the type
+- [ ] T-B002 [BUG-001] Verify fix passes test bugfix_BUG-001.feature for BUG-001
+- [ ] T-B003 [BUG-002] Implement fix for BUG-002 referencing test spec bugfix_BUG-002.feature: remove `RegexMatchTimeout` from `SqlTableParser`; bound the folded literal to 8192 characters with a deterministic warning
+- [ ] T-B004 [BUG-002] Verify fix passes test bugfix_BUG-002.feature for BUG-002

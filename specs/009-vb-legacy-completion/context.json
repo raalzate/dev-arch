@@ -1,8 +1,8 @@
 {
   "testify": {
-    "assertion_hash": "80252baed765e1551833c41bdf8f0272c52cc390cebe7d92d8cb3c1077053577",
-    "generated_at": "2026-10-08T22:11:42Z",
+    "assertion_hash": "33a9be2870afb8bda3e985311faccdce0b23607c31a02cf10eab4cc46b4323bd",
+    "generated_at": "2026-10-30T13:21:08Z",
     "features_dir": "specs/009-vb-legacy-completion/tests/features",
-    "file_count": 10
+    "file_count": 12
   }
 }
