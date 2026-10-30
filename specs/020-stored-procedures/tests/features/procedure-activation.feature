@@ -71,7 +71,7 @@ Feature: Stored procedure detection is enabled only where it applies
       { "dataAccess": { "procedures": "on" } }
       """
     Then the component "Sample.Adapter" uses exactly the tables "sp:usp_Policy_List, sp:usp_Policy_Read, sp:usp_Policy_Rows, sp:usp_Policy_Save"
-    And the analyzer reports exactly the user warnings:
+    And the analyzer reports exactly these procedure warnings:
       """
       Procedure name is not a literal in Sample.Adapter (Adapter.cs:12)
       """

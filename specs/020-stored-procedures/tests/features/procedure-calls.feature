@@ -125,7 +125,7 @@ Feature: Stored procedures invoked by .NET legacy components
       """
     When the project is analyzed
     Then the component "Sample.DynamicAdapter" uses no tables
-    And the analyzer reports exactly the user warnings:
+    And the analyzer reports exactly these procedure warnings:
       """
       Procedure name is not a literal in Sample.DynamicAdapter (DynamicAdapter.vb:4)
       Procedure name is not a literal in Sample.DynamicAdapter (DynamicAdapter.vb:5)

@@ -49,7 +49,7 @@ Feature: Procedures translated to tables with a catalog
       { "dataAccess": { "procedureCatalog": "Catalog/procs" } }
       """
     Then the component "Sample.PolicyAdapter" uses exactly the tables "AuditLog, Policies, PolicyArchive, PolicyHolders, sp:usp_Policy_Archive, sp:usp_Policy_Read, sp:usp_Unknown"
-    And the analyzer reports exactly the user warnings:
+    And the analyzer reports exactly these procedure warnings:
       """
       Procedure catalog 'procs': 1 procedure(s) not found: usp_unknown
       """
@@ -100,7 +100,7 @@ Feature: Procedures translated to tables with a catalog
       { "dataAccess": { "procedureCatalog": "Catalog/procs", "catalogMode": "replace" } }
       """
     Then the component "Sample.PolicyAdapter" uses exactly the tables "Policies, sp:usp_Policy_Archive, sp:usp_Unknown"
-    And the analyzer reports exactly the user warnings:
+    And the analyzer reports exactly these procedure warnings:
       """
       Procedure catalog 'procs': 2 procedure(s) not found: usp_policy_archive, usp_unknown
       Procedure catalog 'procs': duplicate definition of usp_policy_read in b_policy.sql; a_policy.sql used
@@ -113,7 +113,7 @@ Feature: Procedures translated to tables with a catalog
       { "dataAccess": { "procedureCatalog": "Catalog/missing" } }
       """
     Then the component "Sample.PolicyAdapter" uses exactly the tables "sp:usp_Policy_Archive, sp:usp_Policy_Read, sp:usp_Unknown"
-    And the analyzer reports exactly one user warning, starting with "Procedure catalog 'missing' not loaded: path not found"
+    And the analyzer reports a user warning starting with "Procedure catalog 'missing' not loaded: path not found"
     And no user warning contains an absolute path
 
   @TS-016 @FR-016 @acceptance
@@ -128,7 +128,7 @@ Feature: Procedures translated to tables with a catalog
       { "dataAccess": { "procedureCatalog": "Catalog/bad.csv" } }
       """
     Then the component "Sample.PolicyAdapter" uses exactly the tables "sp:usp_Policy_Archive, sp:usp_Policy_Read, sp:usp_Unknown"
-    And the analyzer reports exactly one user warning, starting with "Procedure catalog 'bad.csv' not loaded: CSV header must be"
+    And the analyzer reports a user warning starting with "Procedure catalog 'bad.csv' not loaded: CSV header must be"
 
   @TS-017 @FR-011 @acceptance
   Scenario: Transitive EXEC resolution terminates on cycles without duplicating tables

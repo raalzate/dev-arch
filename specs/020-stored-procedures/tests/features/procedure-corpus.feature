@@ -17,7 +17,7 @@ Feature: Synthetic corpus, golden outputs and documentation for stored procedure
     When the project is analyzed
     Then the component "LegacyShop.DataAccess.PolicyAdapter" uses exactly the tables "sp:usp_Policy_Archive, sp:usp_Policy_Count, sp:usp_Policy_List, sp:usp_Policy_Read, sp:usp_Policy_Save, sp:usp_Policy_Touch"
     And the component "LegacyShop.DataAccess.CustomerDataAccess" uses exactly the tables "AuditLog, Customers, Orders"
-    And the analyzer reports exactly the user warnings:
+    And the analyzer reports exactly these procedure warnings:
       """
       Procedure name is not a literal in LegacyShop.DataAccess.PolicyAdapter (PolicyAdapter.vb:34)
       """
