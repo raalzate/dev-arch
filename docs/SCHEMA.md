@@ -125,6 +125,21 @@ together with a re-lock of TS-028.
 _None yet — 1.0.0 is the first formal version. It describes the v1.1.0 output plus the additive
 `meta.schema_version` (and the new `meta` objects of the architecture and entrypoints documents)._
 
+## `inference-config` — section `analysis` and maintainability (feature 024, additive)
+
+| Key | Type | Default | Meaning |
+|---|---|---|---|
+| `analysis.extended` | `auto` \| `on` \| `off` | `off` | official analyzer rules, dead code, duplication, maintainability (opt-in); `auto` = Visual Basic only |
+| `analysis.rules` | string[] | `[]` | rule ids to evaluate (empty = `schema/extended-rules.json`) |
+| `analysis.duplicateMinTokens` | integer ≥ 10 | `30` | duplication threshold |
+| `analysis.sarif` | string[] | `[]` | SARIF 2.1.0 reports merged into `code_issues` |
+| `analysis.layerSuppressions` | string[] | `[]` | `Layer:RULE` entries removed per fine layer |
+| `viability.maintainabilityWeight` | [0,1] | `0` | weight of `1 − MI/100` in the debt index |
+
+Output conventions without schema change: `code_issues[].pattern` = rule id (`CA2200`, `UNUSED_PUBLIC_MEMBER`, `DUPLICATED_CODE`,
+SARIF rule), `type` within the closed enum, `message` prefixes `[category]`, `[CWE-nnn]`, `[source:<tool>]`; annotation
+`Maintainability:<0-100>`. BUG-010: `EOL_DEPENDENCY` issues now carry `type` `SECURITY` (the enum is closed).
+
 ## `inference-config` — section `inference`, presets and debt index (feature 023, additive)
 
 | Key | Type | Default | Meaning |
@@ -150,7 +165,7 @@ Output conventions without schema change: `summary` ends with `Preset de inferen
 
 Output conventions without schema change: annotations `Integration:<wcf|soap|rest>:<target>`, `Dependency:eol:<name>`;
 `external_dependencies` entries (third-party names, `service:`, `http:`, `project:`); `code_issues[].rule`
-`EOL_DEPENDENCY` (`type` `DEPENDENCY`).
+`EOL_DEPENDENCY` (`type` `SECURITY` since BUG-010).
 
 ## `inference-config` — section `debt` (feature 021, additive)
 

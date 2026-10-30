@@ -255,6 +255,27 @@ public class LegacyInferenceSteps {
         debtIndex = DebtIndex.of(c);
     }
 
+    @When("the debt index is computed for a component with loc {int}, issues {string}, {int} end-of-life dependencies and complexity max {int} and maintainability {int} with weight {double}")
+    public void computeDebtWithMaintainability(int loc, String issues, int eol, int cc, int mi, double weight) {
+        Component c = new Component("Acme.Debt.Sample");
+        c.setLoc(loc);
+        List<CodeIssue> list = new ArrayList<>();
+        for (String sev : split(issues, ",")) {
+            list.add(issue(sev));
+        }
+        c.setCodeIssues(list);
+        List<String> annotations = new ArrayList<>();
+        for (int i = 0; i < eol; i++) {
+            annotations.add(DebtIndex.EOL_PREFIX + "Legacy.Dependency" + i);
+        }
+        if (mi >= 0) {
+            annotations.add(DebtIndex.MAINTAINABILITY_PREFIX + mi);
+        }
+        c.setAnnotations(annotations);
+        c.setComplexityMax(cc);
+        debtIndex = DebtIndex.of(c, weight);
+    }
+
     @Then("the debt index is {double}")
     public void debtIndexIs(double expected) {
         assertEquals(expected, debtIndex, 0.0005);

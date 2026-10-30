@@ -2,7 +2,7 @@
 ## Configuración nueva
 | Campo | Tipo | Default | Preset legacy-desktop |
 |---|---|---|---|
-| `analysis.extended` | auto\|on\|off | auto | — |
+| `analysis.extended` | auto\|on\|off | off | — |
 | `analysis.rules` | string[] | [] (= lista versionada) | — |
 | `analysis.duplicateMinTokens` | int ≥ 10 | 30 | — |
 | `analysis.sarif` | string[] | [] | — |

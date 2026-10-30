@@ -56,6 +56,7 @@
     <StoredProceduresFeaturesDir>../../../../../specs/020-stored-procedures/tests/features/</StoredProceduresFeaturesDir>
     <DesktopFeaturesDir>../../../../../specs/021-desktop-identity-layers/tests/features/</DesktopFeaturesDir>
     <IntegrationsFeaturesDir>../../../../../specs/022-external-integrations/tests/features/</IntegrationsFeaturesDir>
+    <ExtendedFeaturesDir>../../../../../specs/024-extended-static-analysis/tests/features/</ExtendedFeaturesDir>
   </PropertyGroup>
   <ItemGroup>
     <ReqnrollFeatureFiles Include="$(VbLegacyFeaturesDir)*.feature"
@@ -69,6 +70,9 @@
                           CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
     <ReqnrollFeatureFiles Include="$(IntegrationsFeaturesDir)*.feature"
                           Exclude="$(IntegrationsFeaturesDir)integrations-engine.feature"
+                          CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
+    <ReqnrollFeatureFiles Include="$(ExtendedFeaturesDir)*.feature"
+                          Exclude="$(ExtendedFeaturesDir)extended-analysis-engine.feature"
                           CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
   </ItemGroup>
   <Target Name="MoveVbLegacyCodeBehind" AfterTargets="UpdateFeatureFilesInProject">

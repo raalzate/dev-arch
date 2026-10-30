@@ -327,7 +327,10 @@ public sealed class VbAssertionSteps
     {
         foreach (var row in table.Rows)
         {
-            var path = Path.Combine(VbAnalysisContext.FixturesDir, "VbLegacy", row["project"], row["file"]);
+            // 022 tables use (project, file); 024 tables a single "path" column relative to VbLegacy.
+            var path = table.ContainsColumn("path")
+                ? Path.Combine(VbAnalysisContext.FixturesDir, "VbLegacy", row["path"].Replace('/', Path.DirectorySeparatorChar))
+                : Path.Combine(VbAnalysisContext.FixturesDir, "VbLegacy", row["project"], row["file"]);
             File.Exists(path).Should().BeTrue(path);
         }
     }
@@ -335,7 +338,7 @@ public sealed class VbAssertionSteps
     [Then(@"^every synthetic VB project declares in its README that it is synthetic and fictitious$")]
     public void ThenReadmes()
     {
-        foreach (var project in new[] { "SyntheticDesktop", "SyntheticWebServices" })
+        foreach (var project in new[] { "SyntheticDesktop", "SyntheticWebServices", "SyntheticExtended" })
         {
             var readme = File.ReadAllText(Path.Combine(VbAnalysisContext.FixturesDir, "VbLegacy", project, "README.md"));
             readme.Should().Contain("Synthetic").And.Contain("fictitious");

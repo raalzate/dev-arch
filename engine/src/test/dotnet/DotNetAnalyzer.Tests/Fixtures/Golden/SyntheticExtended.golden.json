@@ -1,0 +1,678 @@
+{
+  "components": [
+    {
+      "id": "Acme.Extended.Dead.Helpers",
+      "files": [
+        "<ROOT>/Dead/Helpers.vb"
+      ],
+      "loc": 5,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:69"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Extended.Dead.Orphans",
+      "files": [
+        "<ROOT>/Dead/Orphans.vb"
+      ],
+      "loc": 11,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:61"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CA1822",
+          "type": "PERFORMANCE",
+          "severity": "INFO",
+          "message": "[performance] Member \u0027NeverRead\u0027 does not access instance data and can be marked as static",
+          "line": 10
+        },
+        {
+          "pattern": "UNUSED_PUBLIC_MEMBER",
+          "type": "CODE_STYLE",
+          "severity": "INFO",
+          "message": "Public method \u0027NeverRead\u0027 is never referenced in the analyzed sources. Remove it or make it private.",
+          "line": 10
+        },
+        {
+          "pattern": "CA1822",
+          "type": "PERFORMANCE",
+          "severity": "INFO",
+          "message": "[performance] Member \u0027Used\u0027 does not access instance data and can be marked as static",
+          "line": 14
+        },
+        {
+          "pattern": "CA1822",
+          "type": "PERFORMANCE",
+          "severity": "INFO",
+          "message": "[performance] Member \u0027NeverCalled\u0027 does not access instance data and can be marked as static",
+          "line": 6
+        },
+        {
+          "pattern": "UNUSED_PUBLIC_MEMBER",
+          "type": "CODE_STYLE",
+          "severity": "INFO",
+          "message": "Public method \u0027NeverCalled\u0027 is never referenced in the analyzed sources. Remove it or make it private.",
+          "line": 6
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Extended.Dup.CopyA",
+      "files": [
+        "<ROOT>/Dup/CopyA.vb"
+      ],
+      "loc": 15,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:56"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CA1822",
+          "type": "PERFORMANCE",
+          "severity": "INFO",
+          "message": "[performance] Member \u0027Total\u0027 does not access instance data and can be marked as static",
+          "line": 6
+        },
+        {
+          "pattern": "DUPLICATED_CODE",
+          "type": "CODE_STYLE",
+          "severity": "WARNING",
+          "message": "Method \u0027Total\u0027 duplicates code found in: Acme.Extended.Dup.CopyB. Extract a shared implementation.",
+          "line": 6
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 4,
+      "complexity_avg": 4
+    },
+    {
+      "id": "Acme.Extended.Dup.CopyB",
+      "files": [
+        "<ROOT>/Dup/CopyB.vb"
+      ],
+      "loc": 15,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:56"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CA1822",
+          "type": "PERFORMANCE",
+          "severity": "INFO",
+          "message": "[performance] Member \u0027Total\u0027 does not access instance data and can be marked as static",
+          "line": 6
+        },
+        {
+          "pattern": "DUPLICATED_CODE",
+          "type": "CODE_STYLE",
+          "severity": "WARNING",
+          "message": "Method \u0027Total\u0027 duplicates code found in: Acme.Extended.Dup.CopyA. Extract a shared implementation.",
+          "line": 6
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 4,
+      "complexity_avg": 4
+    },
+    {
+      "id": "Acme.Extended.Dup.Unique",
+      "files": [
+        "<ROOT>/Dup/Unique.vb"
+      ],
+      "loc": 9,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:63"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CA1822",
+          "type": "PERFORMANCE",
+          "severity": "INFO",
+          "message": "[performance] Member \u0027Total\u0027 does not access instance data and can be marked as static",
+          "line": 6
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 2,
+      "complexity_avg": 2
+    },
+    {
+      "id": "Acme.Extended.Forms.BusyForm",
+      "files": [
+        "<ROOT>/Forms/BusyForm.vb"
+      ],
+      "loc": 25,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Web",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Layer:Presentaci\u00F3n",
+        "Maintainability:48"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "HIGH_CYCLOMATIC_COMPLEXITY",
+          "type": "CODE_STYLE",
+          "severity": "ERROR",
+          "message": "Method \u0027Caption\u0027 cyclomatic complexity 18 exceeds 15",
+          "line": 7
+        },
+        {
+          "pattern": "CA1822",
+          "type": "PERFORMANCE",
+          "severity": "INFO",
+          "message": "[performance] Member \u0027Caption\u0027 does not access instance data and can be marked as static",
+          "line": 7
+        },
+        {
+          "pattern": "DUPLICATED_CODE",
+          "type": "CODE_STYLE",
+          "severity": "WARNING",
+          "message": "Method \u0027Caption\u0027 duplicates code found in: Acme.Extended.Rules.BusyController. Extract a shared implementation.",
+          "line": 7
+        }
+      ],
+      "extends": "System.Windows.Forms.Form",
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 18,
+      "complexity_avg": 18
+    },
+    {
+      "id": "Acme.Extended.Forms.MainForm",
+      "files": [
+        "<ROOT>/Forms/MainForm.vb"
+      ],
+      "loc": 10,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Web",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Layer:Presentaci\u00F3n",
+        "Maintainability:61"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "extends": "System.Windows.Forms.Form",
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Extended.Program",
+      "files": [
+        "<ROOT>/Program.vb"
+      ],
+      "loc": 17,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [
+        "Acme.Extended.Dead.Helpers",
+        "Acme.Extended.Dead.Orphans",
+        "Acme.Extended.Dup.CopyA",
+        "Acme.Extended.Dup.CopyB",
+        "Acme.Extended.Dup.Unique",
+        "Acme.Extended.Rules.BusyController",
+        "Acme.Extended.Rules.CatchAll",
+        "Acme.Extended.Rules.Culture",
+        "Acme.Extended.Rules.Rethrow",
+        "Acme.Extended.Rules.Wasteful",
+        "Acme.Extended.Rules.WeakHash"
+      ],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "EntryPoint:Main",
+        "Layer:Batch",
+        "Maintainability:53"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 11,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Extended.Rules.BusyController",
+      "files": [
+        "<ROOT>/Rules/BusyController.vb"
+      ],
+      "loc": 24,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:48"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "HIGH_CYCLOMATIC_COMPLEXITY",
+          "type": "CODE_STYLE",
+          "severity": "ERROR",
+          "message": "Method \u0027Classify\u0027 cyclomatic complexity 18 exceeds 15",
+          "line": 6
+        },
+        {
+          "pattern": "DUPLICATED_CODE",
+          "type": "CODE_STYLE",
+          "severity": "WARNING",
+          "message": "Method \u0027Classify\u0027 duplicates code found in: Acme.Extended.Forms.BusyForm. Extract a shared implementation.",
+          "line": 6
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 18,
+      "complexity_avg": 18
+    },
+    {
+      "id": "Acme.Extended.Rules.CatchAll",
+      "files": [
+        "<ROOT>/Rules/CatchAll.vb"
+      ],
+      "loc": 9,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:64"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CA1031",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "[design] Modify \u0027Run\u0027 to catch a more specific allowed exception type, or rethrow the exception",
+          "line": 9
+        },
+        {
+          "pattern": "CATCH_GENERIC_EXCEPTION",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+          "line": 9
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 2,
+      "complexity_avg": 2
+    },
+    {
+      "id": "Acme.Extended.Rules.Culture",
+      "files": [
+        "<ROOT>/Rules/Culture.vb"
+      ],
+      "loc": 7,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:65"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CA1305",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "[globalization] The behavior of \u0027String.Format(String, Object)\u0027 could vary based on the current user\u0027s locale settings. Replace this call in \u0027Culture.Run()\u0027 with a call to \u0027String.Format(IFormatProvider, String, ParamArray Object())\u0027.",
+          "line": 7
+        },
+        {
+          "pattern": "CA1305",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "[globalization] The behavior of \u0027Integer.Parse(String)\u0027 could vary based on the current user\u0027s locale settings. Replace this call in \u0027Culture.Run()\u0027 with a call to \u0027Integer.Parse(String, IFormatProvider)\u0027.",
+          "line": 8
+        },
+        {
+          "pattern": "CA1305",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "[globalization] The behavior of \u0027Integer.ToString()\u0027 could vary based on the current user\u0027s locale settings. Replace this call in \u0027Culture.Run()\u0027 with a call to \u0027Integer.ToString(IFormatProvider)\u0027.",
+          "line": 9
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Extended.Rules.Rethrow",
+      "files": [
+        "<ROOT>/Rules/Rethrow.vb"
+      ],
+      "loc": 9,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:64"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CA2200",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "[reliability] Re-throwing caught exception changes stack information",
+          "line": 10
+        },
+        {
+          "pattern": "S1234",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "[source:SonarQube] Rethrowing loses the original stack trace.",
+          "line": 10
+        },
+        {
+          "pattern": "CATCH_GENERIC_EXCEPTION",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+          "line": 9
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 2,
+      "complexity_avg": 2
+    },
+    {
+      "id": "Acme.Extended.Rules.Wasteful",
+      "files": [
+        "<ROOT>/Rules/Wasteful.vb"
+      ],
+      "loc": 7,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:66"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CA1806",
+          "type": "PERFORMANCE",
+          "severity": "WARNING",
+          "message": "[performance] Run calls Replace but does not use the new string instance that the method returns. Pass the instance as an argument to another method, assign the instance to a variable, or remove the call if it is unnecessary.",
+          "line": 8
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Extended.Rules.WeakHash",
+      "files": [
+        "<ROOT>/Rules/WeakHash.vb"
+      ],
+      "loc": 8,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Extended.Program"
+      ],
+      "uses_jndi": false,
+      "annotations": [
+        "Maintainability:63"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CA5351",
+          "type": "SECURITY",
+          "severity": "WARNING",
+          "message": "[security][CWE-327] Digest uses a broken cryptographic algorithm MD5",
+          "line": 7
+        },
+        {
+          "pattern": "S2070",
+          "type": "SECURITY",
+          "severity": "ERROR",
+          "message": "[source:SonarQube][CWE-328] MD5 must not be used for hashing.",
+          "line": 7
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    }
+  ],
+  "edges": [
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Dead.Helpers",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Dead.Orphans",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Dup.CopyA",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Dup.CopyB",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Dup.Unique",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Rules.BusyController",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Rules.CatchAll",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Rules.Culture",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Rules.Rethrow",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Rules.Wasteful",
+      "weight": 1,
+      "type": "call"
+    },
+    {
+      "from": "Acme.Extended.Program",
+      "to": "Acme.Extended.Rules.WeakHash",
+      "weight": 1,
+      "type": "call"
+    }
+  ],
+  "api_contracts": {
+    "endpoints": [],
+    "schemas": {}
+  },
+  "meta": {
+    "source": "roslyn-fallback",
+    "schema_version": "1.0.0",
+    "microservice_candidates": {}
+  }
+}

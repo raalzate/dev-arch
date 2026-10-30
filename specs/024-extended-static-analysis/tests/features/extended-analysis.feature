@@ -14,7 +14,10 @@ Feature: Extended static analysis of Visual Basic projects
   @TS-001 @FR-010 @FR-011 @SC-001 @acceptance
   Scenario: Official analyzer rules of several categories with the closed issue types
     Given the synthetic VB project "SyntheticExtended"
-    When the project is analyzed
+    When the project is analyzed with the configuration:
+      """
+      { "analysis": { "extended": "on" } }
+      """
     Then the component "Acme.Extended.Rules.Rethrow" has a code issue "CA2200" whose message starts with "[reliability]"
     And the component "Acme.Extended.Rules.WeakHash" has a code issue "CA5351" whose message starts with "[security][CWE-327]"
     And the component "Acme.Extended.Rules.WeakHash" has exactly 1 code issue "CA5351"
@@ -27,12 +30,9 @@ Feature: Extended static analysis of Visual Basic projects
     And every code issue has a type among "BUG_PATTERN, CODE_STYLE, SECURITY, PERFORMANCE"
 
   @TS-002 @FR-001 @acceptance
-  Scenario: The extended pass is off on request
+  Scenario: The extended pass is off by default
     Given the synthetic VB project "SyntheticExtended"
-    When the project is analyzed with the configuration:
-      """
-      { "analysis": { "extended": "off" } }
-      """
+    When the project is analyzed
     Then no component has a code issue whose rule starts with "CA"
     And the component "Acme.Extended.Dead.Orphans" has no code issue "UNUSED_PUBLIC_MEMBER"
     And the component "Acme.Extended.Dup.CopyA" has no code issue "DUPLICATED_CODE"
@@ -44,7 +44,7 @@ Feature: Extended static analysis of Visual Basic projects
     Given the synthetic VB project "SyntheticExtended"
     When the project is analyzed with the configuration:
       """
-      { "analysis": { "rules": ["CA2200"] } }
+      { "analysis": { "extended": "on", "rules": ["CA2200"] } }
       """
     Then the component "Acme.Extended.Rules.Rethrow" has exactly 1 code issue "CA2200"
     And the component "Acme.Extended.Rules.WeakHash" has no code issue "CA5351"
@@ -52,7 +52,10 @@ Feature: Extended static analysis of Visual Basic projects
   @TS-004 @FR-020 @SC-002 @acceptance
   Scenario: Unused public members are reported and used ones are not
     Given the synthetic VB project "SyntheticExtended"
-    When the project is analyzed
+    When the project is analyzed with the configuration:
+      """
+      { "analysis": { "extended": "on" } }
+      """
     Then the component "Acme.Extended.Dead.Orphans" has the code issues "UNUSED_PUBLIC_MEMBER" exactly at lines "6, 10"
     And the component "Acme.Extended.Dead.Helpers" has no code issue "UNUSED_PUBLIC_MEMBER"
     And the component "Acme.Extended.Forms.MainForm" has no code issue "UNUSED_PUBLIC_MEMBER"
@@ -61,7 +64,10 @@ Feature: Extended static analysis of Visual Basic projects
   @TS-005 @FR-030 @SC-002 @acceptance
   Scenario: Duplicated methods across components are reported
     Given the synthetic VB project "SyntheticExtended"
-    When the project is analyzed
+    When the project is analyzed with the configuration:
+      """
+      { "analysis": { "extended": "on" } }
+      """
     Then the component "Acme.Extended.Dup.CopyA" has a code issue "DUPLICATED_CODE" with severity "WARNING" and message containing "Acme.Extended.Dup.CopyB"
     And the component "Acme.Extended.Dup.CopyB" has a code issue "DUPLICATED_CODE" with severity "WARNING" and message containing "Acme.Extended.Dup.CopyA"
     And the component "Acme.Extended.Dup.Unique" has no code issue "DUPLICATED_CODE"
@@ -71,14 +77,17 @@ Feature: Extended static analysis of Visual Basic projects
     Given the synthetic VB project "SyntheticExtended"
     When the project is analyzed with the configuration:
       """
-      { "analysis": { "duplicateMinTokens": 400 } }
+      { "analysis": { "extended": "on", "duplicateMinTokens": 400 } }
       """
     Then the component "Acme.Extended.Dup.CopyA" has no code issue "DUPLICATED_CODE"
 
   @TS-007 @FR-040 @acceptance
   Scenario: Maintainability index annotation
     Given the synthetic VB project "SyntheticExtended"
-    When the project is analyzed
+    When the project is analyzed with the configuration:
+      """
+      { "analysis": { "extended": "on" } }
+      """
     Then the component "Acme.Extended.Rules.Rethrow" has an annotation "Maintainability:<n>" with n between 0 and 100
     And the component "Acme.Extended.Dead.Orphans" has an annotation "Maintainability:<n>" with n between 0 and 100
 
@@ -101,7 +110,7 @@ Feature: Extended static analysis of Visual Basic projects
     Given the synthetic VB project "SyntheticExtended"
     When the project is analyzed with the configuration:
       """
-      { "analysis": { "sarif": ["reports/missing.sarif"] } }
+      { "analysis": { "extended": "on", "sarif": ["reports/missing.sarif"] } }
       """
     Then the analyzer reports a user warning starting with "SARIF reports/missing.sarif: file not found"
     And the component "Acme.Extended.Rules.Rethrow" has a code issue "CA2200" whose message starts with "[reliability]"
@@ -111,7 +120,7 @@ Feature: Extended static analysis of Visual Basic projects
     Given the synthetic VB project "SyntheticExtended"
     When the project is analyzed with the configuration:
       """
-      { "analysis": { "layerSuppressions": ["Presentación:UNUSED_PUBLIC_MEMBER", "Presentación:HIGH_CYCLOMATIC_COMPLEXITY"] } }
+      { "analysis": { "extended": "on", "layerSuppressions": ["Presentación:UNUSED_PUBLIC_MEMBER", "Presentación:HIGH_CYCLOMATIC_COMPLEXITY"] } }
       """
     Then the component "Acme.Extended.Forms.BusyForm" has no code issue "HIGH_CYCLOMATIC_COMPLEXITY"
     And the component "Acme.Extended.Rules.BusyController" has exactly 1 code issue "HIGH_CYCLOMATIC_COMPLEXITY"
@@ -119,14 +128,20 @@ Feature: Extended static analysis of Visual Basic projects
   @TS-011 @FR-070 @SC-003 @acceptance
   Scenario: C# projects are untouched by the extended pass
     Given the C# fixture project "SampleProject"
-    When the project is analyzed
+    When the project is analyzed with the configuration:
+      """
+      { "analysis": { "extended": "auto" } }
+      """
     Then no component has a code issue whose rule starts with "CA"
     And the analysis log states that extended analysis is "off (auto: C# compilation)"
 
   @TS-012 @FR-070 @FR-080 @SC-001 @acceptance
   Scenario: Golden output of the synthetic extended project
     Given the synthetic VB project "SyntheticExtended"
-    When the project is analyzed twice
+    When the project is analyzed twice with the configuration:
+      """
+      { "analysis": { "extended": "on", "sarif": ["reports/sonar.sarif"] } }
+      """
     Then the serialized output, with the fixture root replaced by "<ROOT>", equals the golden file "SyntheticExtended.golden.json"
     And both serialized outputs are byte-identical
     And the serialized output validates against the dependency-graph contract "1.0.0"

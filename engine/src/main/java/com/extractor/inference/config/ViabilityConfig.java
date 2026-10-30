@@ -14,12 +14,14 @@ package com.extractor.inference.config;
  *                             (023; 0 = the score ignores debt)
  * @param ignoreSupportCoupling  023: calls to support-library members do not
  *                             count as external coupling
+ * @param maintainabilityWeight 024: weight of {@code 1 − MI/100} added to the debt
+ *                             index when the component has {@code Maintainability:<n>}
  */
 public record ViabilityConfig(Weights weights, CohesionBlend cohesionBlend,
         double noTablesDataCohesion, SmallSize smallSize,
         LargeSize largeSize, Thresholds thresholds,
         RationaleConfig rationale, double debtWeight,
-        boolean ignoreSupportCoupling) {
+        boolean ignoreSupportCoupling, double maintainabilityWeight) {
 
     /**
      * Weights of the score.

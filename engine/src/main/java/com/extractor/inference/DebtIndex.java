@@ -21,6 +21,9 @@ public final class DebtIndex {
     /** Annotation prefix of an end-of-life dependency (022). */
     public static final String EOL_PREFIX = "Dependency:eol:";
 
+    /** Annotation prefix of the maintainability index (024). */
+    public static final String MAINTAINABILITY_PREFIX = "Maintainability:";
+
     private static final double CRITICAL = 8;
     private static final double ERROR = 4;
     private static final double WARNING = 2;
@@ -42,6 +45,18 @@ public final class DebtIndex {
      * @return the index in [0, 1] with 3 decimals
      */
     public static double of(final Component c) {
+        return of(c, 0);
+    }
+
+    /**
+     * Debt index of a component with the maintainability term (024, FR-041):
+     * {@code + weight × (1 − MI/100)} when the component carries {@code Maintainability:<n>}.
+     *
+     * @param c      the component
+     * @param maintainabilityWeight weight of the maintainability term (0 = ignored)
+     * @return the index in [0, 1] with 3 decimals
+     */
+    public static double of(final Component c, final double maintainabilityWeight) {
         double issues = 0;
         if (c.getCodeIssues() != null) {
             for (CodeIssue issue : c.getCodeIssues()) {
@@ -56,7 +71,34 @@ public final class DebtIndex {
         if (c.getComplexityMax() != null && c.getComplexityMax() > COMPLEXITY_LIMIT) {
             score += COMPLEXITY_STEP;
         }
+        Integer mi = maintainability(c);
+        if (maintainabilityWeight > 0 && mi != null) {
+            score += maintainabilityWeight * (1 - mi / 100.0);
+        }
         return round(Math.max(0, Math.min(1, score)));
+    }
+
+    /**
+     * Maintainability index of a component from its annotation.
+     *
+     * @param c the component
+     * @return the index in [0, 100], or null when absent or malformed
+     */
+    public static Integer maintainability(final Component c) {
+        if (c.getAnnotations() == null) {
+            return null;
+        }
+        for (String a : c.getAnnotations()) {
+            if (a.startsWith(MAINTAINABILITY_PREFIX)) {
+                try {
+                    int value = Integer.parseInt(a.substring(MAINTAINABILITY_PREFIX.length()).trim());
+                    return value < 0 || value > 100 ? null : value;
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -66,11 +108,22 @@ public final class DebtIndex {
      * @return the index in [0, 1] with 3 decimals (0 for no members)
      */
     public static double of(final Collection<Component> members) {
+        return of(members, 0);
+    }
+
+    /**
+     * LOC-weighted debt index of a group with the maintainability term (024).
+     *
+     * @param members the components
+     * @param maintainabilityWeight weight of the maintainability term
+     * @return the index in [0, 1] with 3 decimals
+     */
+    public static double of(final Collection<Component> members, final double maintainabilityWeight) {
         double weighted = 0;
         double weights = 0;
         for (Component c : members) {
             double w = Math.max(1, c.getLoc());
-            weighted += of(c) * w;
+            weighted += of(c, maintainabilityWeight) * w;
             weights += w;
         }
         return weights == 0 ? 0 : round(weighted / weights);

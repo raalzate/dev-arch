@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "SonarQube",
+          "version": "9.9",
+          "rules": [
+            { "id": "S1234", "shortDescription": { "text": "Fictitious maintainability rule" }, "properties": { "tags": ["maintainability"] } },
+            { "id": "S2070", "shortDescription": { "text": "Fictitious weak hashing rule" }, "properties": { "tags": ["security", "CWE-328"] } }
+          ]
+        }
+      },
+      "results": [
+        { "ruleId": "S1234", "level": "warning", "message": { "text": "Rethrowing loses the original stack trace." },
+          "locations": [ { "physicalLocation": { "artifactLocation": { "uri": "Rules/Rethrow.vb" }, "region": { "startLine": 10 } } } ] },
+        { "ruleId": "S1234", "level": "warning", "message": { "text": "Rethrowing loses the original stack trace." },
+          "locations": [ { "physicalLocation": { "artifactLocation": { "uri": "Rules/Rethrow.vb" }, "region": { "startLine": 10 } } } ] },
+        { "ruleId": "S2070", "level": "error", "message": { "text": "MD5 must not be used for hashing." },
+          "locations": [ { "physicalLocation": { "artifactLocation": { "uri": "file:///C:/build/Rules/WeakHash.vb" }, "region": { "startLine": 7 } } } ] },
+        { "ruleId": "S1234", "level": "note", "message": { "text": "Unmatched file." },
+          "locations": [ { "physicalLocation": { "artifactLocation": { "uri": "Missing/Nope.vb" }, "region": { "startLine": 1 } } } ] }
+      ]
+    }
+  ]
+}

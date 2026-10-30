@@ -1,0 +1,27 @@
+{
+  "version": "1",
+  "package": "Microsoft.CodeAnalysis.NetAnalyzers 8.0.0",
+  "description": "Rules of the official .NET analyzers evaluated by the extended pass (024). category and cwe are the engine's classification, independent of the package defaults; severity is the emitted severity.",
+  "rules": [
+    { "id": "CA1031", "category": "design", "severity": "INFO", "cwe": null },
+    { "id": "CA1304", "category": "globalization", "severity": "INFO", "cwe": null },
+    { "id": "CA1305", "category": "globalization", "severity": "INFO", "cwe": null },
+    { "id": "CA1507", "category": "maintainability", "severity": "INFO", "cwe": null },
+    { "id": "CA1707", "category": "naming", "severity": "INFO", "cwe": null },
+    { "id": "CA1805", "category": "maintainability", "severity": "INFO", "cwe": null },
+    { "id": "CA1806", "category": "performance", "severity": "WARNING", "cwe": null },
+    { "id": "CA1816", "category": "reliability", "severity": "WARNING", "cwe": null },
+    { "id": "CA1822", "category": "performance", "severity": "INFO", "cwe": null },
+    { "id": "CA2100", "category": "security", "severity": "CRITICAL", "cwe": "CWE-89" },
+    { "id": "CA2200", "category": "reliability", "severity": "WARNING", "cwe": null },
+    { "id": "CA2201", "category": "reliability", "severity": "WARNING", "cwe": null },
+    { "id": "CA2213", "category": "reliability", "severity": "WARNING", "cwe": null },
+    { "id": "CA3001", "category": "security", "severity": "CRITICAL", "cwe": "CWE-89" },
+    { "id": "CA3003", "category": "security", "severity": "CRITICAL", "cwe": "CWE-22" },
+    { "id": "CA3006", "category": "security", "severity": "CRITICAL", "cwe": "CWE-78" },
+    { "id": "CA5350", "category": "security", "severity": "WARNING", "cwe": "CWE-327" },
+    { "id": "CA5351", "category": "security", "severity": "WARNING", "cwe": "CWE-327" },
+    { "id": "CA5359", "category": "security", "severity": "CRITICAL", "cwe": "CWE-295" },
+    { "id": "CA5364", "category": "security", "severity": "WARNING", "cwe": "CWE-326" }
+  ]
+}

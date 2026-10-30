@@ -46,6 +46,35 @@ final class InferenceConfigValidator {
         integrations(c.integrations());
         dependencies(c.dependencies());
         inference(c.inference());
+        analysis(c.analysis());
+    }
+
+    /**
+     * Extended analysis rules (024).
+     *
+     * @param a analysis parameters
+     */
+    private static void analysis(final AnalysisConfig a) {
+        String p = "analysis.";
+        List<String> modes = List.of(IntegrationsConfig.AUTO, IntegrationsConfig.ON,
+                IntegrationsConfig.OFF);
+        if (!modes.contains(a.extended())) {
+            throw InvalidConfigException.parameter(p + "extended",
+                    "must be one of " + String.join(", ", modes));
+        }
+        nonBlank(p + "rules", a.rules());
+        if (a.duplicateMinTokens() < 10) {
+            throw InvalidConfigException.parameter(p + "duplicateMinTokens", "must be >= 10");
+        }
+        nonBlank(p + "sarif", a.sarif());
+        nonBlank(p + "layerSuppressions", a.layerSuppressions());
+        for (String entry : a.layerSuppressions()) {
+            int colon = entry.indexOf(':');
+            if (colon <= 0 || colon == entry.length() - 1) {
+                throw InvalidConfigException.parameter(p + "layerSuppressions",
+                        "entries must have the form Layer:RULE");
+            }
+        }
     }
 
     /**
@@ -225,6 +254,7 @@ final class InferenceConfigValidator {
         ratio(q + "dataFair", r.dataFair());
         atMost(q + "dataFair", r.dataFair(), q + "dataGood", r.dataGood());
         ratio(p + "debtWeight", v.debtWeight());
+        ratio(p + "maintainabilityWeight", v.maintainabilityWeight());
     }
 
     /**

@@ -15,4 +15,4 @@
 
 **Root Cause**: 022 added `code_issues[].type = DEPENDENCY` (rule `EOL_DEPENDENCY`) to the .NET analyzer and documented it, but the Java model enum `CodeIssue.Type` only knew `BUG_PATTERN, CODE_STYLE, SECURITY, PERFORMANCE`. The 022 measurement on the reference corpus ran the .NET analyzer directly, so the Java path was never exercised with EOL dependencies (the contract schema does not constrain the type, so no validation caught it).
 
-**Fix Reference**: `CodeIssue.Type.DEPENDENCY` added; unit test `CodeIssueTypeTest`. Found while measuring feature 023 on the reference corpus through the Java CLI (commit on branch `023-legacy-desktop-inference`).
+**Fix Reference**: the contract enum (`schema/1.0.0/common.schema.json`, `CodeIssue.type`) is closed, so the analyzer now emits `type: SECURITY` for `EOL_DEPENDENCY` (an unsupported dependency is an unpatched security risk); the Java enum is unchanged and `CodeIssueTypeTest` asserts that the Java enums equal the schema enums. Golden `SyntheticIntegrations.golden.json` regenerated. Found while measuring feature 023 through the Java CLI; fixed on branch `024-extended-static-analysis`.

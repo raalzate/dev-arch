@@ -86,6 +86,7 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `viability.weights.coupling` | double | `0.35` | [0,1] | viabilidad | Peso de `1 − acoplamiento externo`. |
 | `viability.weights.data` | double | `0.15` | [0,1] | viabilidad | Peso de la cohesión de datos. |
 | `viability.ignoreSupportCoupling` | boolean | `false` | true, false | viabilidad | Las llamadas a miembros de librerías de soporte no cuentan como acoplamiento externo (023). |
+| `viability.maintainabilityWeight` | double | `0.0` | [0,1] | viabilidad | Peso de `1 − MI/100` sumado al índice de deuda cuando el componente tiene la anotación `Maintainability:<n>` (024). |
 | `viability.debtWeight` | double | `0.0` | [0,1] | viabilidad | Peso del índice de deuda técnica restado de la puntuación (023); con 0 la puntuación es la de 1.2.0 y la justificación no incluye `Deuda técnica`. |
 | `viability.cohesionBlend.average` | double | `0.7` | [0,1] | viabilidad | Cohesión ajustada = este valor × cohesión media ponderada + … |
 | `viability.cohesionBlend.density` | double | `0.3` | [0,1] | viabilidad | … este valor × densidad interna. |
@@ -130,6 +131,11 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `integrations.outbound` | string | `auto` | auto, on, off | extracción | Integraciones salientes (SOAP/WCF/REST) del analizador .NET (022): `auto` = solo compilaciones Visual Basic. |
 | `dependencies.enabled` | string | `auto` | auto, on, off | extracción | Dependencias externas, proyectos ausentes y fin de vida (022): `auto` = solo compilaciones Visual Basic. |
 | `dependencies.eol` | string[] | `(vacía)` | no vacías | extracción | Prefijos de nombre añadidos a la lista versionada `schema/eol-dependencies.json` (issue `EOL_DEPENDENCY`). |
+| `analysis.extended` | string | `off` | auto, on, off | extracción | Análisis estático extendido del analizador .NET (024): analizadores oficiales de `Microsoft.CodeAnalysis.NetAnalyzers`, código muerto, duplicación e índice de mantenibilidad. Apagado por defecto (opt-in; +tiempo de análisis); `auto` = solo compilaciones Visual Basic; `on` = todas. |
+| `analysis.rules` | string[] | `(vacía)` | no vacías | extracción | Reglas `CAxxxx` a evaluar; vacía = la lista versionada `schema/extended-rules.json` (categoría, severidad y CWE de cada regla). Ids desconocidos producen una advertencia. |
+| `analysis.duplicateMinTokens` | int | `30` | >= 10 | extracción | Tokens normalizados mínimos de un método para `DUPLICATED_CODE`. |
+| `analysis.sarif` | string[] | `(vacía)` | no vacías | extracción | Reportes SARIF 2.1.0 (SonarQube, NDepend, Semgrep…) fusionados en `code_issues` con prefijo `[source:<herramienta>]`; rutas relativas al proyecto analizado. |
+| `analysis.layerSuppressions` | string[] | `(vacía)` | `Capa:REGLA` | extracción | Reglas suprimidas para una capa fina (`Presentación:HIGH_CYCLOMATIC_COMPLEXITY`). |
 | `inference.preset` | string | `auto` | auto, none, legacy-desktop | inferencia | Preset de inferencia (023). `auto` aplica `legacy-desktop` a grafos Visual Basic (`meta.source` = `roslyn-fallback` o ≥ 50 % de componentes con archivo `.vb`); `none` nunca. |
 | `inference.presentationInCohesion` | boolean | `true` | true, false | inferencia | Con `false`, los miembros `Layer:Presentación`/`Layer:Reportes` no cuentan en la cohesión ni en la densidad interna (siguen siendo miembros y consumidores) (023). |
 
@@ -150,6 +156,7 @@ Valores del preset (parámetro → valor; motivo):
 - `singleDomainRatio` de agrupación → 0.25 (un monolito de escritorio en capas se agrupa por entidades y procedimientos, no por namespace técnico), `procedureGrouping` de agrupación → entity y `attachCallersToTargets` → true, `entityStemMerge` de consolidación → true e `ignoreSupportCoupling` de viabilidad → true: cortes verticales por entidad de negocio; las librerías compartidas no penalizan el acoplamiento.
 - `supportNamespaces` → Commons, Shared, Utils, Utilities, Helpers, Generics, WebServices: librerías comunes como soporte (`minReferencingDomains` queda en 0: en un monolito en capas los "dominios" de namespace son técnicos y la regla de fan-in convertiría la capa de negocio en soporte).
 - `entityHeuristic` de acceso a datos → true: entidad dominante de los `sp:` en el nombre.
+- `maintainabilityWeight` de viabilidad → 0.10 y `layerSuppressions` de análisis → Presentación:HIGH_CYCLOMATIC_COMPLEXITY, Presentación:UNUSED_PUBLIC_MEMBER, Reportes:UNUSED_PUBLIC_MEMBER (024): la mantenibilidad entra en la deuda y los formularios no se penalizan por complejidad de eventos ni por miembros públicos de diseñador.
 
 Índice de deuda por componente: `issues = Σ(CRITICAL 8, ERROR 4, WARNING 2, INFO 0.5)`, `densidad = issues / max(1, loc/100)`, `base = 1 − 1/(1 + densidad/10)`, +0.10 por cada `Dependency:eol:*` (máx. 0.30), +0.10 si `complexity_max > 15`, acotado a [0,1] con tres decimales; por propuesta, media ponderada por LOC. Con `debtWeight > 0` la justificación añade `Deuda técnica: <índice>` y `Mayor deuda: A (x), B (y), C (z)`.
 

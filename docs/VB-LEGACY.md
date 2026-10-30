@@ -190,6 +190,25 @@ What the preset changes (see `engine/CONFIGURATION.md`, section *Presets*):
 Contract 1.0.0 is unchanged: the preset and the debt index live in `summary` and `rationale` text (rich fields are
 deferred to 1.1.0). Without configuration, C# and Java graphs are byte-identical to the previous outputs.
 
+## Extended static analysis (feature 024)
+
+Under `analysis.extended` (off by default; `on`, or `auto` = Visual Basic only) the analyzer adds, in the same compilation and without network
+or external binaries:
+
+- **Official rules** of `Microsoft.CodeAnalysis.NetAnalyzers` 8.0.0 (MIT) restricted to the versioned list
+  `schema/extended-rules.json`; each diagnostic becomes a `code_issues` entry with `pattern` = `CAxxxx`, `type` mapped to
+  the closed contract enum and a message prefixed `[category]` (and `[CWE-nnn]` for security rules). Roslynator has no
+  Visual Basic analyzers; SecurityCodeScan (LGPL) is pending a licensing decision.
+- **Dead code**: `UNUSED_PUBLIC_MEMBER` (INFO) for public/friend types, methods and properties never referenced by name
+  outside their declaration (entry points, forms, reports, web methods, implementations, overrides and handlers excluded).
+- **Duplication**: `DUPLICATED_CODE` (WARNING) for methods with ≥ `analysis.duplicateMinTokens` normalized tokens and the
+  same hash in two or more components.
+- **Maintainability index**: annotation `Maintainability:<0-100>` (Microsoft formula over Halstead volume, cyclomatic
+  complexity and lines); the inference adds `viability.maintainabilityWeight × (1 − MI/100)` to the debt index.
+- **SARIF 2.1.0 import** (`analysis.sarif`): results of other tools merged by file suffix with `[source:<tool>]`,
+  deduplicated and sorted; missing or invalid files are user warnings.
+- **Layer suppressions** (`analysis.layerSuppressions`): `Capa:REGLA` entries removed for that fine layer.
+
 ## Limitations
 
 - SQL is recognized only in string literals and their concatenations; SQL built through variables, `StringBuilder`,

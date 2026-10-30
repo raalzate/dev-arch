@@ -4,6 +4,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Unreleased]
 
+### Añadido (feature 024, análisis estático extendido)
+- Pasada `analysis.extended` (opt-in; `auto` = Visual Basic): reglas oficiales de `Microsoft.CodeAnalysis.NetAnalyzers` 8.0.0 con lista versionada `schema/extended-rules.json`, `UNUSED_PUBLIC_MEMBER`, `DUPLICATED_CODE`, anotación `Maintainability:<n>` (término `viability.maintainabilityWeight` del índice de deuda), importación SARIF 2.1.0 (`analysis.sarif`) y supresiones por capa (`analysis.layerSuppressions`). Contrato 1.0.0 sin cambios.
+- Corregido BUG-010 (022): `EOL_DEPENDENCY` emitía `type: DEPENDENCY`, fuera del enumerado cerrado del contrato; ahora `SECURITY`.
+- Dependencia del analizador .NET: `Microsoft.CodeAnalysis.NetAnalyzers` 8.0.0 (MIT, solo análisis, versión fija), registrada en el inventario de dependencias de 005.
+
 ### Añadido (feature 023, inferencia para el perfil desktop legacy)
 - Preset `legacy-desktop` (`inference.preset`: `auto` lo aplica a grafos Visual Basic) como configuración parcial versionada bajo la configuración explícita; se registra en `summary` (`Preset de inferencia: legacy-desktop`).
 - Cortes verticales (`consolidation.verticalSliceRatio`), presentación fuera de la cohesión (`inference.presentationInCohesion`), nombres por dominio de namespace y entidad (`naming.strategy = domain`), librerías de soporte por namespace y fan-in (`recommendation.supportNamespaces`, `recommendation.minReferencingDomains`).

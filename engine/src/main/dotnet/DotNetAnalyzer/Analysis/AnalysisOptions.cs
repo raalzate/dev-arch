@@ -73,9 +73,21 @@ public sealed record DependenciesOptions(PassMode Enabled, IReadOnlyList<string>
 /// Options of an analysis (<c>dotnet-analyzer &lt;path&gt; [--config=&lt;file&gt;]</c>). Unknown sections and keys are
 /// ignored so later features can add theirs; invalid values are reported with their cause.
 /// </summary>
-public sealed record AnalysisOptions(DataAccessOptions DataAccess, DebtOptions Debt, IntegrationsOptions Integrations, DependenciesOptions Dependencies)
+/// <summary>024: extended static analysis (official analyzers, dead code, duplication, maintainability, SARIF, layer suppressions).</summary>
+public sealed record AnalysisSection(PassMode Extended, IReadOnlyList<string> Rules, int DuplicateMinTokens, IReadOnlyList<string> Sarif, IReadOnlyList<string> LayerSuppressions)
 {
-    public static readonly AnalysisOptions Default = new(DataAccessOptions.Default, DebtOptions.Default, IntegrationsOptions.Default, DependenciesOptions.Default);
+    public static readonly AnalysisSection Default = new(PassMode.Off, Array.Empty<string>(), 30, Array.Empty<string>(), Array.Empty<string>());
+}
+
+public sealed record AnalysisOptions(DataAccessOptions DataAccess, DebtOptions Debt, IntegrationsOptions Integrations, DependenciesOptions Dependencies, AnalysisSection Analysis)
+{
+    public static readonly AnalysisOptions Default = new(DataAccessOptions.Default, DebtOptions.Default, IntegrationsOptions.Default, DependenciesOptions.Default, AnalysisSection.Default);
+
+    /// <summary>022 constructor.</summary>
+    public AnalysisOptions(DataAccessOptions dataAccess, DebtOptions debt, IntegrationsOptions integrations, DependenciesOptions dependencies)
+        : this(dataAccess, debt, integrations, dependencies, AnalysisSection.Default)
+    {
+    }
 
     /// <summary>020 constructor kept for callers that only set the data access section.</summary>
     public AnalysisOptions(DataAccessOptions dataAccess) : this(dataAccess, DebtOptions.Default, IntegrationsOptions.Default, DependenciesOptions.Default)
@@ -177,7 +189,48 @@ public sealed record AnalysisOptions(DataAccessOptions DataAccess, DebtOptions D
             dependencies = new DependenciesOptions(enabled, eol.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(e => e, StringComparer.Ordinal).ToList());
         }
 
-        return new AnalysisOptions(dataAccess, debt, integrations, dependencies);
+        var analysis = AnalysisSection.Default;
+        if (obj["analysis"] is JsonNode analysisSection)
+        {
+            if (analysisSection is not JsonObject an)
+                throw new ArgumentException("analysis must be an object");
+            var extended = Enum("analysis.extended", an["extended"], analysis.Extended,
+                ("auto", PassMode.Auto), ("on", PassMode.On), ("off", PassMode.Off));
+            var minTokens = analysis.DuplicateMinTokens;
+            if (an["duplicateMinTokens"] is JsonNode tokensNode)
+            {
+                if (tokensNode is not JsonValue tv || !tv.TryGetValue<int>(out minTokens) || minTokens < 10)
+                    throw new ArgumentException("analysis.duplicateMinTokens must be an integer >= 10");
+            }
+            var rules = Strings("analysis.rules", an["rules"]);
+            var sarif = Strings("analysis.sarif", an["sarif"]);
+            var suppressions = Strings("analysis.layerSuppressions", an["layerSuppressions"]);
+            foreach (var entry in suppressions)
+            {
+                if (entry.IndexOf(':') <= 0 || entry.IndexOf(':') == entry.Length - 1)
+                    throw new ArgumentException("analysis.layerSuppressions entries must have the form Layer:RULE");
+            }
+            analysis = new AnalysisSection(extended, rules, minTokens, sarif, suppressions);
+        }
+
+        return new AnalysisOptions(dataAccess, debt, integrations, dependencies, analysis);
+    }
+
+    private static IReadOnlyList<string> Strings(string key, JsonNode? node)
+    {
+        if (node == null)
+            return Array.Empty<string>();
+        if (node is not JsonArray array)
+            throw new ArgumentException($"{key} must be an array of strings");
+        var list = new List<string>();
+        foreach (var item in array)
+        {
+            var text = (item as JsonValue)?.TryGetValue<string>(out var t) == true ? t : null;
+            if (string.IsNullOrWhiteSpace(text))
+                throw new ArgumentException($"{key} must be an array of non-blank strings");
+            list.Add(text.Trim());
+        }
+        return list;
     }
 
     private static int PositiveInt(string key, JsonNode? node, int fallback)

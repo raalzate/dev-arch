@@ -9,7 +9,7 @@
 
 ## Contexto
 
-El motor emite ≈ 16 reglas propias; un cliente espera el nivel de un analizador estándar y suele tener reportes de otras herramientas. Esta feature añade, bajo `analysis.extended` (`auto` = solo compilaciones Visual Basic): (1) los analizadores oficiales `Microsoft.CodeAnalysis.NetAnalyzers` (MIT, con soporte VB) en la misma compilación, con un conjunto de reglas **versionado** en `schema/extended-rules.json`; (2) código muerto `UNUSED_PUBLIC_MEMBER`; (3) duplicación `DUPLICATED_CODE`; (4) índice de mantenibilidad (fórmula de Microsoft) como anotación y como término del índice de deuda (023); (5) lector SARIF 2.1.0 (`analysis.sarif`) que fusiona reportes de otras herramientas en `code_issues`; (6) supresiones por capa (`analysis.layerSuppressions`). El contrato 1.0.0 cierra `code_issues[]` (`type` ∈ BUG_PATTERN|CODE_STYLE|SECURITY|PERFORMANCE, `pattern` abierto) y no tiene `maintainability_index`, así que: `pattern` = identificador de regla (`CA2200`, `UNUSED_PUBLIC_MEMBER`, regla SARIF), `type` se mapea al enumerado cerrado, el `message` lleva prefijos `[categoría]`, `[CWE-nnn]` y `[source:<herramienta>]`, y el índice de mantenibilidad es la anotación `Maintainability:<0-100>`. Forma rica (`rule_id`, `category`, `cwe`, `source`, `maintainability_index`) para 1.1.0.
+El motor emite ≈ 16 reglas propias; un cliente espera el nivel de un analizador estándar y suele tener reportes de otras herramientas. Esta feature añade, bajo `analysis.extended` (default `off`; `auto` = solo compilaciones Visual Basic; `on` = todas): (1) los analizadores oficiales `Microsoft.CodeAnalysis.NetAnalyzers` (MIT, con soporte VB) en la misma compilación, con un conjunto de reglas **versionado** en `schema/extended-rules.json`; (2) código muerto `UNUSED_PUBLIC_MEMBER`; (3) duplicación `DUPLICATED_CODE`; (4) índice de mantenibilidad (fórmula de Microsoft) como anotación y como término del índice de deuda (023); (5) lector SARIF 2.1.0 (`analysis.sarif`) que fusiona reportes de otras herramientas en `code_issues`; (6) supresiones por capa (`analysis.layerSuppressions`). El contrato 1.0.0 cierra `code_issues[]` (`type` ∈ BUG_PATTERN|CODE_STYLE|SECURITY|PERFORMANCE, `pattern` abierto) y no tiene `maintainability_index`, así que: `pattern` = identificador de regla (`CA2200`, `UNUSED_PUBLIC_MEMBER`, regla SARIF), `type` se mapea al enumerado cerrado, el `message` lleva prefijos `[categoría]`, `[CWE-nnn]` y `[source:<herramienta>]`, y el índice de mantenibilidad es la anotación `Maintainability:<0-100>`. Forma rica (`rule_id`, `category`, `cwe`, `source`, `maintainability_index`) para 1.1.0.
 
 Fuera de alcance (decisiones §7 del plan pendientes): `SecurityCodeScan` (LGPL) — las reglas de seguridad son las de NetAnalyzers (`CA2100`, `CA53xx`) y las propias (`SQL_CONCAT_INJECTION`, `HARDCODED_SECRET_IN_CODE`), todas con `[CWE-nnn]`; `Roslynator.Analyzers` no incluye analizadores Visual Basic y se descarta.
 
@@ -20,7 +20,7 @@ Fuera de alcance (decisiones §7 del plan pendientes): `SecurityCodeScan` (LGPL)
 **Acceptance Scenarios**:
 
 1. **Given** el proyecto sintético `SyntheticExtended`, **When** se analiza, **Then** los componentes reciben issues `CAxxxx` de al menos cinco categorías (`[reliability]`, `[security]`, `[performance]`, `[globalization]`, `[design]`, `[usage]`…) con `type` del enumerado cerrado y al menos uno con `[CWE-nnn]`
-2. **Given** `analysis.extended = off`, **Then** ningún componente tiene issues `CA*`, `UNUSED_PUBLIC_MEMBER`, `DUPLICATED_CODE` ni anotación `Maintainability:`
+2. **Given** la configuración por defecto (`analysis.extended = off`), **Then** ningún componente tiene issues `CA*`, `UNUSED_PUBLIC_MEMBER`, `DUPLICATED_CODE` ni anotación `Maintainability:`
 3. **Given** un proyecto C# o Java, **When** se analiza sin configuración, **Then** la salida es byte a byte la actual
 4. **Given** `analysis.rules` explícito, **Then** solo esas reglas se evalúan; vacío = lista versionada
 
@@ -52,7 +52,7 @@ Fuera de alcance (decisiones §7 del plan pendientes): `SecurityCodeScan` (LGPL)
 
 ## Requirements *(mandatory)*
 
-- **FR-001**: Configuración `analysis.extended` ∈ {auto, on, off} (default auto: solo Visual Basic), `analysis.rules` (string[], default vacía = `schema/extended-rules.json`), `analysis.duplicateMinTokens` (int ≥ 10, default 30), `analysis.sarif` (string[] rutas, default vacía), `analysis.layerSuppressions` (string[] `Capa:REGLA`, default vacía); `viability.maintainabilityWeight` ([0,1], default 0). El preset `legacy-desktop` fija `maintainabilityWeight` 0.10 y `layerSuppressions` [`Presentación:HIGH_CYCLOMATIC_COMPLEXITY`, `Presentación:UNUSED_PUBLIC_MEMBER`, `Reportes:UNUSED_PUBLIC_MEMBER`].
+- **FR-001**: Configuración `analysis.extended` ∈ {auto, on, off} (default `off`; `auto` = solo Visual Basic), `analysis.rules` (string[], default vacía = `schema/extended-rules.json`), `analysis.duplicateMinTokens` (int ≥ 10, default 30), `analysis.sarif` (string[] rutas, default vacía), `analysis.layerSuppressions` (string[] `Capa:REGLA`, default vacía); `viability.maintainabilityWeight` ([0,1], default 0). El preset `legacy-desktop` fija `maintainabilityWeight` 0.10 y `layerSuppressions` [`Presentación:HIGH_CYCLOMATIC_COMPLEXITY`, `Presentación:UNUSED_PUBLIC_MEMBER`, `Reportes:UNUSED_PUBLIC_MEMBER`].
 - **FR-010**: Pasada `VbExtendedAnalyzer` MUST ejecutar los analizadores de `Microsoft.CodeAnalysis.NetAnalyzers` (VB) sobre la compilación con exactamente las reglas activas; cada diagnóstico → issue `pattern` = id, `type` = mapeo (Security→SECURITY, Performance→PERFORMANCE, Naming/Style→CODE_STYLE, resto→BUG_PATTERN), severidad (Error→ERROR, Warning→WARNING, Info/Hidden→INFO; reglas de seguridad → CRITICAL cuando el paquete las marca Error), `message` = `[<categoría en minúsculas>]` + `[CWE-nnn]` si la regla tiene CWE en la lista versionada + texto; ordenados por ubicación y regla.
 - **FR-011**: La lista versionada `schema/extended-rules.json` MUST declarar cada regla activa con `category` y `cwe` opcional; versionada en el repositorio y embebida en el analizador.
 - **FR-020**: `UNUSED_PUBLIC_MEMBER` (INFO) MUST emitirse para métodos, propiedades y tipos `Public`/`Friend` sin referencia por nombre fuera de su declaración, excluyendo `Sub Main`, formularios y controles, `WebMethod`/`OperationContract`, implementaciones (`Implements`), `Overrides`, `Handles`, eventos y constructores.
@@ -66,7 +66,7 @@ Fuera de alcance (decisiones §7 del plan pendientes): `SecurityCodeScan` (LGPL)
 
 ## Success Criteria *(mandatory)*
 
-- **SC-001**: Referencia (opt-in): ≥ 5 categorías `[…]` presentes; ≥ 1 issue con `[CWE-`; doble corrida idéntica con analizadores activos (tiempo registrado en `docs/EVALUATIONS.md`).
+- **SC-001**: Referencia (opt-in): ≥ 5 categorías `[…]` presentes; ≥ 1 issue con `[CWE-`; doble corrida idéntica con analizadores activos (tiempo registrado en `docs/EVALUATIONS.md`). *Resultado 2026-10-30 (docs/EVALUATIONS.md §12): 6 categorías y doble corrida cumplidos; 0 CWE en la referencia por fidelidad reducida (cumplido en el fixture) — parcial.*
 - **SC-002**: Fixture sintético: `UNUSED_PUBLIC_MEMBER` y `DUPLICATED_CODE` con caso positivo y negativo; SARIF de ejemplo importado.
 - **SC-003**: `test-for-demo/*` y líneas base byte a byte idénticas; `meta.schema_version` 1.0.0.
 
@@ -75,8 +75,10 @@ Fuera de alcance (decisiones §7 del plan pendientes): `SecurityCodeScan` (LGPL)
 ### Session 2026-10-30
 
 - SecurityCodeScan excluido (LGPL, §7.6 pendiente); Roslynator excluido (sin analizadores VB en 4.12.4).
-- `analysis.extended` default `auto` (= VB) por la decisión ya tomada en §7 ("pasadas con flag activas solo en VB").
+- `analysis.extended` default `off` (opción 2 de §7.7): con `auto` por defecto los escenarios bloqueados de 009/020/021 (conjuntos exactos de issues y goldens de los fixtures VB) cambiarían, y esos guardas no se reescriben; además evita el coste de tiempo en análisis que no lo piden. `auto` sigue disponible (= solo Visual Basic).
 - El tipo `DEPENDENCY` emitido por 022 para `EOL_DEPENDENCY` viola el enumerado cerrado del contrato; se corrige a `SECURITY` (dependencias sin soporte = riesgo de seguridad), con prueba que compara el enumerado Java con el del esquema (BUG-010, bugs.md de 022).
+
+- Dependencia nueva (principio VI, "justificadas y mínimas"): `Microsoft.CodeAnalysis.NetAnalyzers` 8.0.0 (MIT, solo analizadores, versión exacta, cargada desde la carpeta `analyzers` del binario) registrada en `specs/005-json-schema-contract/baseline-deps.txt`, el inventario que vigila el guarda de 005 (TS-043); ninguna dependencia Java nueva.
 
 ## Assumptions
 

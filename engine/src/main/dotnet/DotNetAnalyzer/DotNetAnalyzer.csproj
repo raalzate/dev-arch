@@ -16,11 +16,19 @@
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="4.9.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.9.2" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
+    <!-- 024-extended-static-analysis: official analyzers (MIT, analysis only), loaded at run time from the
+         "analyzers" output folder; GeneratePathProperty exposes $(PkgMicrosoft_CodeAnalysis_NetAnalyzers). -->
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="analyzers;build;buildtransitive" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)/analyzers/dotnet/vb/*.dll" Link="analyzers/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- 022-external-integrations: the versioned end-of-life list (schema/eol-dependencies.json) embedded as a linked resource. -->
     <EmbeddedResource Include="..\..\..\..\..\schema\eol-dependencies.json" Link="Resources\eol-dependencies.json" LogicalName="DotNetAnalyzer.eol-dependencies.json" />
+    <!-- 024-extended-static-analysis: the versioned rule list of the official analyzers. -->
+    <EmbeddedResource Include="..\..\..\..\..\schema\extended-rules.json" Link="Resources\extended-rules.json" LogicalName="DotNetAnalyzer.extended-rules.json" />
   </ItemGroup>
 
 </Project>

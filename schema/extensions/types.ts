@@ -26,6 +26,10 @@ export interface InferenceConfig {
      * 023: in the entity path, a component without procedures joins the cluster it calls most.
      */
     attachCallersToTargets?: boolean;
+    /**
+     * 023: transitive = components sharing procedures (transitively) form one cluster; entity = components grouped by the stem of their dominant procedure entity.
+     */
+    procedureGrouping?: "transitive" | "entity";
   };
   evidence?: {
     weights?: {
@@ -117,6 +121,10 @@ export interface InferenceConfig {
      * 023: calls to support-library members do not count as external coupling.
      */
     ignoreSupportCoupling?: boolean;
+    /**
+     * 024: weight of (1 - MI/100) added to the debt index when the component carries Maintainability:<n>.
+     */
+    maintainabilityWeight?: number;
   };
   recommendation?: {
     supportRatio?: number;
@@ -220,6 +228,31 @@ export interface InferenceConfig {
      * false = Layer:Presentación/Layer:Reportes members do not count in cohesion or internal density.
      */
     presentationInCohesion?: boolean;
+  };
+  /**
+   * Extended static analysis of the .NET analyzer (024-extended-static-analysis).
+   */
+  analysis?: {
+    /**
+     * off by default (opt-in); auto = Visual Basic compilations only; on = every compilation.
+     */
+    extended?: "auto" | "on" | "off";
+    /**
+     * Official analyzer rule ids to evaluate; empty = the versioned list schema/extended-rules.json.
+     */
+    rules?: string[];
+    /**
+     * Minimum normalized tokens of a duplicated method.
+     */
+    duplicateMinTokens?: number;
+    /**
+     * SARIF 2.1.0 reports merged into code_issues (paths relative to the analyzed project).
+     */
+    sarif?: string[];
+    /**
+     * Layer:RULE entries removed for components of that fine layer.
+     */
+    layerSuppressions?: string[];
   };
 }
 /**

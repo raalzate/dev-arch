@@ -239,6 +239,27 @@ Hallazgos:
 - La viabilidad sigue mayoritariamente **Baja** con métricas honestas: la cohesión interna por llamadas de los cortes es 1–57 % y el acoplamiento entre cortes 33–100 %, aun ignorando las llamadas a soporte (`viability.ignoreSupportCoupling`) y con umbrales 0.6/0.4. El índice de deuda (0.34–0.80) resta 0.05–0.12. Conclusión para la referencia: el monolito es un único dominio (pólizas) en capas; la propuesta útil son cortes por entidad con deuda visible, no microservicios "viables" en la escala original. SC-001 queda registrado como **parcial**; decisión pendiente del usuario (§7 del plan): aceptar la escala o reducir los umbrales/recalibrar la cohesión para el perfil.
 - BUG-010 (022): el modelo Java no aceptaba `code_issues[].type = DEPENDENCY`, por lo que la CLI Java fallaba sobre cualquier grafo VB con dependencias EOL (la medición de 022 se hizo con el analizador .NET directo). Corregido en 023.
 
+## 12. Feature 024 (análisis estático extendido) sobre el corpus de referencia VB
+
+Corrida local 2026-10-30 (macOS, SDK 8, fidelidad reducida, CLI Java `--language=dotnet`, `--config='{"detection":{"maxDepth":3},"analysis":{"extended":"on"}}'`):
+
+| Métrica | Valor | Criterio SC-001 |
+|---|---|---|
+| Categorías de reglas oficiales presentes | 6 (naming 1699, reliability 781, design 560, globalization 501, maintainability 310, performance 123) | ≥ 5 — cumplido |
+| Issues con `[CWE-` | 0 (las reglas de seguridad `CA2100`/`CA3xxx` requieren `SqlCommand` y tipos de .NET Framework que la fidelidad reducida no resuelve; `CA53xx` no aplica: el corpus no usa criptografía) | ≥ 1 — **no cumplido en la referencia** (cumplido en el fixture: `CA5351` con `CWE-327`, SARIF `CWE-328`) |
+| `UNUSED_PUBLIC_MEMBER` / `DUPLICATED_CODE` | 3 158 / 723 (detección por nombre y hash de tokens; muchos miembros públicos de diseñador y adaptadores generados) | fixture con caso positivo y negativo — cumplido |
+| `Maintainability:<n>` | 558 componentes con métodos; MI mín. 0, medio 36, máx. 71 | — |
+| Tiempo | ≈ 33 s por corrida (≈ 17 s sin la pasada extendida) | registrado |
+| Doble corrida | grafo y arquitectura byte a byte idénticos | cumplido |
+| Inferencia (preset `legacy-desktop`, `maintainabilityWeight` 0.10) | 44 propuestas, todas Baja (el término de mantenibilidad baja 2 propuestas Media de §11 a Baja) | — |
+
+Decisiones y hallazgos:
+
+- `analysis.extended` queda **apagado por defecto** (opción 2 de §7.7 del plan): con `auto` (Visual Basic) los escenarios bloqueados de 009/020/021 (conjuntos exactos de issues y goldens de los fixtures VB) cambiaban; además la pasada duplica el tiempo del analizador. El preset de inferencia no puede activarla (se resuelve tras la extracción).
+- `Roslynator.Analyzers` 4.12.4 no trae analizadores Visual Basic (solo `cs`) y se descarta; `SecurityCodeScan` (LGPL) sigue pendiente de decisión (§7.6). Las categorías y CWE provienen de la lista versionada `schema/extended-rules.json`, no de los metadatos del paquete.
+- La cobertura de seguridad en la referencia depende de la fidelidad: añadir `Microsoft.NETFramework.ReferenceAssemblies.net48` al fallback Adhoc (transversal 1 del plan, pendiente) haría resolubles `SqlCommand`, `System.Web` y `System.ServiceModel` y activaría `CA2100`/`CA3xxx`.
+- BUG-010: corregido emitiendo `type: SECURITY` para `EOL_DEPENDENCY` (enumerado cerrado); prueba `CodeIssueTypeTest` compara los enumerados Java con `schema/1.0.0/common.schema.json`.
+
 ## Cómo reproducir
 
 ```bash
@@ -246,5 +267,5 @@ export DOTNET_ROOT="$HOME/.dotnet8" PATH="$HOME/.dotnet8:$PATH"     # SDK 8 can�
 make build && make test                                              # pruebas y puertas
 DEVARCH_E2E=true make test-acceptance && make test-e2e-browser       # escenarios lentos y navegador
 java -jar engine/target/java-dependency-extractor.jar engine/test-for-demo/java-standar out.json   # un análisis
-java -jar engine/target/java-dependency-extractor.jar "$(realpath engine/test-for-demo/vb-demo-legacy)" out.json --language=dotnet --config=cfg.json  # referencia VB (cfg: {"detection":{"maxDepth":3}})
+java -jar engine/target/java-dependency-extractor.jar "$(realpath engine/test-for-demo/vb-demo-legacy)" out.json --language=dotnet --config=cfg.json  # referencia VB (cfg: {"detection":{"maxDepth":3}}; añadir "analysis":{"extended":"on"} para 024)
 ```
