@@ -42,7 +42,7 @@ Feature: Shared procedures in the inference and configuration through the engine
       | Sample.ReaderB  | Datos | zebra, sp:usp_Zeta, Alpha        |
     When the architecture is inferred with the default configuration
     Then the components "Sample.ReaderA" and "Sample.ReaderB" belong to the same proposal
-    And that proposal lists exactly the shared tables "Alpha, zebra, sp:usp_Zeta"
+    And that proposal lists the shared tables "Alpha, zebra" followed by the shared procedures "sp:usp_Zeta"
 
   @TS-023 @FR-023 @FR-031 @SC-004 @acceptance
   Scenario Outline: Demo projects keep their baseline outputs without configuration
