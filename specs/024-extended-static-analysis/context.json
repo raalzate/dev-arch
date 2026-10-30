@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "fd1ef5f6a738a075eaf54cd432ef20cdb2fd921819f04dbe249f0c39c698dc90",
+    "generated_at": "2026-10-30T22:53:25Z",
+    "features_dir": "specs/024-extended-static-analysis/tests/features",
+    "file_count": 2
+  }
+}
