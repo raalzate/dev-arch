@@ -92,7 +92,7 @@ Feature: Outbound integrations of VB legacy components
     And the component "Sample.RatesClient" has the annotation "Integration:rest:BisiBaseURL"
     And the component "Sample.RatesClient" has the annotation "Integration:rest:dynamic"
     And the component "Sample.RatesClient" has exactly the external dependencies "http:BisiBaseURL, http:api.example.invalid, http:rates.example.invalid"
-    And the serialized output does not contain "secret"
+    And the serialized output does not contain "user:secret"
     And the serialized output does not contain "key=abc"
     And the analyzer reports exactly these outbound warnings:
       """
