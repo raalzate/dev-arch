@@ -27,7 +27,7 @@ description: "Task list for 022-external-integrations"
 - [x] T010 Goldens `SyntheticIntegrations.golden.json`; regenerar goldens 020/021 si cambian [TS-030, TS-031]
 - [x] T011 [P] Docs `docs/VB-LEGACY.md`, `docs/SCHEMA.md`, `CHANGELOG.md` [TS-033]
 - [x] T012 [P] Prueba `Corpus` opt-in: SC-001 (≥ 12 integraciones, 11 proyectos ausentes, ≥ 3 EOL, sin direcciones completas)
-- [ ] T013 `make test-engine` (SDK 8), `dotnet format`, doble corrida sobre la referencia; memoria
+- [x] T013 `make test-engine` (SDK 8), `dotnet format`, doble corrida sobre la referencia; memoria
 
 ## Dependencies
 T001-T004 paralelo → T005 → {T006, T007} → T008 → T009 → T010 → {T011, T012} → T013.
