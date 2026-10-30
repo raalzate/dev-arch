@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Acme.Legacy</RootNamespace>
+    <AssemblyName>SyntheticLegacyDebt</AssemblyName>
+    <StartupObject>Acme.Legacy.Jobs.NightlyProcess</StartupObject>
+    <MyType>Console</MyType>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <OptionStrict>Off</OptionStrict>
+    <OptionExplicit>On</OptionExplicit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Import Include="System" />
+    <Import Include="System.Data" />
+    <Import Include="Microsoft.VisualBasic" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Forms\PolicyScreen.vb" />
+    <Compile Include="Reports\PolicyListing.vb" />
+    <Compile Include="Jobs\NightlyProcess.vb" />
+    <Compile Include="Rules\PolicyValidator.vb" />
+    <Compile Include="Data\PolicyRepository.vb" />
+    <Compile Include="Facades\PolicyFacade.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Reports\PolicyListing.rdlc" />
+  </ItemGroup>
+</Project>

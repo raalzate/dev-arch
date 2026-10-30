@@ -9,3 +9,5 @@ It is not a real system and is not derived from any real code base.
 Feature 020-stored-procedures: the stored procedure invocations live in the sibling fixture `SyntheticProcedures`;
 `Modules/DbMaintenance.vb` runs its maintenance procedure through a text command (`EXEC …`) so the tables of this
 corpus stay those of 009.
+Since feature 021 the project compiles with `Option Strict On` (the file-level `Option Strict Off` of
+`Forms/CustomerForm.vb` remains): the project-level rule is exercised by `SyntheticLegacyDebt`.
