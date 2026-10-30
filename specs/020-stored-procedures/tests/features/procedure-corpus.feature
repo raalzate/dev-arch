@@ -12,32 +12,31 @@ Feature: Synthetic corpus, golden outputs and documentation for stored procedure
   So that continuous integration guards the rules and the reference corpus stays opt-in
 
   @TS-040 @FR-051 @SC-001 @acceptance
-  Scenario: The synthetic desktop project invokes procedures in every recognized form
-    Given the synthetic VB project "SyntheticDesktop"
+  Scenario: The synthetic procedures project invokes procedures in every recognized form
+    Given the synthetic VB project "SyntheticProcedures"
     When the project is analyzed
     Then the component "LegacyShop.DataAccess.PolicyAdapter" uses exactly the tables "sp:usp_Policy_Archive, sp:usp_Policy_Count, sp:usp_Policy_List, sp:usp_Policy_Read, sp:usp_Policy_Save, sp:usp_Policy_Touch"
-    And the component "LegacyShop.DataAccess.CustomerDataAccess" uses exactly the tables "AuditLog, Customers, Orders"
     And the analyzer reports exactly these procedure warnings:
       """
       Procedure name is not a literal in LegacyShop.DataAccess.PolicyAdapter (PolicyAdapter.vb:34)
       """
 
   @TS-041 @FR-051 @FR-050 @SC-001 @SC-005 @acceptance
-  Scenario: Golden output of the synthetic desktop project without a catalog
-    Given the synthetic VB project "SyntheticDesktop"
+  Scenario: Golden output of the synthetic procedures project without a catalog
+    Given the synthetic VB project "SyntheticProcedures"
     When the project is analyzed twice
-    Then the serialized output, with the fixture root replaced by "<ROOT>", equals the golden file "SyntheticDesktop.golden.json"
+    Then the serialized output, with the fixture root replaced by "<ROOT>", equals the golden file "SyntheticProcedures.golden.json"
     And both serialized outputs are byte-identical
 
   @TS-042 @FR-051 @SC-003 @SC-005 @acceptance
-  Scenario Outline: Golden output of the synthetic desktop project with each catalog form
-    Given the synthetic VB project "SyntheticDesktop"
+  Scenario Outline: Golden output of the synthetic procedures project with each catalog form
+    Given the synthetic VB project "SyntheticProcedures"
     When the project is analyzed twice with the configuration:
       """
       { "dataAccess": { "procedureCatalog": "<catalog>", "catalogMode": "replace" } }
       """
     Then the component "LegacyShop.DataAccess.PolicyAdapter" uses exactly the tables "AuditLog, Policies, PolicyArchive, PolicyHolders, sp:usp_Policy_Touch"
-    And the serialized output, with the fixture root replaced by "<ROOT>", equals the golden file "SyntheticDesktop.catalog.golden.json"
+    And the serialized output, with the fixture root replaced by "<ROOT>", equals the golden file "SyntheticProcedures.catalog.golden.json"
     And both serialized outputs are byte-identical
 
     Examples:
@@ -49,10 +48,11 @@ Feature: Synthetic corpus, golden outputs and documentation for stored procedure
   Scenario: The synthetic corpus ships both catalog forms and documents them
     Then the synthetic VB corpus contains the files:
       | project          | file                           |
-      | SyntheticDesktop | DataAccess/PolicyAdapter.vb    |
-      | SyntheticDesktop | Catalog/procs/policy.sql       |
-      | SyntheticDesktop | Catalog/procs/audit.sql        |
-      | SyntheticDesktop | Catalog/procs.csv              |
+      | SyntheticProcedures | DataAccess/PolicyAdapter.vb |
+      | SyntheticProcedures | Catalog/procs/policy.sql    |
+      | SyntheticProcedures | Catalog/procs/audit.sql     |
+      | SyntheticProcedures | Catalog/procs.csv           |
+      | SyntheticProcedures | README.md                   |
     And every synthetic VB project declares in its README that it is synthetic and fictitious
 
   @TS-044 @FR-053 @SC-002 @acceptance

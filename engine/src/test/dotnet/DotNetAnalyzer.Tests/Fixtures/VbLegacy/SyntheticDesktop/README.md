@@ -6,7 +6,6 @@ ADO.NET data access with literal SQL and a typed DataSet, `app.config`, a report
 facade). All names, hosts and credentials are fictitious (`*.example.invalid`, `Synthetic-*`).
 It is not a real system and is not derived from any real code base.
 
-Feature 020-stored-procedures adds `DataAccess/PolicyAdapter.vb` (stored procedure invocations in the
-Enterprise Library, ADO.NET and Dapper styles, one non-literal name, one text command) and the procedure
-catalog `Catalog/procs/*.sql` and `Catalog/procs.csv` (equivalent; `usp_Policy_Touch` is deliberately
-absent). Procedures and tables are fictitious.
+Feature 020-stored-procedures: the stored procedure invocations live in the sibling fixture `SyntheticProcedures`;
+`Modules/DbMaintenance.vb` runs its maintenance procedure through a text command (`EXEC …`) so the tables of this
+corpus stay those of 009.

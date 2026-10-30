@@ -16,8 +16,8 @@ Namespace LegacyShop.Modules
 
         Public Sub RunNightly()
             Dim cmd As New SqlCommand()
-            cmd.CommandType = CommandType.StoredProcedure
-            cmd.CommandText = "usp_NightlyMaintenance"
+            cmd.CommandType = CommandType.Text
+            cmd.CommandText = "EXEC usp_NightlyMaintenance"
         End Sub
 
     End Module

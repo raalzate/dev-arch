@@ -1,7 +1,7 @@
 {
   "testify": {
-    "assertion_hash": "097ef2ba4dd3bb369d73fa100da318eb2bd2bffdf39ac048a95bc9948542ed1e",
-    "generated_at": "2026-10-30T16:46:00Z",
+    "assertion_hash": "40b0b9cd1e8431a1db1d8a6a82e9c4396191ede570b72aecc46028f80c473104",
+    "generated_at": "2026-10-30T17:09:02Z",
     "features_dir": "specs/020-stored-procedures/tests/features",
     "file_count": 5
   }

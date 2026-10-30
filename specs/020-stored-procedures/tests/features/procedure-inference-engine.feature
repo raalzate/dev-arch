@@ -86,13 +86,13 @@ Feature: Shared procedures in the inference and configuration through the engine
 
   @TS-026 @FR-030 @FR-031 @acceptance
   Scenario: The bridge invokes the .NET analyzer exactly as before when dataAccess is the default
-    Given a copy of the synthetic VB project "SyntheticDesktop"
+    Given a copy of the synthetic VB project "SyntheticProcedures"
     When it is analyzed in command-line mode
     Then the .NET analyzer was invoked with exactly the arguments "<project>"
 
   @TS-027 @FR-030 @FR-010 @acceptance
   Scenario: The bridge passes a configuration file when dataAccess is not the default
-    Given a copy of the synthetic VB project "SyntheticDesktop"
+    Given a copy of the synthetic VB project "SyntheticProcedures"
     When it is analyzed in command-line mode with the configuration:
       """
       { "dataAccess": { "procedureCatalog": "Catalog/procs.csv", "catalogMode": "replace" } }
