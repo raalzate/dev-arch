@@ -5,3 +5,8 @@ Synthetic, redistributable fixture written for feature 009-vb-legacy-completion.
 ADO.NET data access with literal SQL and a typed DataSet, `app.config`, a report class and a business
 facade). All names, hosts and credentials are fictitious (`*.example.invalid`, `Synthetic-*`).
 It is not a real system and is not derived from any real code base.
+
+Feature 020-stored-procedures adds `DataAccess/PolicyAdapter.vb` (stored procedure invocations in the
+Enterprise Library, ADO.NET and Dapper styles, one non-literal name, one text command) and the procedure
+catalog `Catalog/procs/*.sql` and `Catalog/procs.csv` (equivalent; `usp_Policy_Touch` is deliberately
+absent). Procedures and tables are fictitious.

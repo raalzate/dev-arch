@@ -32,6 +32,7 @@
     <Compile Include="Business\CustomerController.vb" />
     <Compile Include="DataAccess\CustomerDataAccess.vb" />
     <Compile Include="DataAccess\InvoiceAdapter.vb" />
+    <Compile Include="DataAccess\PolicyAdapter.vb" />
     <Compile Include="DataAccess\SalesDataSet.Designer.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

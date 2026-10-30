@@ -1,0 +1,11 @@
+procedimiento,tabla,operación
+dbo.usp_Policy_Read,Policies,SELECT
+dbo.usp_Policy_Read,PolicyHolders,SELECT
+usp_Policy_List,Policies,SELECT
+usp_Policy_Count,Policies,SELECT
+usp_Policy_Save,Policies,UPDATE
+usp_Policy_Save,AuditLog,INSERT
+"[dbo].[usp_Policy_Archive]","PolicyArchive",INSERT
+usp_Policy_Archive,Policies,SELECT
+usp_Policy_Archive,Policies,DELETE
+usp_Audit_Write,AuditLog,INSERT
