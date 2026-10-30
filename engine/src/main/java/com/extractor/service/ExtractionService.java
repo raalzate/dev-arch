@@ -6,6 +6,8 @@ import com.extractor.analyzer.DotNetToolLocator;
 import com.extractor.analyzer.JavaSpoonAnalyzer;
 import com.extractor.analyzer.LanguageAnalyzer;
 import com.extractor.analyzer.ProjectTypeDetector;
+import com.extractor.inference.config.DataAccessConfig;
+import com.extractor.inference.config.InferenceConfig;
 import com.extractor.inference.config.DetectionConfig;
 import com.extractor.model.DependencyGraph;
 import com.extractor.model.SecretLocation;
@@ -44,10 +46,29 @@ public final class ExtractionService {
     public ExtractionResult extract(final Path projectRoot,
             final AnalysisOptions options, final DetectionConfig detection,
             final AnalysisProgressListener listener) throws Exception {
+        return extract(projectRoot, options, detection,
+                InferenceConfig.defaults().dataAccess(), listener);
+    }
+
+    /**
+     * Extraction with data access parameters (020: forwarded to the .NET analyzer).
+     *
+     * @param projectRoot project directory (already validated)
+     * @param options     analysis options (language)
+     * @param detection   detection parameters
+     * @param dataAccess  data access parameters
+     * @param listener    receives DETECTION and EXTRACTION
+     * @return the extraction result
+     * @throws Exception when the analysis fails
+     */
+    public ExtractionResult extract(final Path projectRoot,
+            final AnalysisOptions options, final DetectionConfig detection,
+            final DataAccessConfig dataAccess,
+            final AnalysisProgressListener listener) throws Exception {
         listener.onPhase(AnalysisPhase.DETECTION);
         List<String> warnings = new ArrayList<>();
         LanguageAnalyzer analyzer = createAnalyzer(projectRoot,
-                options.language(), detection, warnings);
+                options.language(), detection, dataAccess, warnings);
         listener.onPhase(AnalysisPhase.EXTRACTION);
         DependencyGraph graph = analyzer.analyzeProject(projectRoot);
         warnings.addAll(analyzer.getWarnings());
@@ -75,7 +96,8 @@ public final class ExtractionService {
             final AnalysisOptions options, final DetectionConfig detection)
             throws Exception {
         return createAnalyzer(projectRoot, options.language(), detection,
-                new ArrayList<>()).analyzeProject(projectRoot);
+                InferenceConfig.defaults().dataAccess(), new ArrayList<>())
+                .analyzeProject(projectRoot);
     }
 
     /**
@@ -105,11 +127,28 @@ public final class ExtractionService {
     LanguageAnalyzer createAnalyzer(final Path projectRoot,
             final AnalysisLanguage language, final DetectionConfig detection,
             final List<String> warnings) {
+        return createAnalyzer(projectRoot, language, detection,
+                InferenceConfig.defaults().dataAccess(), warnings);
+    }
+
+    /**
+     * Creates the analyzer for the language choice with data access parameters.
+     *
+     * @param projectRoot project directory
+     * @param language    analyzer choice
+     * @param detection   detection parameters
+     * @param dataAccess  data access parameters (020)
+     * @param warnings    receives detection warnings
+     * @return the analyzer
+     */
+    LanguageAnalyzer createAnalyzer(final Path projectRoot,
+            final AnalysisLanguage language, final DetectionConfig detection,
+            final DataAccessConfig dataAccess, final List<String> warnings) {
         if (language == AnalysisLanguage.JAVA) {
             return new JavaSpoonAnalyzer();
         }
         if (language == AnalysisLanguage.DOTNET) {
-            return createDotNetAnalyzer();
+            return createDotNetAnalyzer(dataAccess);
         }
         Detection detected = new ProjectTypeDetector().detect(projectRoot,
                 detection.maxDepth());
@@ -118,7 +157,7 @@ public final class ExtractionService {
         }
         return switch (detected.type()) {
             case JAVA -> new JavaSpoonAnalyzer();
-            case DOTNET -> createDotNetAnalyzer();
+            case DOTNET -> createDotNetAnalyzer(dataAccess);
             case AMBIGUOUS -> throw new IllegalArgumentException(
                     detected.ambiguityMessage(projectRoot));
             case UNKNOWN -> {
@@ -136,9 +175,10 @@ public final class ExtractionService {
      *
      * @return the analyzer
      */
-    private LanguageAnalyzer createDotNetAnalyzer() {
+    private LanguageAnalyzer createDotNetAnalyzer(final DataAccessConfig dataAccess) {
         return new DotNetBridgeAnalyzer(
-                new DotNetToolLocator(getJarDirectory()));
+                new DotNetToolLocator(getJarDirectory()),
+                DotNetBridgeAnalyzer.DEFAULT_TIMEOUT, dataAccess);
     }
 
     /**

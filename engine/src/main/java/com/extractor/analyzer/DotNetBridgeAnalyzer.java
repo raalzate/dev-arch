@@ -15,6 +15,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import com.extractor.inference.config.DataAccessConfig;
+import com.extractor.inference.config.InferenceConfig;
+import java.nio.file.Files;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -34,7 +39,8 @@ import java.util.concurrent.TimeUnit;
 public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
 
     private static final Logger logger = LoggerFactory.getLogger(DotNetBridgeAnalyzer.class);
-    private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
+    /** Default subprocess timeout (shared with ExtractionService, 020). */
+    public static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
     /** Prefix of a user warning line on the analyzer's stderr (009). */
     private static final String WARNING_PREFIX = "[warning] ";
 
@@ -43,6 +49,37 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
     private final ObjectMapper objectMapper;
     /** Non-fatal warnings of the last parse (FR-022). */
     private final List<String> warnings = new ArrayList<>();
+    private final DataAccessConfig dataAccess;
+
+    /**
+     * Writes the analyzer section of the configuration to a temporary file (020, research D3), or returns null
+     * when the defaults apply.
+     */
+    private Path writeConfigIfNeeded() throws IOException {
+        if (dataAccess == null || !dataAccess.affectsAnalyzer()) {
+            return null;
+        }
+        Map<String, Object> section = new LinkedHashMap<>();
+        section.put("procedures", dataAccess.procedures());
+        section.put("procedureCatalog", dataAccess.procedureCatalog() == null ? null
+                : Path.of(dataAccess.procedureCatalog()).toAbsolutePath().normalize().toString());
+        section.put("catalogMode", dataAccess.catalogMode());
+        Path file = Files.createTempFile("dev-arch-dataaccess-", ".json");
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("dataAccess", section);
+        objectMapper.writeValue(file.toFile(), root);
+        return file;
+    }
+
+    private static void deleteQuietly(Path file) {
+        if (file != null) {
+            try {
+                Files.deleteIfExists(file);
+            } catch (IOException e) {
+                logger.debug("Could not delete {}: {}", file, e.getMessage());
+            }
+        }
+    }
 
     /**
      * Creates a new analyzer that uses the given locator to find the dotnet-analyzer executable.
@@ -60,8 +97,21 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
      * @param timeout maximum wall-clock time the subprocess may run
      */
     public DotNetBridgeAnalyzer(DotNetToolLocator locator, Duration timeout) {
+        this(locator, timeout, InferenceConfig.defaults().dataAccess());
+    }
+
+    /**
+     * Bridge with data access parameters (020): when they differ from the defaults the analyzer receives them
+     * through a temporary {@code --config=<file>}; otherwise the command line is exactly the historical one.
+     *
+     * @param locator    locates the dotnet-analyzer executable
+     * @param timeout    maximum wall-clock time the subprocess may run
+     * @param dataAccess data access parameters
+     */
+    public DotNetBridgeAnalyzer(DotNetToolLocator locator, Duration timeout, DataAccessConfig dataAccess) {
         this.locator = locator;
         this.timeout = timeout;
+        this.dataAccess = dataAccess;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
@@ -78,13 +128,29 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
         Path executablePath = locator.locate();
         logger.info("Running dotnet-analyzer: {} {}", executablePath, projectRoot);
 
-        ProcessBuilder pb = new ProcessBuilder(
-                executablePath.toString(),
-                projectRoot.toString()
-        );
+        List<String> command = new ArrayList<>(List.of(executablePath.toString(), projectRoot.toString()));
+        Path configFile = writeConfigIfNeeded();
+        if (configFile != null) {
+            command.add("--config=" + configFile);
+        }
+        ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(false);
 
-        Process process = pb.start();
+        Process process;
+        try {
+            process = pb.start();
+        } catch (IOException e) {
+            deleteQuietly(configFile);
+            throw e;
+        }
+        try {
+            return analyze(process, configFile);
+        } finally {
+            deleteQuietly(configFile);
+        }
+    }
+
+    private DependencyGraph analyze(Process process, Path configFile) throws Exception {
         process.getOutputStream().close();
 
         // Drain both streams concurrently so a full stderr pipe cannot block stdout (BUG-002)

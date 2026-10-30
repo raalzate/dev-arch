@@ -38,7 +38,7 @@ public final class ProposalScorer {
         List<Cluster> clusters = new ArrayList<>(
                 new InferenceEngine(config).analyze(graph).getCandidates());
         clusters.sort(Comparator.comparingInt(Cluster::getClusterId));
-        MetricsCalculator calculator = new MetricsCalculator();
+        MetricsCalculator calculator = new MetricsCalculator(config.dataAccess());
         List<Cluster> fragments = new ArrayList<>();
         Set<String> placed = new LinkedHashSet<>();
         int nextId = 0;

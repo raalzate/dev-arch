@@ -26,7 +26,7 @@ public record DataAccessConfig(String procedures, String procedureCatalog,
      */
     public boolean affectsAnalyzer() {
         DataAccessConfig defaults = InferenceConfig.defaults().dataAccess();
-        return !AUTO.equals(procedures) && !defaults.procedures().equals(procedures)
+        return !defaults.procedures().equals(procedures)
                 || procedureCatalog != null && !procedureCatalog.isBlank()
                 || !defaults.catalogMode().equals(catalogMode);
     }

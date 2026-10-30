@@ -57,6 +57,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Motor: `language` en MCP y `--language` en CLI, progreso por fases (`notifications/progress`), reutilización en memoria del
   modo MCP, advertencias en `_meta` y en stderr del CLI. **Sin cambio de contrato (1.0.0).**
 
+### Añadido (feature 020, acceso a datos por stored procedures — plan VB legacy 015)
+- Motor .NET: pasada 5c de procedimientos almacenados (Enterprise Library `GetStoredProcCommand`/`Execute*`, ADO.NET
+  `CommandType.StoredProcedure` + `CommandText`, Dapper `commandType`) en VB y C#, emitidos en `tables_used` como
+  `sp:<nombre>`; catálogo opcional sp → tablas (scripts `CREATE PROCEDURE` o CSV) con modos `complement`/`replace`,
+  resolución transitiva de `EXEC` y advertencias deterministas; opción `dotnet-analyzer <path> --config=<file>`.
+- Motor: sección `dataAccess` de la configuración de inferencia (`procedures`, `procedureCatalog`, `catalogMode`,
+  `procedureWeight`, `entityHeuristic`), contrato aditivo en `inference-config.schema.json` y tipos regenerados;
+  los `sp:` pesan como tablas en el agrupamiento, `tables_shared` y la cohesión de datos; heurística de entidad
+  opcional para nombrar propuestas. Activa por defecto solo en fuentes VB: salidas C#/Java sin cambios.
+- Corpus sintético `SyntheticDesktop` ampliado con `PolicyAdapter.vb` y catálogo (`Catalog/procs`, `procs.csv`);
+  golden files con y sin catálogo.
+
 ### Corregido (014b, deuda del motor previa al plan VB legacy)
 - Motor .NET: un fallo de Roslyn al construir el árbol de operaciones de una expresión (constructor base implícito con
   parámetro opcional de tipo no resuelto, fallback Adhoc) ya no descarta todos los issues del tipo VB; se omite solo la

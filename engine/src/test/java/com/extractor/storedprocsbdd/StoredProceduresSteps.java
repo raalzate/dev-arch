@@ -134,6 +134,19 @@ public class StoredProceduresSteps {
         assertEquals(expected, p.getMetrics().getTables(), "tables_shared of " + p.getName());
     }
 
+    @Then("that proposal lists the shared tables {string} followed by the shared procedures {string}")
+    public void sharedTablesThenProcedures(String tablesCsv, String proceduresCsv) {
+        MicroserviceProposal p = lastProposal;
+        assertNotNull(p, "no proposal selected");
+        List<String> tables = Arrays.stream(tablesCsv.split(",")).map(String::trim).sorted().toList();
+        List<String> procedures = Arrays.stream(proceduresCsv.split(",")).map(String::trim).toList();
+        List<String> actual = p.getMetrics().getTables();
+        assertEquals(tables.size() + procedures.size(), actual.size(), "tables_shared: " + actual);
+        // The tables keep their pre-020 order (existing outputs unchanged); the procedures follow, ordinal.
+        assertEquals(tables, actual.subList(0, tables.size()).stream().sorted().toList(), "tables of " + actual);
+        assertEquals(procedures, actual.subList(tables.size(), actual.size()), "procedures of " + actual);
+    }
+
     @Then("no proposal lists a shared table starting with {string}")
     public void noSharedTableStartingWith(String prefix) {
         for (MicroserviceProposal p : architecture.getProposals()) {
@@ -262,10 +275,14 @@ public class StoredProceduresSteps {
         // The engine locates dotnet-analyzer next to its own classes first: the child JVM loads the engine
         // classes through a link placed next to the recording wrapper.
         Path classesLink = argvLog.getParent().resolve("classes");
-        String classPath = Arrays.stream(System.getProperty("java.class.path").split(java.io.File.pathSeparator))
+        // Surefire forks with a booter jar: the real class path is in surefire.test.class.path.
+        String realClassPath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+        String classPath = Arrays.stream(realClassPath.split(java.io.File.pathSeparator))
                 .map(entry -> entry.endsWith(java.io.File.separator + "target" + java.io.File.separator + "classes")
                         ? classesLink.toString() : entry)
                 .collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator));
+        assertTrue(classPath.contains(classesLink.toString()),
+                "no target/classes entry found in the class path: " + realClassPath);
         cli = CliRunner.run(cliOut, args, Map.of(), classPath);
         assertEquals(0, cli.exitCode(), cli.stderr());
     }
@@ -275,7 +292,20 @@ public class StoredProceduresSteps {
         Path real = ProductLayout.get().engineRoot().resolve("target/dotnet-analyzer");
         assumeTrue(Files.isExecutable(real), "requires-dotnet: " + real);
         Path dir = Files.createTempDirectory(tmp, "wrapper");
-        Files.createSymbolicLink(dir.resolve("classes"), ProductLayout.get().engineRoot().resolve("target/classes"));
+        // A real copy: the JVM reports the code source of a linked directory through its target, so a link would
+        // still make the locator find engine/target/dotnet-analyzer first.
+        Path classes = ProductLayout.get().engineRoot().resolve("target/classes");
+        Path copy = dir.resolve("classes");
+        try (Stream<Path> files = Files.walk(classes)) {
+            for (Path p : (Iterable<Path>) files.sorted()::iterator) {
+                Path dest = copy.resolve(classes.relativize(p).toString());
+                if (Files.isDirectory(p)) {
+                    Files.createDirectories(dest);
+                } else {
+                    Files.copy(p, dest, StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        }
         Path log = dir.resolve("argv.log");
         Path exe = dir.resolve("dotnet-analyzer");
         Files.writeString(exe, "#!/usr/bin/env bash\n"

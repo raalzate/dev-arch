@@ -1,5 +1,8 @@
 package com.extractor.inference;
 
+import com.extractor.inference.config.DataAccessConfig;
+import com.extractor.inference.config.InferenceConfig;
+
 import com.extractor.model.Component;
 import com.extractor.model.DependencyGraph;
 import com.extractor.model.Edge;
@@ -9,6 +12,22 @@ import java.util.*;
  * Calculates metrics for microservice candidate clusters.
  */
 public class MetricsCalculator {
+
+    /** Data access parameters (020). */
+    private final DataAccessConfig dataAccess;
+
+    public MetricsCalculator() {
+        this(InferenceConfig.defaults().dataAccess());
+    }
+
+    /**
+     * Calculator with data access parameters (procedures as shared data resources).
+     *
+     * @param dataAccess data access parameters
+     */
+    public MetricsCalculator(final DataAccessConfig dataAccess) {
+        this.dataAccess = dataAccess;
+    }
     
     /**
      * Calculates all metrics for a cluster.
@@ -96,18 +115,16 @@ public class MetricsCalculator {
         Map<String, Integer> tableCount = new HashMap<>();
         
         for (Component component : components) {
-            if (component.getTablesUsed() != null) {
-                for (String table : component.getTablesUsed()) {
-                    tableCount.put(table, tableCount.getOrDefault(table, 0) + 1);
-                }
+            for (String table : DataResources.of(component, dataAccess)) {
+                tableCount.put(table, tableCount.getOrDefault(table, 0) + 1);
             }
         }
         
-        // Return only tables used by at least 2 components (actually shared)
-        return tableCount.entrySet().stream()
+        // Return only tables used by at least 2 components (actually shared); procedures after the tables (020)
+        return DataResources.ordered(tableCount.entrySet().stream()
             .filter(entry -> entry.getValue() >= 2)
             .map(Map.Entry::getKey)
-            .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+            .collect(ArrayList::new, ArrayList::add, ArrayList::addAll));
     }
     
     /**

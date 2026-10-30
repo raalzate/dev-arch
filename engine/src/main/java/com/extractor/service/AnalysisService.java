@@ -152,7 +152,7 @@ public final class AnalysisService {
             final AnalysisProgressListener listener,
             final InferenceConfig config) throws Exception {
         ExtractionResult extracted = extraction.extract(projectRoot, options,
-                config.detection(), listener);
+                config.detection(), config.dataAccess(), listener);
         listener.onPhase(AnalysisPhase.INFERENCE);
         ConsolidatedArchitecture architecture =
                 inference.infer(InferenceInput.of(extracted), config);
@@ -228,7 +228,8 @@ public final class AnalysisService {
         validateProjectPath(projectRoot);
         InferenceConfig config = InferenceConfig.defaults();
         ExtractionResult extracted = extraction.extract(projectRoot, options,
-                config.detection(), AnalysisProgressListener.NOOP);
+                config.detection(), config.dataAccess(),
+                AnalysisProgressListener.NOOP);
         return filterByViability(
                 inference.infer(InferenceInput.of(extracted), config),
                 minViability);
