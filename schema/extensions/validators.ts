@@ -142,6 +142,50 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
       })
       .strict()
       .optional(),
+    dataAccess: z
+      .object({
+        procedures: z
+          .enum(["auto", "on", "off"])
+          .describe("Stored procedure detection: auto = Visual Basic compilations only.")
+          .optional(),
+        procedureCatalog: z
+          .union([
+            z
+              .string()
+              .describe(
+                "Directory of .sql scripts (CREATE PROCEDURE) or .csv file (procedimiento,tabla,operación) translating procedures to tables.",
+              ),
+            z
+              .null()
+              .describe(
+                "Directory of .sql scripts (CREATE PROCEDURE) or .csv file (procedimiento,tabla,operación) translating procedures to tables.",
+              ),
+          ])
+          .describe(
+            "Directory of .sql scripts (CREATE PROCEDURE) or .csv file (procedimiento,tabla,operación) translating procedures to tables.",
+          )
+          .optional(),
+        catalogMode: z
+          .enum(["complement", "replace"])
+          .describe("complement keeps sp:<name> next to the tables; replace emits tables only.")
+          .optional(),
+        procedureWeight: z
+          .number()
+          .gte(0)
+          .describe(
+            "Weight of an sp: resource relative to a table in shared-data grouping, tables_shared and data cohesion; 0 ignores procedures.",
+          )
+          .optional(),
+        entityHeuristic: z
+          .boolean()
+          .describe("Derive a business entity from procedure names for proposal naming.")
+          .optional(),
+      })
+      .strict()
+      .describe(
+        "Data access parameters (020-stored-procedures): stored procedure detection in the .NET analyzer, the optional procedure catalog and the weight of sp: resources in the inference.",
+      )
+      .optional(),
   })
   .strict()
   .describe(

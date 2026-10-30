@@ -113,6 +113,31 @@ export interface InferenceConfig {
     excludeTokens?: string[];
     minTokenLength?: number;
   };
+  /**
+   * Data access parameters (020-stored-procedures): stored procedure detection in the .NET analyzer, the optional procedure catalog and the weight of sp: resources in the inference.
+   */
+  dataAccess?: {
+    /**
+     * Stored procedure detection: auto = Visual Basic compilations only.
+     */
+    procedures?: "auto" | "on" | "off";
+    /**
+     * Directory of .sql scripts (CREATE PROCEDURE) or .csv file (procedimiento,tabla,operación) translating procedures to tables.
+     */
+    procedureCatalog?: string | null;
+    /**
+     * complement keeps sp:<name> next to the tables; replace emits tables only.
+     */
+    catalogMode?: "complement" | "replace";
+    /**
+     * Weight of an sp: resource relative to a table in shared-data grouping, tables_shared and data cohesion; 0 ignores procedures.
+     */
+    procedureWeight?: number;
+    /**
+     * Derive a business entity from procedure names for proposal naming.
+     */
+    entityHeuristic?: boolean;
+  };
 }
 /**
  * Successful score_proposal response (008-configurable-inference): evaluation of a user-defined proposal with the formulas of the engine's proposals.

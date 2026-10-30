@@ -72,12 +72,12 @@ public sealed class VbAnalysisContext
     {
         var (graph, json, warnings, log, exit) = await RunProcessAsync(configJson);
         ProcessExitCode = exit;
+        Log = log;
         if (exit != 0)
             return;
         Graph = graph;
         Json = json;
         UserWarnings = warnings;
-        Log = log;
     }
 
     public async Task AnalyzeTwiceWithProcessAsync(string? configJson)

@@ -36,6 +36,32 @@ final class InferenceConfigValidator {
         viability(c.viability());
         recommendation(c.recommendation());
         naming(c.naming());
+        dataAccess(c.dataAccess());
+    }
+
+    /**
+     * Data access rules (020).
+     *
+     * @param d data access parameters
+     */
+    private static void dataAccess(final DataAccessConfig d) {
+        String p = "dataAccess.";
+        List<String> modes = List.of(DataAccessConfig.AUTO, DataAccessConfig.ON,
+                DataAccessConfig.OFF);
+        if (!modes.contains(d.procedures())) {
+            throw InvalidConfigException.parameter(p + "procedures",
+                    "must be one of " + String.join(", ", modes));
+        }
+        List<String> catalogModes = List.of(DataAccessConfig.COMPLEMENT,
+                DataAccessConfig.REPLACE);
+        if (!catalogModes.contains(d.catalogMode())) {
+            throw InvalidConfigException.parameter(p + "catalogMode",
+                    "must be one of " + String.join(", ", catalogModes));
+        }
+        if (!(d.procedureWeight() >= 0)) {
+            throw InvalidConfigException.parameter(p + "procedureWeight",
+                    "must be >= 0");
+        }
     }
 
     /**

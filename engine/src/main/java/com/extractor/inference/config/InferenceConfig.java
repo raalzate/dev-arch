@@ -16,7 +16,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public record InferenceConfig(DetectionConfig detection,
         ClusteringConfig clustering, EvidenceConfig evidence,
         ConsolidationConfig consolidation, ViabilityConfig viability,
-        RecommendationConfig recommendation, NamingConfig naming) {
+        RecommendationConfig recommendation, NamingConfig naming,
+        DataAccessConfig dataAccess) {
 
     /**
      * The 1.2.0 values (FR-005).

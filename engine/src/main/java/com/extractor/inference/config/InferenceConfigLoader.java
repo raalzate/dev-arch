@@ -193,7 +193,10 @@ public final class InferenceConfigLoader {
      */
     private static void checkType(final String path, final JsonNode reference,
             final JsonNode value) {
-        if (reference.isIntegralNumber()) {
+        if (reference.isNull()) {
+            // Optional text parameters default to null (020: dataAccess.procedureCatalog).
+            requireType(path, value.isNull() || value.isTextual(), "a string or null");
+        } else if (reference.isIntegralNumber()) {
             requireType(path, value.isIntegralNumber(), "an integer");
         } else if (reference.isNumber()) {
             requireType(path, value.isNumber(), "a number");

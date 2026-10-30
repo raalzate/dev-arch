@@ -69,6 +69,16 @@ public sealed class ProcedureSteps
         _context.Log.Should().Contain($"Stored procedure detection: {state} for {language} ({reason})",
             "the diagnostics were:\n" + _context.Log);
 
+    [Then(@"^the analyzer reports exactly these procedure warnings:$")]
+    public void ThenExactProcedureWarnings(string text) =>
+        _context.UserWarnings.Where(w => w.StartsWith("Procedure ", StringComparison.Ordinal))
+            .Should().Equal(text.Replace("\r\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries));
+
+    [Then(@"^the analyzer reports a user warning starting with ""([^""]+)""$")]
+    public void ThenAWarningStartingWith(string prefix) =>
+        _context.UserWarnings.Should().Contain(w => w.StartsWith(prefix, StringComparison.Ordinal),
+            "warnings were: " + string.Join(" | ", _context.UserWarnings));
+
     [Then(@"^the product document ""([^""]+)"" mentions each of:$")]
     public void ThenDocumentMentions(string document, Table table)
     {

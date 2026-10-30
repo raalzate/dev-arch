@@ -237,7 +237,8 @@ public class TypeAnalyzer
         }
     }
 
-    private static string GetFullyQualifiedName(INamedTypeSymbol symbol)
+    /// <summary>Namespaces + simple name; shared with the 020 C# procedure adapter.</summary>
+    internal static string GetFullyQualifiedName(INamedTypeSymbol symbol)
     {
         var parts = new List<string>();
         var current = symbol.ContainingNamespace;

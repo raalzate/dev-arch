@@ -1,6 +1,5 @@
 package com.extractor.storedprocsbdd;
 
-import com.extractor.bdd.BaselineArtifacts;
 import com.extractor.inference.ConsolidatedArchitecture;
 import com.extractor.inference.MicroserviceProposal;
 import com.extractor.inference.ProcedureEntityHeuristic;
@@ -17,6 +16,7 @@ import com.extractor.service.InferenceService;
 import com.extractor.service.LoadedGraph;
 import com.extractor.testsupport.CliRunner;
 import com.extractor.testsupport.ProductLayout;
+import com.extractor.testsupport.RegressionBaselines;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
@@ -34,7 +34,6 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -260,7 +259,14 @@ public class StoredProceduresSteps {
             args.add("--config=" + config);
         }
         argvLog = installRecordingAnalyzer();
-        cli = CliRunner.run(cliOut, args, Map.of("DOTNET_ANALYZER_PATH", argvLog.getParent().toString()));
+        // The engine locates dotnet-analyzer next to its own classes first: the child JVM loads the engine
+        // classes through a link placed next to the recording wrapper.
+        Path classesLink = argvLog.getParent().resolve("classes");
+        String classPath = Arrays.stream(System.getProperty("java.class.path").split(java.io.File.pathSeparator))
+                .map(entry -> entry.endsWith(java.io.File.separator + "target" + java.io.File.separator + "classes")
+                        ? classesLink.toString() : entry)
+                .collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator));
+        cli = CliRunner.run(cliOut, args, Map.of(), classPath);
         assertEquals(0, cli.exitCode(), cli.stderr());
     }
 
@@ -269,6 +275,7 @@ public class StoredProceduresSteps {
         Path real = ProductLayout.get().engineRoot().resolve("target/dotnet-analyzer");
         assumeTrue(Files.isExecutable(real), "requires-dotnet: " + real);
         Path dir = Files.createTempDirectory(tmp, "wrapper");
+        Files.createSymbolicLink(dir.resolve("classes"), ProductLayout.get().engineRoot().resolve("target/classes"));
         Path log = dir.resolve("argv.log");
         Path exe = dir.resolve("dotnet-analyzer");
         Files.writeString(exe, "#!/usr/bin/env bash\n"
@@ -281,14 +288,11 @@ public class StoredProceduresSteps {
 
     @Then("the output documents are byte-identical to the versioned baseline of {string}")
     public void outputsMatchBaseline(String demo) throws IOException {
-        Map<String, String> baseline = BaselineArtifacts.load(demo);
-        Map<String, String> current = new LinkedHashMap<>();
-        for (String artifact : List.of(DemoOutputs.GRAPH, DemoOutputs.ARCHITECTURE, DemoOutputs.ENTRYPOINTS)) {
-            current.put(artifact, Files.readString(cliOut.resolve(artifact), StandardCharsets.UTF_8));
-        }
-        Map<String, String> stripped = BaselineArtifacts.stripContractMetadata(current, "meta.schema_version", "meta");
+        // baseline-v1.2.0 (008): default outputs of the hermetic demo copies, byte for byte.
+        Map<String, String> baseline = RegressionBaselines.load(demo);
         for (String artifact : baseline.keySet()) {
-            assertEquals(baseline.get(artifact), stripped.get(artifact), artifact + " of " + demo);
+            String current = Files.readString(cliOut.resolve(artifact), StandardCharsets.UTF_8);
+            assertEquals(baseline.get(artifact), current, artifact + " of " + demo);
         }
     }
 

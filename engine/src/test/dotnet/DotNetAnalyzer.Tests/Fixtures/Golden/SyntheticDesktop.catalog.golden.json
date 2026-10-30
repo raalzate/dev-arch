@@ -1,0 +1,470 @@
+{
+  "components": [
+    {
+      "id": "LegacyShop.Business.Customer",
+      "files": [
+        "<ROOT>/Business/Customer.vb"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0
+    },
+    {
+      "id": "LegacyShop.Business.CustomerController",
+      "files": [
+        "<ROOT>/Business/CustomerController.vb"
+      ],
+      "loc": 15,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [
+        "LegacyShop.DataAccess.CustomerDataAccess"
+      ],
+      "calls_in": [
+        "LegacyShop.Forms.CustomerForm"
+      ],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 2,
+      "lcom": 0,
+      "complexity_max": 2,
+      "complexity_avg": 1.5
+    },
+    {
+      "id": "LegacyShop.DataAccess.CustomerDataAccess",
+      "files": [
+        "<ROOT>/DataAccess/CustomerDataAccess.vb"
+      ],
+      "loc": 47,
+      "tables_used": [
+        "AuditLog",
+        "Customers",
+        "Orders"
+      ],
+      "sensitive_data": true,
+      "layer": "Datos",
+      "calls_out": [],
+      "calls_in": [
+        "LegacyShop.Business.CustomerController"
+      ],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [
+        "ConfigurationManager",
+        "config:ConnectionStrings:ShopDb"
+      ],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "PLAINTEXT_SECRET_IN_CONFIG",
+          "type": "SECURITY",
+          "severity": "CRITICAL",
+          "message": "Configuration entry \u0027config:ConnectionStrings:ShopDb\u0027 is stored as a plaintext credential in app.config. Move it to a protected configuration section or a secret store.",
+          "line": 10
+        },
+        {
+          "pattern": "CATCH_GENERIC_EXCEPTION",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+          "line": 32
+        },
+        {
+          "pattern": "EMPTY_CATCH_BLOCK",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Empty catch block detected. Exceptions should not be swallowed.",
+          "line": 53
+        }
+      ],
+      "implements": [],
+      "cbo": 1,
+      "lcom": 0.7,
+      "complexity_max": 2,
+      "complexity_avg": 1.3333333333333333
+    },
+    {
+      "id": "LegacyShop.DataAccess.InvoiceAdapter",
+      "files": [
+        "<ROOT>/DataAccess/InvoiceAdapter.vb"
+      ],
+      "loc": 17,
+      "tables_used": [
+        "InvoiceLines",
+        "Invoices"
+      ],
+      "sensitive_data": false,
+      "layer": "Datos",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 1,
+      "complexity_max": 4,
+      "complexity_avg": 2.5
+    },
+    {
+      "id": "LegacyShop.DataAccess.PolicyAdapter",
+      "files": [
+        "<ROOT>/DataAccess/PolicyAdapter.vb"
+      ],
+      "loc": 35,
+      "tables_used": [
+        "AuditLog",
+        "Policies",
+        "PolicyArchive",
+        "PolicyHolders",
+        "sp:usp_Policy_Touch"
+      ],
+      "sensitive_data": false,
+      "layer": "Datos",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 20
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 21
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 25
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 30
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 34
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 35
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 45
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 46
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0.5,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "LegacyShop.Forms.CustomerForm",
+      "files": [
+        "<ROOT>/Forms/CustomerForm.vb"
+      ],
+      "loc": 20,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Web",
+      "calls_out": [
+        "LegacyShop.Business.CustomerController"
+      ],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "OPTION_STRICT_OFF",
+          "type": "CODE_STYLE",
+          "severity": "WARNING",
+          "message": "\u0027Option Strict Off\u0027 allows implicit narrowing conversions and late binding. Use Option Strict On.",
+          "line": 1
+        },
+        {
+          "pattern": "ON_ERROR_RESUME_NEXT",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "\u0027On Error Resume Next\u0027 silently ignores run-time errors. Use structured exception handling (Try/Catch) instead.",
+          "line": 13
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 18
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 19
+        },
+        {
+          "pattern": "LATE_BINDING",
+          "type": "BUG_PATTERN",
+          "severity": "WARNING",
+          "message": "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.",
+          "line": 20
+        },
+        {
+          "pattern": "MISSING_SWITCH_DEFAULT",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Select Case statement is missing a \u0027Case Else\u0027 clause.",
+          "line": 24
+        }
+      ],
+      "implements": [],
+      "cbo": 2,
+      "lcom": 1,
+      "complexity_max": 3,
+      "complexity_avg": 1.6666666666666667
+    },
+    {
+      "id": "LegacyShop.Forms.MainWindow",
+      "files": [
+        "<ROOT>/Forms/MainWindow.vb"
+      ],
+      "loc": 7,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Web",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "extends": "System.Windows.Forms.Form",
+      "implements": [],
+      "cbo": 1,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "LegacyShop.Modules.AppGlobals",
+      "files": [
+        "<ROOT>/Modules/AppGlobals.vb"
+      ],
+      "loc": 14,
+      "tables_used": [],
+      "sensitive_data": true,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [
+        "config:UpdateServiceToken"
+      ],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "GOTO_STATEMENT",
+          "type": "CODE_STYLE",
+          "severity": "INFO",
+          "message": "\u0027GoTo\u0027 statement makes the control flow hard to follow. Use structured control flow instead.",
+          "line": 12
+        },
+        {
+          "pattern": "PLAINTEXT_SECRET_IN_CONFIG",
+          "type": "SECURITY",
+          "severity": "CRITICAL",
+          "message": "Configuration entry \u0027config:UpdateServiceToken\u0027 is stored as a plaintext credential in app.config. Move it to a protected configuration section or a secret store.",
+          "line": 17
+        },
+        {
+          "pattern": "HARDCODED_SECRET_IN_CODE",
+          "type": "BUG_PATTERN",
+          "severity": "CRITICAL",
+          "message": "Hardcoded secret detected in variable \u0027AdminPassword\u0027. Use configuration or secret management instead.",
+          "line": 5
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 2,
+      "complexity_avg": 1.5
+    },
+    {
+      "id": "LegacyShop.Modules.DbMaintenance",
+      "files": [
+        "<ROOT>/Modules/DbMaintenance.vb"
+      ],
+      "loc": 14,
+      "tables_used": [
+        "TempImport",
+        "sp:usp_NightlyMaintenance"
+      ],
+      "sensitive_data": true,
+      "layer": "Datos",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [
+        "ConfigurationManager",
+        "config:ConnectionStrings:ShopDb"
+      ],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "PLAINTEXT_SECRET_IN_CONFIG",
+          "type": "SECURITY",
+          "severity": "CRITICAL",
+          "message": "Configuration entry \u0027config:ConnectionStrings:ShopDb\u0027 is stored as a plaintext credential in app.config. Move it to a protected configuration section or a secret store.",
+          "line": 10
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "LegacyShop.Reports.MonthlySalesReport",
+      "files": [
+        "<ROOT>/Reports/MonthlySalesReport.vb"
+      ],
+      "loc": 34,
+      "tables_used": [
+        "Invoices"
+      ],
+      "sensitive_data": false,
+      "layer": "Web",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [
+        "ConfigurationManager",
+        "config:ConnectionStrings:ReportsDb",
+        "config:ReportsFolder"
+      ],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "HIGH_CYCLOMATIC_COMPLEXITY",
+          "type": "CODE_STYLE",
+          "severity": "ERROR",
+          "message": "Method \u0027Build\u0027 cyclomatic complexity 16 exceeds 15",
+          "line": 9
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 1,
+      "complexity_max": 16,
+      "complexity_avg": 8.5
+    }
+  ],
+  "edges": [
+    {
+      "from": "LegacyShop.Business.CustomerController",
+      "to": "LegacyShop.DataAccess.CustomerDataAccess",
+      "weight": 2,
+      "type": "call"
+    },
+    {
+      "from": "LegacyShop.Business.CustomerController",
+      "to": "LegacyShop.DataAccess.CustomerDataAccess",
+      "weight": 1,
+      "type": "injection"
+    },
+    {
+      "from": "LegacyShop.Forms.CustomerForm",
+      "to": "LegacyShop.Business.CustomerController",
+      "weight": 1,
+      "type": "call"
+    }
+  ],
+  "api_contracts": {
+    "endpoints": [],
+    "schemas": {}
+  },
+  "meta": {
+    "source": "roslyn-fallback",
+    "schema_version": "1.0.0",
+    "microservice_candidates": {}
+  }
+}

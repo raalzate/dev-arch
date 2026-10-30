@@ -35,6 +35,20 @@ public final class CliRunner {
      * @return exit code and outputs
      */
     public static Result run(Path workDir, List<String> args, Map<String, String> env) {
+        return run(workDir, args, env, System.getProperty("java.class.path"));
+    }
+
+    /**
+     * Runs the CLI with an explicit class path (020: the engine classes reached through a directory whose
+     * sibling {@code dotnet-analyzer} is a recording wrapper).
+     *
+     * @param workDir   working directory
+     * @param args      program arguments
+     * @param env       extra environment variables
+     * @param classPath class path of the child JVM
+     * @return exit code and outputs
+     */
+    public static Result run(Path workDir, List<String> args, Map<String, String> env, String classPath) {
         try {
             Files.createDirectories(workDir);
             Path out = Files.createTempFile(workDir, "cli-out", ".txt");
@@ -42,7 +56,7 @@ public final class CliRunner {
             List<String> cmd = new ArrayList<>();
             cmd.add(Path.of(System.getProperty("java.home"), "bin", "java").toString());
             cmd.add("-cp");
-            cmd.add(System.getProperty("java.class.path"));
+            cmd.add(classPath);
             cmd.add("com.extractor.MicroserviceInferenceMain");
             cmd.addAll(args);
             ProcessBuilder pb = new ProcessBuilder(cmd).directory(workDir.toFile())
