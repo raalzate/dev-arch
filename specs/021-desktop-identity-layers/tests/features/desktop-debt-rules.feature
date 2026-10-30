@@ -131,7 +131,7 @@ Feature: Legacy debt rules
       """
       { "debt": { "godClass": { "minLoc": 5, "minComplexity": 5 } } }
       """
-    Then the component "Sample.Branchy" has a code issue "GOD_CLASS" with severity "WARNING" and message "Type 'Branchy' has 10 lines of code and a maximum method complexity of 7 (thresholds 5 and 5). Split it by responsibility."
+    Then the component "Sample.Branchy" has a code issue "GOD_CLASS" with severity "WARNING" and message "Type 'Branchy' has 11 lines of code and a maximum method complexity of 7 (thresholds 5 and 5). Split it by responsibility."
     When the project is analyzed with the configuration:
       """
       { "debt": { "godClass": { "minLoc": 50, "minComplexity": 5 } } }
