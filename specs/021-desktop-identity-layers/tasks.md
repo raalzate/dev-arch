@@ -38,7 +38,7 @@ description: "Task list for 021-desktop-identity-layers"
 - [x] T014 [P] Prueba `Corpus` opt-in: SC-001 (0 sin namespace, ≥ 95 % Win en Presentación/Reportes, consola Batch) y aristas ≥ 90 % de las actuales; SC-006 tiempo
 
 ## Phase 7: Polish
-- [ ] T015 `make test-engine` completo (SDK 8), Checkstyle/SpotBugs/`dotnet format`, doble corrida sobre la referencia; memoria de progreso
+- [x] T015 `make test-engine` completo (SDK 8), Checkstyle/SpotBugs/`dotnet format`, doble corrida sobre la referencia; memoria de progreso
 
 ## Dependencies
 Setup (T001-T004, paralelo) → T005 → {T006, T007} → T008 → T009 → T010 → T011 → T012 → {T013, T014} → T015.
