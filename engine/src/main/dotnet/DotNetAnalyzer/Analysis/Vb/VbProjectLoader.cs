@@ -98,21 +98,32 @@ public static class VbProjectLoader
         }
 
         var compilations = new List<Compilation>();
-        var references = new List<MetadataReference>();
+        var compiled = new Dictionary<string, MetadataReference>(StringComparer.Ordinal);
         foreach (var project in TopologicalOrder(projects, byPath))
         {
             var files = filesByProject[project.Path];
             if (files.Count == 0)
                 continue;
+            // Only the declared project references (as MSBuild does): referencing every earlier project would make
+            // types declared in several projects ambiguous and break the resolution of calls.
+            var references = project.ProjectReferences
+                .Where(compiled.ContainsKey)
+                .OrderBy(r => r, StringComparer.Ordinal)
+                .Select(r => compiled[r])
+                .ToList();
             var compilation = Compile(files.ToArray(), Path.GetFileNameWithoutExtension(project.Path), project, references);
+            Console.Error.WriteLine(
+                $"[info] VbProjectLoader: compiled '{project.FileName}' ({files.Count} files, root namespace "
+                + $"'{project.RootNamespace ?? string.Empty}', {references.Count} project references)");
             compilations.Add(compilation);
-            references.Add(compilation.ToMetadataReference());
+            compiled[project.Path] = compilation.ToMetadataReference();
         }
 
         if (residual.Count > 0)
         {
             var name = Path.GetFileName(rootDirectory.TrimEnd(Path.DirectorySeparatorChar));
-            compilations.Add(Compile(residual.ToArray(), string.IsNullOrEmpty(name) ? "VbAdhocCompilation" : name, null, references));
+            compilations.Add(Compile(residual.ToArray(), string.IsNullOrEmpty(name) ? "VbAdhocCompilation" : name, null,
+                compiled.OrderBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => kv.Value).ToList()));
         }
 
         return compilations;

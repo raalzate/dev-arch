@@ -179,6 +179,26 @@ Criterios de salida del plan (`PLAN-VB-PLATAFORMA-LEGACY.md` §4, feature 015): 
 ≥ 850 procedimientos distintos: cumplidos. Las salidas de `test-for-demo/*` (líneas base v1.1.0 y v1.2.0) no cambian.
 La prueba opt-in `VbCorpusSmokeTests` ("020 SC-002/SC-008") repite esta medición con el límite de tiempo.
 
+## 9. Feature 021 (identidad, capas, deuda) sobre el corpus de referencia VB
+
+Corrida local 2026-10-30 (macOS, SDK 8, fidelidad reducida, carpeta sin `.sln` con 14 `.vbproj`):
+
+| Métrica | Antes (020) | Después (021) |
+|---|---|---|
+| Compilaciones Adhoc | 1 (todo el directorio) | 14 (una por proyecto, orden de `ProjectReference`) + 1 C# |
+| Componentes sin namespace | 229 | 47 (todos en los 11 proyectos sin `<RootNamespace>`) |
+| Aristas / entre proyectos | 1 249 / 971 | 1 251 / 973 |
+| `*.Win.*` con `Layer:Presentación`/`Reportes` | — | 161 de 171 (94 %) |
+| Puntos de entrada por lotes | 0 | 1 (`Layer:Batch`, `EntryPoint:Main`) |
+| Issues de deuda nuevos | — | `PROJECT_OPTION_STRICT_OFF` 90, `UI_CALL_IN_BUSINESS_LAYER` 37, `STATIC_FACADE` 33, `GOD_CLASS` 13, `MIXED_TRANSACTION_MODELS` 5, `SQL_CONCAT_INJECTION` 4 |
+| Avisos BUG-001 (árbol de operaciones) | 2 | 0 (los `Import` globales resuelven `Int64`) |
+| Tiempo analizador .NET / doble corrida | ~40 s | ~16 s / byte a byte idéntica |
+
+Hallazgo: al compilar por proyecto, cada proyecto debe referenciar solo sus `ProjectReference` declaradas (referenciar
+todas las compilaciones anteriores no cambia la resolución pero no es lo que hace MSBuild) y las pasadas de invocación
+deben compartir el ámbito de componentes de todas las compilaciones VB: con el ámbito por compilación se perdían las
+971 aristas entre proyectos. La prueba opt-in `VbCorpusSmokeTests` ("021 SC-001/SC-006") fija estos umbrales.
+
 ## Cómo reproducir
 
 ```bash

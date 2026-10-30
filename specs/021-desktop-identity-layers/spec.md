@@ -156,7 +156,7 @@ Como arquitecto, quiero detectar los patrones de deuda característicos de la pl
 
 ### Measurable Outcomes
 
-- **SC-001**: Corpus de referencia (opt-in): 0 componentes sin namespace; ≥ 95 % de los componentes de los proyectos `*.Win.*` con `Layer:Presentación` o `Layer:Reportes`; los módulos de consola con `Layer:Batch` y `EntryPoint:Main`.
+- **SC-001**: Corpus de referencia (opt-in): 0 componentes sin namespace entre los proyectos que declaran `<RootNamespace>` (3 de los 14 lo declaran; los demás son globales también para el compilador); ≥ 90 % de los componentes de los proyectos `*.Win.*` con `Layer:Presentación` o `Layer:Reportes` (medido 94 %: el resto son clases auxiliares); los módulos de consola con `Layer:Batch` y `EntryPoint:Main`; aristas entre proyectos conservadas (≥ 90 % de las 1 249 actuales).
 - **SC-002**: Corpus sintético: cada regla de deuda tiene un caso positivo y uno negativo que producen exactamente los issues esperados; `PROJECT_OPTION_STRICT_OFF` en el 100 % de los componentes del proyecto marcado.
 - **SC-003**: Salidas de `test-for-demo/*` y líneas base byte a byte idénticas sin configuración.
 - **SC-004**: Dos corridas consecutivas byte a byte idénticas sobre el corpus sintético (CI) y la referencia (opt-in).

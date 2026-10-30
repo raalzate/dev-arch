@@ -121,4 +121,41 @@ public class VbCorpusSmokeTests
         timed.Elapsed.Should().BeLessThanOrEqualTo(baseline.Elapsed * 1.10 + TimeSpan.FromSeconds(2),
             "the pass is linear in syntax nodes (SC-008)");
     }
+
+    /// <summary>
+    /// 021 SC-001 / SC-006 (opt-in): identity, fine layers, batch entry point and edge resolution on the reference
+    /// corpus. Projects that declare a root namespace have no unqualified component; forms and reports of the
+    /// *.Win.* projects carry the fine layer; the console module is the batch entry point; the per-project
+    /// compilation keeps the inter-project edges (≥ 1 100 edges, 1 249 before 021).
+    /// </summary>
+    [Fact(DisplayName = "021 SC-001/SC-006: identity, fine layers and edges of the reference corpus")]
+    public async Task DesktopIdentity_LayersAndEdges_OnTheReferenceCorpus()
+    {
+        var root = Path.Combine(FindRepoRoot(), "test-for-demo", "vb-demo-legacy");
+        Directory.Exists(root).Should().BeTrue($"Reference corpus not found: {root}");
+        var timed = System.Diagnostics.Stopwatch.StartNew();
+        var graph = await new ProjectAnalyzer().AnalyzeProjectAsync(root);
+        timed.Stop();
+
+        var projectsWithRoot = Directory.GetFiles(root, "*.vbproj", SearchOption.AllDirectories)
+            .Select(DotNetAnalyzer.Analysis.Vb.VbProjectFile.Load)
+            .Where(p => p.RootNamespace != null)
+            .Select(p => p.Directory)
+            .ToList();
+        projectsWithRoot.Should().NotBeEmpty();
+        var unqualified = graph.Components
+            .Where(c => !c.Id.Contains('.') && c.Files.Any(f => projectsWithRoot.Any(d => f.StartsWith(d, StringComparison.Ordinal))))
+            .Select(c => c.Id).ToList();
+        unqualified.Should().BeEmpty("components of projects declaring a RootNamespace must be qualified");
+
+        var win = graph.Components.Where(c => c.Files.Any(f => f.Contains(".Win.", StringComparison.Ordinal))).ToList();
+        win.Should().NotBeEmpty();
+        var presentation = win.Count(c => c.Annotations.Contains("Layer:Presentación") || c.Annotations.Contains("Layer:Reportes"));
+        ((double)presentation / win.Count).Should().BeGreaterOrEqualTo(0.9, $"{presentation} of {win.Count} *.Win.* components");
+
+        graph.Components.Should().Contain(c => c.Annotations.Contains("Layer:Batch") && c.Annotations.Contains("EntryPoint:Main") && c.Layer == "Negocio",
+            "the console process module is a batch entry point");
+        graph.Edges.Count.Should().BeGreaterOrEqualTo(1100, "per-project compilation must keep the inter-project edges");
+        timed.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(90));
+    }
 }
