@@ -57,6 +57,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Motor: `language` en MCP y `--language` en CLI, progreso por fases (`notifications/progress`), reutilización en memoria del
   modo MCP, advertencias en `_meta` y en stderr del CLI. **Sin cambio de contrato (1.0.0).**
 
+### Añadido (feature 021, identidad, capas y puntos de entrada del perfil desktop — plan VB legacy 016)
+- Motor .NET: el cargador VB de fidelidad reducida aplica `<RootNamespace>` e `<Import>` globales del `.vbproj` y
+  compila un proyecto por `.vbproj` anidado (orden de `ProjectReference`, referencias entre compilaciones).
+- Motor .NET: capas finas de escritorio como anotaciones (`Layer:Presentación`, `Layer:Reportes`, `Layer:Batch`,
+  `EntryPoint:Main`) proyectadas al catálogo `layer` de 1.0.0; validadores → Negocio; el motor declara
+  `legacy_entrypoint` `internal` de proceso por lotes para las propuestas con `Sub Main`.
+- Motor .NET: pasada de deuda legacy (`debt.enabled`, solo VB por defecto): `PROJECT_OPTION_STRICT_OFF`,
+  `UI_CALL_IN_BUSINESS_LAYER`, `SQL_CONCAT_INJECTION`, `STATIC_FACADE`, `MIXED_TRANSACTION_MODELS`, `GOD_CLASS`
+  (umbrales `debt.godClass.*`); sección `debt` de la configuración (contrato aditivo, tipos regenerados).
+- Corpus sintético `SyntheticLegacyDebt` con golden; `SyntheticDesktop` y `SyntheticProcedures` compilan con
+  `Option Strict On` a nivel de proyecto (test data).
+
 ### Añadido (feature 020, acceso a datos por stored procedures — plan VB legacy 015)
 - Motor .NET: pasada 5c de procedimientos almacenados (Enterprise Library `GetStoredProcCommand`/`Execute*`, ADO.NET
   `CommandType.StoredProcedure` + `CommandText`, Dapper `commandType`) en VB y C#, emitidos en `tables_used` como

@@ -125,6 +125,18 @@ together with a re-lock of TS-028.
 _None yet — 1.0.0 is the first formal version. It describes the v1.1.0 output plus the additive
 `meta.schema_version` (and the new `meta` objects of the architecture and entrypoints documents)._
 
+## `inference-config` — section `debt` (feature 021, additive)
+
+| Key | Type | Default | Meaning |
+|---|---|---|---|
+| `enabled` | `auto` \| `on` \| `off` | `auto` | legacy debt rules of the .NET analyzer; `auto` = Visual Basic compilations only |
+| `godClass.minLoc` | integer ≥ 1 | `1000` | lines of code above which a type may be a god class |
+| `godClass.minComplexity` | integer ≥ 1 | `15` | maximum method complexity above which a type may be a god class |
+
+Output conventions without schema change: `components[].annotations` may contain `Layer:Presentación`,
+`Layer:Reportes`, `Layer:Batch` and `EntryPoint:Main`; `proposals[].legacy_entrypoint` of a batch proposal is
+`internal` with `exposed_operations = ["Main"]`; new `code_issues[].rule` values are listed in `docs/VB-LEGACY.md`.
+
 ## `inference-config` — section `dataAccess` (feature 020, additive)
 
 | Key | Type | Default | Meaning |

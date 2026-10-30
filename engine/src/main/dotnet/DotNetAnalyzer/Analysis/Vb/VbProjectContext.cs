@@ -102,7 +102,7 @@ public static class VbProjectContext
             .Any(s => s.Equals("bin", StringComparison.OrdinalIgnoreCase) || s.Equals("obj", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static bool IsSameOrUnder(string dir, string ancestor) =>
+    public static bool IsSameOrUnder(string dir, string ancestor) =>
         dir.Equals(ancestor, StringComparison.Ordinal)
         || dir.StartsWith(ancestor.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.Ordinal);
 }

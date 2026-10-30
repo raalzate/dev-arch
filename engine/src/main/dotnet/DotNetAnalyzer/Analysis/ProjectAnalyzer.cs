@@ -125,6 +125,10 @@ public class ProjectAnalyzer
                 // 009: VB passes run only for Visual Basic compilations (research D1); C# is untouched.
                 var vbIndex = compilation.Language == LanguageNames.VisualBasic ? VbTypeIndex.Build(compilation) : null;
                 var vbDirectory = vbIndex != null ? VbProjectContext.ResolveProjectDirectory(compilation) : null;
+                // 021: the project file of the compilation (Option Strict, startup object, report definitions).
+                var vbProject = vbIndex != null && VbProjectContext.FindProjectFile(vbDirectory) is { } projectFile
+                    ? VbProjectFile.Load(projectFile)
+                    : null;
 
                 // Pass 2: Invocation analysis
                 var edges = _invocationAnalyzer.AnalyzeInvocations(compilation, components);
@@ -174,9 +178,9 @@ public class ProjectAnalyzer
                 // Pass 8: Layer classification
                 _layerClassifier.Classify(components);
 
-                // Pass 8b: desktop layers (VB)
+                // Pass 8b: desktop layers (VB), fine layers and entry points (021)
                 if (vbIndex != null)
-                    RunVbPass("VbLayerClassifier", () => VbLayerClassifier.Classify(vbIndex, components));
+                    RunVbPass("VbLayerClassifier", () => VbLayerClassifier.Classify(vbIndex, components, vbProject));
 
                 // Pass 9: Messaging detection (MassTransit, Azure Service Bus)
                 _messagingDetector.Detect(compilation, components);
@@ -197,6 +201,11 @@ public class ProjectAnalyzer
                 // Pass 11b: VB code issues (ordered as C#)
                 if (vbIndex != null)
                     RunVbPass("VbCodeAnalyzer", () => VbCodeAnalyzer.Analyze(vbIndex, components));
+
+                // Pass 11c (021): legacy debt rules; auto = Visual Basic only (FR-030).
+                Console.Error.WriteLine($"[info] {VbDebtAnalyzer.StateDiagnostic(_options.Debt, compilation.Language)}");
+                if (vbIndex != null && VbDebtAnalyzer.Enabled(_options.Debt, compilation.Language))
+                    RunVbPass("VbDebtAnalyzer", () => VbDebtAnalyzer.Analyze(vbIndex, components, vbProject, _options.Debt));
 
                 allComponents.AddRange(components);
                 allEdges.AddRange(edges);
@@ -470,11 +479,15 @@ public class ProjectAnalyzer
 
         if (!isCsProj)
         {
-            // Directory or .sln-flavored fallback: glob both languages.
-            var vbCompilation = VbProjectLoader.LoadAdhoc(directory);
-            if (vbCompilation != null)
+            // Directory or .sln-flavored fallback: glob both languages. 021 (research D2b): a directory of nested
+            // .vbproj files is compiled one project at a time (root namespaces, project references).
+            var nested = VbProjectContext.NestedProjectFiles(directory);
+            var vbCompilations = nested.Count > 0
+                ? VbProjectLoader.LoadAdhocProjects(nested, directory)
+                : VbProjectLoader.LoadAdhoc(directory) is { } single ? new List<Compilation> { single } : new List<Compilation>();
+            if (vbCompilations.Count > 0)
             {
-                compilations.Add(vbCompilation);
+                compilations.AddRange(vbCompilations);
                 var name = Path.GetFileName(Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar));
                 reducedFidelityVb.Add($"VB sources in '{name}'");
             }

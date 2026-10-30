@@ -445,6 +445,21 @@ public class MicroserviceRecommendationEngine {
 
     private LegacyEntrypoint buildEntrypointFromComponents(List<String> componentFQCNs,
                                                            Map<String, Component> componentsById) {
+        // 021 (FR-015): a module with Sub Main (annotation EntryPoint:Main) is a batch entry point; the closed
+        // catalogue of the contract keeps the type "internal".
+        String batchEntry = componentFQCNs.stream()
+            .map(componentsById::get)
+            .filter(c -> c != null && c.getAnnotations() != null && c.getAnnotations().contains("EntryPoint:Main"))
+            .map(Component::getId)
+            .sorted()
+            .findFirst().orElse(null);
+        if (batchEntry != null) {
+            String simpleName = batchEntry.substring(batchEntry.lastIndexOf('.') + 1);
+            return new LegacyEntrypoint("internal", batchEntry, List.of("Main"), null, List.of(),
+                "Proceso por lotes (Sub Main) sin endpoints: se ejecuta por línea de comandos o planificador. "
+                + "Entrada principal: " + simpleName + ".");
+        }
+
         boolean anyMessaging = componentFQCNs.stream()
             .map(componentsById::get)
             .filter(Objects::nonNull)
