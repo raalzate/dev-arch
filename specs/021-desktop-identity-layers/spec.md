@@ -46,7 +46,7 @@ Como arquitecto, quiero que los formularios, controles, reportes y procesos por 
 
 1. **Given** una clase que hereda (directa o transitivamente) de un tipo cuyo nombre termina en `Form`, `UserControl`, `XtraForm`, `XtraUserControl` o `WaitForm`, o que tiene un archivo hermano `<Nombre>.Designer.vb`, **When** se analiza, **Then** el componente lleva la anotación `Layer:Presentación` y su `layer` del contrato es `Web`
 2. **Given** una clase que hereda de un tipo cuyo nombre contiene `Report` o `ActiveReport`, o un proyecto con un archivo `.rdlc` del mismo nombre, o una clase que usa `LocalReport`, **When** se analiza, **Then** el componente lleva `Layer:Reportes` y su `layer` es `Web`
-3. **Given** un `Module` con un procedimiento `Sub Main` o un proyecto con `<OutputType>Exe</OutputType>` cuyo objeto de inicio es ese módulo, **When** se analiza, **Then** el componente lleva `Layer:Batch` y `EntryPoint:Main`, su `layer` es `Negocio`, y la propuesta que lo contiene declara un `legacy_entrypoint` de tipo `batch` con ese componente como clase de entrada
+3. **Given** un `Module` con un procedimiento `Sub Main` o un proyecto con `<OutputType>Exe</OutputType>` cuyo objeto de inicio es ese módulo, **When** se analiza, **Then** el componente lleva `Layer:Batch` y `EntryPoint:Main`, su `layer` es `Negocio`, y la propuesta que lo contiene declara un `legacy_entrypoint` de tipo `internal` (el catálogo del contrato 1.0.0 es cerrado) con ese componente como clase de entrada, la operación `Main` y una descripción que lo identifica como proceso por lotes
 4. **Given** una clase cuyo nombre termina en `Validator` o pertenece a un proyecto `*.Validators`, **When** se analiza, **Then** su `layer` es `Negocio`
 5. **Given** un formulario que la regla de 009 ya clasificaba como `Web`, **When** se analiza, **Then** su `layer` sigue siendo `Web` (sin cambios en el contrato) y gana la anotación de capa fina
 6. **Given** los proyectos C# y Java de demostración, **When** se analizan sin configuración, **Then** sus salidas son byte a byte idénticas a las anteriores
@@ -120,7 +120,7 @@ Como arquitecto, quiero detectar los patrones de deuda característicos de la pl
 - **FR-012**: El sistema MUST clasificar como Batch los `Module` con un procedimiento `Sub Main` y marcar el componente como punto de entrada (`EntryPoint:Main`); un proyecto `<OutputType>Exe</OutputType>` cuyo `<StartupObject>` sea ese módulo refuerza la clasificación.
 - **FR-013**: El sistema MUST clasificar como Negocio los tipos cuyo nombre termina en `Validator` o que pertenecen a un proyecto cuyo nombre termina en `.Validators`.
 - **FR-014**: La capa fina MUST emitirse como anotación `Layer:<Presentación|Reportes|Batch>` del componente y proyectarse en `layer` como `Web` (Presentación, Reportes) o `Negocio` (Batch), sin añadir valores al catálogo del contrato 1.0.0.
-- **FR-015**: Una propuesta que contenga un componente `EntryPoint:Main` MUST declarar `legacy_entrypoint` de tipo `batch`, con el componente de menor id ordinal como clase de entrada y una descripción determinista.
+- **FR-015**: Una propuesta que contenga un componente `EntryPoint:Main` MUST declarar `legacy_entrypoint` de tipo `internal` (único valor del catálogo cerrado 1.0.0 aplicable), con el componente de menor id ordinal como clase de entrada, `Main` como operación expuesta y una descripción determinista que lo identifica como proceso por lotes; no se añaden valores al catálogo `type`.
 - **FR-016**: Las reglas de capa de 009 MUST conservarse; la capa fina solo añade anotaciones y nunca cambia un `layer` existente salvo Validator → Negocio y Batch → Negocio (hoy `Compartida`).
 
 **Option Strict de proyecto (US3)**
@@ -149,7 +149,7 @@ Como arquitecto, quiero detectar los patrones de deuda característicos de la pl
 
 - **Proyecto VB**: archivo `.vbproj`; atributos relevantes: `RootNamespace`, `Import` globales, `OptionStrict`, `OutputType`, `StartupObject`, archivos `.rdlc` y `.Designer.vb`.
 - **Capa fina**: Presentación | Reportes | Batch; anotación del componente, proyectada al `layer` del contrato.
-- **Punto de entrada por lotes**: componente `Module` con `Sub Main`; anotación `EntryPoint:Main`; `legacy_entrypoint` de tipo `batch` en la propuesta.
+- **Punto de entrada por lotes**: componente `Module` con `Sub Main`; anotación `EntryPoint:Main`; `legacy_entrypoint` de tipo `internal` (descripción de proceso por lotes) en la propuesta.
 - **Regla de deuda**: identificador, tipo, severidad, condición sintáctica, umbrales (solo `GOD_CLASS`), activación por `debt.enabled`.
 
 ## Success Criteria *(mandatory)*
@@ -167,6 +167,7 @@ Como arquitecto, quiero detectar los patrones de deuda característicos de la pl
 
 ### Session 2026-10-30
 
+- Punto de entrada por lotes: `legacy_entrypoint.type` es un catálogo cerrado (`rest`, `messaging`, `service`, `internal`); el proceso por lotes usa `internal` con `exposed_operations = [Main]` y descripción explícita.
 - Capas nuevas (plan 016.2): se adopta la **opción (b)** del plan (anotaciones + proyección a `Web`/`Negocio`) porque los escenarios bloqueados de 005 y 008 y las líneas base exigen `meta.schema_version = 1.0.0` en toda salida; la opción (a) (contrato 1.1.0 con tres capas) queda documentada para cuando se abra una versión de contrato. `Batch` se proyecta a `Negocio` (hoy `Compartida` para módulos): cambio solo visible en fuentes VB.
 - `detection.maxDepth` por defecto (plan 016.5): **excluido**; cambiaría la línea base de `dotnet-unstructured` (analizado hoy como Java sin componentes). Requiere decisión del usuario (§7.2).
 - Activación de las reglas de deuda: `debt.enabled = auto` (solo VB) siguiendo la regla 4.0 del plan.
