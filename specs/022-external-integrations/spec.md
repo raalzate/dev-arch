@@ -131,7 +131,7 @@ Como arquitecto, quiero ver las bibliotecas externas de cada proyecto y cuáles 
 
 ## Success Criteria *(mandatory)*
 
-- **SC-001**: Referencia (opt-in): ≥ 12 integraciones salientes distintas anotadas con su componente consumidor; 11 proyectos ausentes advertidos; ≥ 3 dependencias EOL distintas; ningún valor de configuración ni dirección completa en la salida.
+- **SC-001**: Referencia (opt-in): ≥ 12 integraciones salientes distintas anotadas con su componente consumidor (medido 19); ≥ 11 proyectos ausentes advertidos (medido 36: el subconjunto Policy referencia más proyectos que los 11 estimados en el plan); ≥ 3 dependencias EOL distintas (medido 13); ningún valor de configuración ni dirección completa en la salida.
 - **SC-002**: Corpus sintético: cada forma reconocida tiene un caso positivo y uno negativo que producen exactamente las anotaciones, dependencias e issues esperados.
 - **SC-003**: `test-for-demo/*` y líneas base byte a byte idénticas; `meta.schema_version` sigue en `1.0.0`.
 - **SC-004**: Doble corrida byte a byte idéntica en el corpus sintético (CI) y en la referencia (opt-in).

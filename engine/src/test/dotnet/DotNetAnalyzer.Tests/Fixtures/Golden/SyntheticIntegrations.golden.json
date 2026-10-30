@@ -1,0 +1,301 @@
+{
+  "components": [
+    {
+      "id": "Acme.Integrations.Clients.HolidayGateway",
+      "files": [
+        "<ROOT>/Clients/HolidayGateway.vb"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Dependency:eol:Microsoft.Practices.EnterpriseLibrary.Data",
+        "Integration:soap:Holiday"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [
+        "Microsoft.Practices.EnterpriseLibrary.Data",
+        "Newtonsoft.Json",
+        "RestSharp",
+        "project:Acme.Billing",
+        "service:Holiday"
+      ],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "EOL_DEPENDENCY",
+          "type": "DEPENDENCY",
+          "severity": "WARNING",
+          "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
+          "line": 0
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Integrations.Clients.IPricing",
+      "files": [
+        "<ROOT>/Clients/PricingClient.vb"
+      ],
+      "loc": 3,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Dependency:eol:Microsoft.Practices.EnterpriseLibrary.Data"
+      ],
+      "is_interface": true,
+      "secrets_references": [],
+      "external_dependencies": [
+        "Microsoft.Practices.EnterpriseLibrary.Data",
+        "Newtonsoft.Json",
+        "RestSharp",
+        "project:Acme.Billing"
+      ],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "EOL_DEPENDENCY",
+          "type": "DEPENDENCY",
+          "severity": "WARNING",
+          "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
+          "line": 0
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0
+    },
+    {
+      "id": "Acme.Integrations.Clients.LegacySoapClient",
+      "files": [
+        "<ROOT>/Clients/LegacySoapClient.vb"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Dependency:eol:Microsoft.Practices.EnterpriseLibrary.Data",
+        "Integration:soap:LegacySoapClient"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [
+        "Microsoft.Practices.EnterpriseLibrary.Data",
+        "Newtonsoft.Json",
+        "RestSharp",
+        "project:Acme.Billing",
+        "service:LegacySoapClient"
+      ],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "EOL_DEPENDENCY",
+          "type": "DEPENDENCY",
+          "severity": "WARNING",
+          "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
+          "line": 0
+        }
+      ],
+      "extends": "System.Web.Services.Protocols.SoapHttpClientProtocol",
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0
+    },
+    {
+      "id": "Acme.Integrations.Clients.OfacGateway",
+      "files": [
+        "<ROOT>/Clients/OfacGateway.vb"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Dependency:eol:Microsoft.Practices.EnterpriseLibrary.Data",
+        "Integration:wcf:Ofac",
+        "Integration:wcf:Ofac.IOfacService@ofac.example.invalid"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [
+        "Microsoft.Practices.EnterpriseLibrary.Data",
+        "Newtonsoft.Json",
+        "RestSharp",
+        "project:Acme.Billing",
+        "service:Ofac"
+      ],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "EOL_DEPENDENCY",
+          "type": "DEPENDENCY",
+          "severity": "WARNING",
+          "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
+          "line": 0
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Integrations.Clients.PricingClient",
+      "files": [
+        "<ROOT>/Clients/PricingClient.vb"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Dependency:eol:Microsoft.Practices.EnterpriseLibrary.Data",
+        "Integration:wcf:IPricing"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [
+        "Microsoft.Practices.EnterpriseLibrary.Data",
+        "Newtonsoft.Json",
+        "RestSharp",
+        "project:Acme.Billing",
+        "service:IPricing"
+      ],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "EOL_DEPENDENCY",
+          "type": "DEPENDENCY",
+          "severity": "WARNING",
+          "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
+          "line": 0
+        }
+      ],
+      "extends": "System.ServiceModel.ClientBase",
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Integrations.Clients.RatesClient",
+      "files": [
+        "<ROOT>/Clients/RatesClient.vb"
+      ],
+      "loc": 7,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Dependency:eol:Microsoft.Practices.EnterpriseLibrary.Data",
+        "Integration:rest:BisiBaseURL",
+        "Integration:rest:rates.example.invalid"
+      ],
+      "is_interface": false,
+      "secrets_references": [
+        "ConfigurationManager",
+        "config:BisiBaseURL"
+      ],
+      "external_dependencies": [
+        "Microsoft.Practices.EnterpriseLibrary.Data",
+        "Newtonsoft.Json",
+        "RestSharp",
+        "http:BisiBaseURL",
+        "http:rates.example.invalid",
+        "project:Acme.Billing"
+      ],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "EOL_DEPENDENCY",
+          "type": "DEPENDENCY",
+          "severity": "WARNING",
+          "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
+          "line": 0
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Integrations.Rules.NoIntegration",
+      "files": [
+        "<ROOT>/Rules/NoIntegration.vb"
+      ],
+      "loc": 5,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Compartida",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Dependency:eol:Microsoft.Practices.EnterpriseLibrary.Data"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [
+        "Microsoft.Practices.EnterpriseLibrary.Data",
+        "Newtonsoft.Json",
+        "RestSharp",
+        "project:Acme.Billing"
+      ],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "EOL_DEPENDENCY",
+          "type": "DEPENDENCY",
+          "severity": "WARNING",
+          "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
+          "line": 0
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    }
+  ],
+  "edges": [],
+  "api_contracts": {
+    "endpoints": [],
+    "schemas": {}
+  },
+  "meta": {
+    "source": "roslyn-fallback",
+    "schema_version": "1.0.0",
+    "microservice_candidates": {}
+  }
+}

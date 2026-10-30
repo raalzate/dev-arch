@@ -18,4 +18,9 @@
     <PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- 022-external-integrations: the versioned end-of-life list (schema/eol-dependencies.json) embedded as a linked resource. -->
+    <EmbeddedResource Include="..\..\..\..\..\schema\eol-dependencies.json" Link="Resources\eol-dependencies.json" LogicalName="DotNetAnalyzer.eol-dependencies.json" />
+  </ItemGroup>
+
 </Project>

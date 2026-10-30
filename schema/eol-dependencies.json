@@ -1,0 +1,7 @@
+[
+  { "prefix": "ActiveReports.", "maxVersion": "5", "reason": "ActiveReports 3 (assemblies 5.x) is no longer supported" },
+  { "prefix": "ActiveReports3", "reason": "ActiveReports 3 is no longer supported" },
+  { "prefix": "Microsoft.Practices.EnterpriseLibrary.", "maxVersion": "5", "reason": "Enterprise Library 5 and earlier reached end of life in 2013" },
+  { "prefix": "Microsoft.ReportViewer.", "reason": "ReportViewer WinForms/WebForms controls are deprecated" },
+  { "prefix": "System.Web.Services", "reason": "ASMX web services are a legacy technology without a .NET (Core) counterpart" }
+]

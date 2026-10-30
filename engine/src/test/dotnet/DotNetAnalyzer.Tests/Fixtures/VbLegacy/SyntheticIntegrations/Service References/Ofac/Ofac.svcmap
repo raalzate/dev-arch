@@ -1,0 +1,1 @@
+<ReferenceGroup xmlns="urn:schemas-microsoft-com:xml-wcfservicemap"><MetadataSources><MetadataSource Address="net.tcp://ofac.example.invalid:8012/Ofac/mex" Protocol="mex" SourceId="1" /></MetadataSources></ReferenceGroup>

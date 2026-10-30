@@ -57,6 +57,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Motor: `language` en MCP y `--language` en CLI, progreso por fases (`notifications/progress`), reutilización en memoria del
   modo MCP, advertencias en `_meta` y en stderr del CLI. **Sin cambio de contrato (1.0.0).**
 
+### Añadido (feature 022, integraciones externas, proyectos ausentes y dependencias EOL — plan VB legacy 017)
+- Motor .NET: integraciones salientes (Service/Web References por espacio de nombres, `ClientBase(Of T)`,
+  `SoapHttpClientProtocol`, REST con URL literal o clave de configuración, endpoints de cliente de `app.config`) como
+  anotaciones `Integration:wcf|soap|rest:<destino>` y `external_dependencies` (`service:`, `http:`); solo el host.
+- Motor .NET: `packages.config` y `<Reference Include>` de terceros en `external_dependencies`; lista versionada
+  `schema/eol-dependencies.json` (ampliable con `dependencies.eol`) → `EOL_DEPENDENCY` y `Dependency:eol:<nombre>`;
+  proyectos referenciados ausentes → advertencia y `project:<Nombre>`; `*.vdproj` → advertencia.
+- Configuración: secciones `integrations` y `dependencies` (contrato aditivo, tipos regenerados); activas por defecto
+  solo en fuentes VB. Corpus sintético `SyntheticIntegrations` con golden.
+
 ### Añadido (feature 021, identidad, capas y puntos de entrada del perfil desktop — plan VB legacy 016)
 - Motor .NET: el cargador VB de fidelidad reducida aplica `<RootNamespace>` e `<Import>` globales del `.vbproj` y
   compila un proyecto por `.vbproj` anidado (orden de `ProjectReference`, referencias entre compilaciones).

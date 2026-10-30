@@ -10,6 +10,39 @@ namespace DotNetAnalyzer.Analysis.Vb;
 /// </summary>
 public static class AppConfigParser
 {
+    /// <summary>A <c>system.serviceModel/client/endpoint</c> reduced to contract, host, binding and name (022).</summary>
+    public sealed record ClientEndpoint(string Contract, string? Host, string? Binding, string? Name);
+
+    /// <summary>Client endpoints of the configuration files of <paramref name="projectDirectory"/>, ordinal by contract then name.</summary>
+    public static IReadOnlyList<ClientEndpoint> ClientEndpoints(string? projectDirectory)
+    {
+        var endpoints = new List<ClientEndpoint>();
+        if (projectDirectory == null)
+            return endpoints;
+        foreach (var file in VbProjectContext.ConfigFiles(projectDirectory))
+        {
+            try
+            {
+                using var reader = System.Xml.XmlReader.Create(file, new System.Xml.XmlReaderSettings { DtdProcessing = System.Xml.DtdProcessing.Prohibit, XmlResolver = null });
+                var document = System.Xml.Linq.XDocument.Load(reader);
+                foreach (var endpoint in document.Descendants("endpoint").Where(e => e.Parent?.Name.LocalName == "client"))
+                {
+                    var contract = endpoint.Attribute("contract")?.Value?.Trim();
+                    if (string.IsNullOrEmpty(contract))
+                        continue;
+                    endpoints.Add(new ClientEndpoint(contract, Hosts.Of(endpoint.Attribute("address")?.Value),
+                        endpoint.Attribute("binding")?.Value?.Trim(), endpoint.Attribute("name")?.Value?.Trim()));
+                }
+            }
+            catch (Exception ex) when (ex is System.Xml.XmlException or IOException or UnauthorizedAccessException)
+            {
+                Console.Error.WriteLine($"[WARN] AppConfigParser: could not read client endpoints of '{Path.GetFileName(file)}': {ex.Message}");
+            }
+        }
+
+        return endpoints.OrderBy(e => e.Contract, StringComparer.Ordinal).ThenBy(e => e.Name ?? string.Empty, StringComparer.Ordinal).ToList();
+    }
+
     private static readonly string[] SecretKeyMarkers =
     {
         "password", "passwd", "secret", "apikey", "api_key", "token", "accesstoken", "access_token",

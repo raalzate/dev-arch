@@ -509,6 +509,45 @@
           }
         }
       }
+    },
+    "integrations": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Outbound integration detection of the .NET analyzer (022-external-integrations).",
+      "properties": {
+        "outbound": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ],
+          "description": "auto = Visual Basic compilations only."
+        }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "External dependency and end-of-life detection of the .NET analyzer (022-external-integrations).",
+      "properties": {
+        "enabled": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ]
+        },
+        "eol": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Name prefixes added to schema/eol-dependencies.json."
+        }
+      }
     }
   }
 }

@@ -1,0 +1,1 @@
+<DiscoveryClientResultsFile><Results><DiscoveryClientResult referenceType="System.Web.Services.Discovery.ContractReference" url="http://holiday.example.invalid/HolidayService.asmx?wsdl" filename="Holiday.wsdl" /></Results></DiscoveryClientResultsFile>

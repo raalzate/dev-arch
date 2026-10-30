@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Acme.Integrations</RootNamespace>
+    <AssemblyName>SyntheticIntegrations</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <OptionStrict>On</OptionStrict>
+  </PropertyGroup>
+  <ItemGroup>
+    <Import Include="System" />
+    <Import Include="System.Configuration" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Data, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Acme.Billing\Acme.Billing.vbproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Clients\OfacGateway.vb" />
+    <Compile Include="Clients\HolidayGateway.vb" />
+    <Compile Include="Clients\PricingClient.vb" />
+    <Compile Include="Clients\LegacySoapClient.vb" />
+    <Compile Include="Clients\RatesClient.vb" />
+    <Compile Include="Rules\NoIntegration.vb" />
+  </ItemGroup>
+</Project>

@@ -38,6 +38,27 @@ final class InferenceConfigValidator {
         naming(c.naming());
         dataAccess(c.dataAccess());
         debt(c.debt());
+        integrations(c.integrations());
+        dependencies(c.dependencies());
+    }
+
+    private static void integrations(final IntegrationsConfig i) {
+        List<String> modes = List.of(IntegrationsConfig.AUTO, IntegrationsConfig.ON,
+                IntegrationsConfig.OFF);
+        if (!modes.contains(i.outbound())) {
+            throw InvalidConfigException.parameter("integrations.outbound",
+                    "must be one of " + String.join(", ", modes));
+        }
+    }
+
+    private static void dependencies(final DependenciesConfig d) {
+        List<String> modes = List.of(IntegrationsConfig.AUTO, IntegrationsConfig.ON,
+                IntegrationsConfig.OFF);
+        if (!modes.contains(d.enabled())) {
+            throw InvalidConfigException.parameter("dependencies.enabled",
+                    "must be one of " + String.join(", ", modes));
+        }
+        nonBlank("dependencies.eol", d.eol());
     }
 
     /**
