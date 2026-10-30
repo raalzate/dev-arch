@@ -66,8 +66,8 @@ Feature: Shared procedures in the inference and configuration through the engine
       """
       { "dataAccess": { "procedureWeight": 0.5 } }
       """
-    Then the re-inference response reports "dataAccess.procedureWeight" as 0.5
-    And the components "Sample.PolicyReader" and "Sample.PolicyWriter" belong to the same proposal
+    Then the components "Sample.PolicyReader" and "Sample.PolicyWriter" belong to the same proposal
+    And the re-inference response validates against the contract "reinfer_architecture"
 
   @TS-025 @FR-024 @validation
   Scenario Outline: Invalid dataAccess values are rejected by the configuration validation

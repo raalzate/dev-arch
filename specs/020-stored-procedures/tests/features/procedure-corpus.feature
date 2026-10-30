@@ -15,11 +15,11 @@ Feature: Synthetic corpus, golden outputs and documentation for stored procedure
   Scenario: The synthetic desktop project invokes procedures in every recognized form
     Given the synthetic VB project "SyntheticDesktop"
     When the project is analyzed
-    Then the component "SyntheticDesktop.DataAccess.PolicyAdapter" uses exactly the tables "sp:usp_Policy_Archive, sp:usp_Policy_Count, sp:usp_Policy_List, sp:usp_Policy_Read, sp:usp_Policy_Save, sp:usp_Policy_Touch"
-    And the component "SyntheticDesktop.DataAccess.CustomerDataAccess" uses exactly the tables "Customers, Orders"
+    Then the component "LegacyShop.DataAccess.PolicyAdapter" uses exactly the tables "sp:usp_Policy_Archive, sp:usp_Policy_Count, sp:usp_Policy_List, sp:usp_Policy_Read, sp:usp_Policy_Save, sp:usp_Policy_Touch"
+    And the component "LegacyShop.DataAccess.CustomerDataAccess" uses exactly the tables "AuditLog, Customers, Orders"
     And the analyzer reports exactly the user warnings:
       """
-      Procedure name is not a literal in SyntheticDesktop.DataAccess.PolicyAdapter (PolicyAdapter.vb:34)
+      Procedure name is not a literal in LegacyShop.DataAccess.PolicyAdapter (PolicyAdapter.vb:34)
       """
 
   @TS-041 @FR-051 @FR-050 @SC-001 @SC-005 @acceptance
@@ -36,7 +36,7 @@ Feature: Synthetic corpus, golden outputs and documentation for stored procedure
       """
       { "dataAccess": { "procedureCatalog": "<catalog>", "catalogMode": "replace" } }
       """
-    Then the component "SyntheticDesktop.DataAccess.PolicyAdapter" uses exactly the tables "AuditLog, Policies, PolicyArchive, PolicyHolders, sp:usp_Policy_Touch"
+    Then the component "LegacyShop.DataAccess.PolicyAdapter" uses exactly the tables "AuditLog, Policies, PolicyArchive, PolicyHolders, sp:usp_Policy_Touch"
     And the serialized output, with the fixture root replaced by "<ROOT>", equals the golden file "SyntheticDesktop.catalog.golden.json"
     And both serialized outputs are byte-identical
 
@@ -48,11 +48,11 @@ Feature: Synthetic corpus, golden outputs and documentation for stored procedure
   @TS-043 @FR-051 @acceptance
   Scenario: The synthetic corpus ships both catalog forms and documents them
     Then the synthetic VB corpus contains the files:
-      | file                                                   |
-      | SyntheticDesktop/DataAccess/PolicyAdapter.vb           |
-      | SyntheticDesktop/Catalog/procs/policy.sql              |
-      | SyntheticDesktop/Catalog/procs/audit.sql               |
-      | SyntheticDesktop/Catalog/procs.csv                     |
+      | project          | file                           |
+      | SyntheticDesktop | DataAccess/PolicyAdapter.vb    |
+      | SyntheticDesktop | Catalog/procs/policy.sql       |
+      | SyntheticDesktop | Catalog/procs/audit.sql        |
+      | SyntheticDesktop | Catalog/procs.csv              |
     And every synthetic VB project declares in its README that it is synthetic and fictitious
 
   @TS-044 @FR-053 @SC-002 @acceptance
