@@ -6,6 +6,9 @@
 ## D2 — Raíz e imports en la compilación Adhoc
 **Decisión**: `VisualBasicCompilationOptions.WithRootNamespace` y `WithGlobalImports(GlobalImport.Parse(...))`; es exactamente lo que hace el compilador con el proyecto. Los símbolos quedan calificados ⇒ `TypeAnalyzer` y `VbTypeIndex` producen ids con raíz sin tocar su lógica; solo el nombre de respaldo (tipo sin símbolo) recibe la raíz. Imports inválidos se ignoran con `[WARN]`. Cierra el disparador real de 009 BUG-001 en la referencia (`Int64` sin `Imports System`). **Alternativa**: reescribir namespaces en el árbol (frágil).
 
+## D2b — Un proyecto por `.vbproj` anidado en el fallback Adhoc
+**Decisión**: cuando la carpeta analizada no tiene `.sln` ni proyecto en la raíz pero sí `.vbproj` anidados, se compila cada proyecto por separado (archivos `.vb` bajo su carpeta, sin `bin/`/`obj/`), en orden topológico de `ProjectReference` (ciclos y empates por orden ordinal), con `ToMetadataReference()` de las compilaciones previas como referencias; es lo que haría MSBuild. Sin `.vbproj` anidados, compilación única como hoy. **Alternativas**: envolver cada árbol en un `Namespace` sintético (desplaza líneas); exigir un `.sln` (la referencia no lo trae).
+
 ## D3 — Capas finas por evidencia, sin marcas
 **Decisión**: sufijos/contenidos de nombres de **tipos base** (`Form`, `UserControl`, `XtraForm`, `XtraUserControl`, `WaitForm`; `Report`), archivos asociados (`.Designer.vb`, `.rdlc`), `Sub Main`, `Validator`/`.Validators`. Cadena de herencia por símbolo y por sintaxis (`VbLayerClassifier.BaseNames`, 009). Capa fina en `annotations` (`Layer:<fina>`) porque `layer` es un catálogo cerrado y 005/008 bloquean `schema_version = 1.0.0`; proyección: Presentación/Reportes → `Web` (ya usado para formularios en 009), Batch/Validator → `Negocio`. **Alternativa (a) del plan**: contrato 1.1.0 con tres capas: requiere bump de versión en toda salida y re-testify de 005/008; documentada para una futura versión.
 
