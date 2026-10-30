@@ -57,6 +57,8 @@ public static class VbCodeAnalyzer
     {
         var file = FileName(entry.Block.SyntaxTree);
         var lateBoundLines = new SortedSet<int>();
+        var operationFailures = new SortedSet<int>();
+        string? operationFailure = null;
         foreach (var node in index.OwnNodes(entry))
         {
             switch (node)
@@ -80,8 +82,18 @@ public static class VbCodeAnalyzer
                     AnalyzeDeclarator(component, file, declarator);
                     break;
                 case InvocationExpressionSyntax or MemberAccessExpressionSyntax or ObjectCreationExpressionSyntax:
-                    if (IsLateBound((ExpressionSyntax)node, entry.Model))
-                        lateBoundLines.Add(Line(node));
+                    switch (IsLateBound((ExpressionSyntax)node, entry.Model, out var failure))
+                    {
+                        case true:
+                            lateBoundLines.Add(Line(node));
+                            break;
+                        case null:
+                            // BUG-001 (009): Roslyn could not build the operation tree of this node; only the
+                            // late-binding check of the node is lost, the other rules of the type still apply.
+                            operationFailures.Add(Line(node));
+                            operationFailure ??= failure;
+                            break;
+                    }
                     break;
             }
         }
@@ -90,6 +102,14 @@ public static class VbCodeAnalyzer
         {
             AddAt(component, file, line, "LATE_BINDING", "BUG_PATTERN", "WARNING",
                 "Late-bound member access is resolved at run time. Declare a specific type and use Option Strict On.");
+        }
+
+        if (operationFailures.Count > 0)
+        {
+            Console.Error.WriteLine(
+                $"[WARN] VbCodeAnalyzer: late-binding detection skipped for {operationFailures.Count} expression(s) of type "
+                + $"'{entry.Id}' ({file}:{string.Join(",", operationFailures)}): Roslyn could not build their operation "
+                + $"tree ({operationFailure}). The other rules of the type were applied.");
         }
     }
 
@@ -127,14 +147,31 @@ public static class VbCodeAnalyzer
         }
     }
 
-    private static bool IsLateBound(ExpressionSyntax node, SemanticModel model)
+    /// <summary>
+    /// True when <paramref name="node"/> is late bound, false when it is not, null when Roslyn fails to build the
+    /// operation tree of the node (BUG-001: duplicate key in <c>OperationMapBuilder</c> for an implicit base
+    /// constructor call whose optional parameter has an unresolved type under the Adhoc fallback).
+    /// </summary>
+    private static bool? IsLateBound(ExpressionSyntax node, SemanticModel model, out string? failure)
     {
+        failure = null;
         if (node is InvocationExpressionSyntax invocation
             && SimpleName(invocation.Expression) is { } name
             && LateBindingFactories.Any(f => f.Equals(name, StringComparison.OrdinalIgnoreCase)))
             return true;
 
-        return model.GetOperation(node) is IDynamicMemberReferenceOperation or IDynamicInvocationOperation
+        IOperation? operation;
+        try
+        {
+            operation = model.GetOperation(node);
+        }
+        catch (ArgumentException ex)
+        {
+            failure = ex.Message.Split('\n')[0].Trim();
+            return null;
+        }
+
+        return operation is IDynamicMemberReferenceOperation or IDynamicInvocationOperation
             or IDynamicIndexerAccessOperation or IDynamicObjectCreationOperation;
     }
 

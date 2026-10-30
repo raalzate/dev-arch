@@ -87,6 +87,7 @@ public class SecretLocationScanner {
         try (Stream<Path> files = Files.walk(projectRoot)) {
             files.filter(Files::isRegularFile)
                  .filter(this::isScannable)
+                 .sorted()
                  .forEach(file -> scanFile(projectRoot, file, hits));
         } catch (IOException e) {
             logger.warn("SecretLocationScanner aborted on {}: {}", projectRoot, e.getMessage());

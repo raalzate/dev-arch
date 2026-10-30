@@ -46,5 +46,15 @@ flowchart TB
 Single source of truth: the agent tools, the REST API and the UI all read the same engine documents and project
 them with the same functions, so an agent and a person always see the same analysis.
 
+## Registered technical debt
+
+Debt known in the engine, with the decision it waits for. Fixing it is not required by any open feature; it is
+recorded so that it is weighed explicitly instead of being rediscovered (014b of the VB legacy plan, 2026-10-30).
+
+| Debt | Where | Why it stays | Decision pending |
+|---|---|---|---|
+| C# and VB syntax handled by parallel branches in the general passes | `Analysis/InvocationAnalyzer.cs`, `Analysis/DependencyInjectionAnalyzer.cs`, `Analysis/TypeAnalyzer.cs` (one walker per language, same rules) | Both branches are covered by the same scenarios through the C# demos and the synthetic VB corpus (009 `csharp-compatibility.feature` guards the C# outputs byte for byte); abstracting over `IOperation` would change the semantic resolution path of both languages at once | Keep the controlled duplication with mirror tests (current state) or abstract the three passes over `IOperation` (one source of truth, principle II; more work and a regression risk on the C# baselines). The user decides before feature 016 touches these passes |
+| Dependency on the Roslyn operation tree for `LATE_BINDING` under reduced fidelity | `Analysis/Vb/VbCodeAnalyzer.cs` | Roslyn 4.9.2 throws for one constructor pattern (009 BUG-001); the pass degrades per expression | Applying the `.vbproj` imports and root namespace in the Adhoc fallback (feature 016) removes the trigger seen in the reference corpus; the guard stays |
+
 See also: [INSTALL.md](INSTALL.md) · [AGENTS-MCP.md](AGENTS-MCP.md) · [SCHEMA.md](SCHEMA.md) ·
 [CONTINUOUS-MODERNIZATION.md](CONTINUOUS-MODERNIZATION.md)

@@ -67,6 +67,7 @@ public class ProjectTypeDetector {
         try (Stream<Path> walk = Files.walk(projectRoot, maxDepth + 1)) {
             walk.filter(Files::isRegularFile)
                     .filter(p -> !skipped(projectRoot, p))
+                    .sorted()
                     .forEach(p -> {
                         Path parent = projectRoot.relativize(p.getParent());
                         if (parent.getNameCount() == 0 || parent.toString().isEmpty()

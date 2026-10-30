@@ -57,6 +57,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Motor: `language` en MCP y `--language` en CLI, progreso por fases (`notifications/progress`), reutilización en memoria del
   modo MCP, advertencias en `_meta` y en stderr del CLI. **Sin cambio de contrato (1.0.0).**
 
+### Corregido (014b, deuda del motor previa al plan VB legacy)
+- Motor .NET: un fallo de Roslyn al construir el árbol de operaciones de una expresión (constructor base implícito con
+  parámetro opcional de tipo no resuelto, fallback Adhoc) ya no descarta todos los issues del tipo VB; se omite solo la
+  detección de enlace tardío de esas expresiones con un `[WARN]` que las nombra (009 BUG-001).
+- Motor .NET: `SqlTableParser` sin `RegexMatchTimeout`; límite determinista de 8192 caracteres por literal SQL con aviso
+  (009 BUG-002, principio IV).
+- Motor: todas las enumeraciones de archivos se ordenan antes de usarse (`LoadCSharpAdhoc`, `Files.walk` en resolvers,
+  escáner de secretos, detección anidada y recursos MCP); comprobación de fuentes en `bugfix_BUG-008.feature` (002 BUG-008).
+- BUG-007 (doble corrida intermitente) cerrado como no reproducido tras BUG-009; deuda registrada en
+  `docs/ARCHITECTURE.md` (walkers C#/VB duplicados) y origen único de binarios documentado en `docs/INSTALL.md`.
+
 ### Cambiado
 - `POST /api/analyze` queda obsoleta (`Deprecation`, `Link` a `/api/analyses`); misma petición y respuesta.
 - `GET /api/source` exige `jobId` y una ruta relativa; la forma `?path=<absoluta>` responde 400.

@@ -61,9 +61,14 @@ VB project 'Shop.vbproj' analyzed with reduced fidelity (Adhoc fallback: MSBuild
 
 - SQL is recognized only in string literals and their concatenations; SQL built through variables, `StringBuilder`,
   resources or stored procedures (`EXEC`) is not followed. Temporary tables, table variables and table-valued functions
-  are ignored.
+  are ignored. A folded literal longer than 8192 characters is ignored with a `[WARN]` diagnostic (BUG-002: the bound
+  is on the input, never on wall-clock time, so the tables of a component depend only on its source).
 - `LATE_BINDING` needs `System.Object` to be resolved; with Option Strict On late binding is a compile error and is not
-  reported.
+  reported. Under reduced fidelity Roslyn may fail to build the operation tree of expressions in a class whose
+  implicit `MyBase.New()` call resolves to a constructor with an optional parameter of an unresolved type (for example
+  `Optional ByVal x As Int64 = 0` without the project-level `Imports System`); the late-binding check of those
+  expressions is skipped with a `[WARN] VbCodeAnalyzer: late-binding detection skipped …` diagnostic and every other
+  rule of the type still applies (BUG-001).
 - Configuration is read only from `app.config` / `web.config` in the project directory; config transforms and external
   `configSource` files are not followed. Malformed files are skipped with a `[WARN]` diagnostic.
 - The `Web` layer for forms and reports is a convention of the closed layer catalogue (it has no "presentation" layer).

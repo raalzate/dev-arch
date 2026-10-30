@@ -255,6 +255,28 @@ public sealed class VbAssertionSteps
                                                        && !w.Contains(Path.GetTempPath(), StringComparison.Ordinal));
     }
 
+    [Then(@"^the analysis log does not report an error analyzing the type ""([^""]+)""$")]
+    public void ThenLogHasNoTypeError(string id) =>
+        _context.Log.Should().NotContain($"error analyzing type '{id}'", "the diagnostics were:\n" + _context.Log);
+
+    [Then(@"^the analysis log reports that a SQL literal of (\d+) characters exceeds the bound of (\d+) and was ignored$")]
+    public void ThenLogReportsLiteralBound(int length, int bound) =>
+        _context.Log.Should().Contain($"SQL literal of {length} characters exceeds the bound of {bound} and was ignored",
+            "the diagnostics were:\n" + _context.Log);
+
+    [Then(@"^the SQL table parser builds its regular expressions without a match timeout$")]
+    public void ThenSqlParserHasNoMatchTimeout()
+    {
+        var regexes = typeof(SqlTableParser)
+            .GetFields(BindingFlags.NonPublic | BindingFlags.Static)
+            .Where(f => f.FieldType == typeof(System.Text.RegularExpressions.Regex))
+            .Select(f => (System.Text.RegularExpressions.Regex)f.GetValue(null)!)
+            .ToList();
+        regexes.Should().NotBeEmpty();
+        regexes.Should().OnlyContain(r => r.MatchTimeout == System.Text.RegularExpressions.Regex.InfiniteMatchTimeout,
+            "a wall-clock timeout makes the tables depend on the machine (Constitution IV)");
+    }
+
     [Then(@"^both analyses report the same user warnings$")]
     public void ThenSameWarnings() => _context.SecondUserWarnings.Should().Equal(_context.UserWarnings);
 

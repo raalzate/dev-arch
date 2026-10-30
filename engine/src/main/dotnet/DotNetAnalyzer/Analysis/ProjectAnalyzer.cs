@@ -447,6 +447,8 @@ public class ProjectAnalyzer
     private static Compilation? LoadCSharpAdhoc(string directory)
     {
         var csFiles = Directory.GetFiles(directory, "*.cs", SearchOption.AllDirectories);
+        // Stable order for determinism (Constitución IV; BUG-008): the file system order is unspecified.
+        Array.Sort(csFiles, StringComparer.Ordinal);
 
         if (csFiles.Length == 0)
         {

@@ -228,6 +228,7 @@ public final class McpResources {
         try (Stream<Path> walk = Files.walk(root)) {
             for (Path file : walk.filter(Files::isRegularFile)
                     .filter(p -> p.toString().endsWith(".schema.json"))
+                    .sorted()
                     .toList()) {
                 String relative = root.relativize(file).toString()
                         .replace('\\', '/');

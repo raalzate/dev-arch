@@ -20,6 +20,7 @@ public class SourcePathDiscoverer {
             Files.walk(projectRoot)
                 .filter(Files::isDirectory)
                 .filter(path -> path.toString().endsWith("src/main/java"))
+                .sorted()
                 .map(Path::toString)
                 .forEach(sourcePaths::add);
             

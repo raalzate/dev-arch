@@ -143,7 +143,7 @@
 
 **Reported**: 2026-10-30
 **Severity**: medium
-**Status**: reported
+**Status**: fixed
 **GitHub Issue**: _(none)_
 
 **Description**: File enumerations that feed the analysis are not ordered before use (`Directory.GetFiles` in `LoadCSharpAdhoc`, `Files.walk` in the Java resolvers and scanners), so the order of compilation and of collected items depends on the file system
@@ -155,4 +155,4 @@
 
 **Root Cause**: `Directory.GetFiles` and `Files.walk` return entries in file-system order (not specified by either API); the results are consumed directly.
 
-**Fix Reference**: _(empty until implementation)_
+**Fix Reference**: `LoadCSharpAdhoc` sorts the `.cs` files with `StringComparer.Ordinal`; every `Files.walk` pipeline of the engine calls `.sorted()` (`SourcePathDiscoverer`, `DependencyResolver`, `DotNetDependencyResolver`, `SecretLocationScanner`, `ProjectTypeDetector`, `McpResources`). Scenario `bugfix_BUG-008.feature`: two directories with the same loose sources created in opposite order give the same graph, and a source check fails on any `Files.walk` without `.sorted(` or any `var x = Directory.GetFiles(...)` not followed by `Array.Sort(x, StringComparer.Ordinal)`. The demo baselines (`BaselineParityTest`) stay byte-identical.

@@ -103,6 +103,18 @@ public sealed class VbProjectSteps
             + "            Return n\n        End Function\n    End Class\nEnd Namespace\n");
     }
 
+    [Given(@"^a VB legacy project with a class ""([^""]+)"" whose method ""([^""]+)"" has a SQL literal of (\d+) characters starting with ""([^""]+)""$")]
+    public void GivenAClassWithALongSqlLiteral(string id, string method, int length, string prefix)
+    {
+        var (ns, name) = Split(id);
+        if (length < prefix.Length + 1)
+            throw new ArgumentOutOfRangeException(nameof(length), "the literal must hold the prefix and a closing quote");
+        var literal = prefix + new string('x', length - prefix.Length - 1) + "'";
+        GivenAVbProjectWithTheFile("Sample.vb",
+            $"Namespace {ns}\n    Public Class {name}\n        Public Function {method}() As String\n"
+            + $"            Return \"{literal}\"\n        End Function\n    End Class\nEnd Namespace\n");
+    }
+
     [Given(@"^the synthetic VB project ""([^""]+)""$")]
     public void GivenTheSyntheticProject(string name)
     {

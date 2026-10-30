@@ -28,6 +28,12 @@ public sealed class VbAnalysisContext
 
     public IReadOnlyList<string> SecondUserWarnings { get; private set; } = Array.Empty<string>();
 
+    /// <summary>Diagnostics the analyzer wrote to stderr during the last analysis (<c>[WARN]</c> lines).</summary>
+    public string Log { get; private set; } = string.Empty;
+
+    // The analyzer passes write their diagnostics to Console.Error; analyses are serialized while it is captured.
+    private static readonly SemaphoreSlim ConsoleGate = new(1, 1);
+
     public static string EngineRoot => ContractSchemas.Shared.EngineRoot;
 
     public static string FixturesDir =>
@@ -35,13 +41,13 @@ public sealed class VbAnalysisContext
 
     public async Task AnalyzeAsync()
     {
-        (Graph, Json, UserWarnings) = await RunAsync();
+        (Graph, Json, UserWarnings, Log) = await RunAsync();
     }
 
     public async Task AnalyzeTwiceAsync()
     {
         await AnalyzeAsync();
-        (_, SecondJson, SecondUserWarnings) = await RunAsync();
+        (_, SecondJson, SecondUserWarnings, _) = await RunAsync();
     }
 
     public Component Component(string id)
@@ -52,11 +58,26 @@ public sealed class VbAnalysisContext
                    $"Component '{id}' not found; components: {string.Join(", ", graph.Components.Select(c => c.Id))}");
     }
 
-    private async Task<(DependencyGraph, string, IReadOnlyList<string>)> RunAsync()
+    private async Task<(DependencyGraph, string, IReadOnlyList<string>, string)> RunAsync()
     {
         var target = Target ?? throw new InvalidOperationException("No project given");
         var analyzer = new ProjectAnalyzer();
-        var graph = await analyzer.AnalyzeProjectAsync(target);
-        return (graph, GraphJson.Serialize(graph), analyzer.UserWarnings.ToList());
+        var original = Console.Error;
+        var captured = new StringWriter();
+        await ConsoleGate.WaitAsync();
+        DependencyGraph graph;
+        try
+        {
+            Console.SetError(captured);
+            graph = await analyzer.AnalyzeProjectAsync(target);
+        }
+        finally
+        {
+            Console.SetError(original);
+            ConsoleGate.Release();
+        }
+
+        original.Write(captured.ToString());
+        return (graph, GraphJson.Serialize(graph), analyzer.UserWarnings.ToList(), captured.ToString());
     }
 }

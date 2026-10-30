@@ -64,6 +64,16 @@ them), `LLM_MODEL`, `ENGINE_JAR_PATH` (engine archive, relative to `web/`), `DOT
 
 `make doctor` is still a reserved placeholder (feature 006); use `make check-env` or `npm run doctor`.
 
+### One origin for the engine binaries
+
+`engine/target/` is the only build output of the engine: `java-dependency-extractor.jar` (Maven) and
+`dotnet-analyzer` with its `dotnet-analyzer-publish/` directory (`scripts/engine-build.sh`, `dotnet publish`
+framework-dependent). `web/engine-dist/` is a **staging copy** made by `make build` for the web runtime and the
+container image; it is never edited or versioned, and `make clean` removes it. The Java tests and the acceptance
+scenarios run the analyzer from `engine/target/` (rebuilt by `scripts/test.sh` when the .NET sources are newer than
+`engine/target/dotnet-analyzer.published`). If two copies ever disagree, `engine/target/` is the one to trust; rebuild
+the other with `make build`.
+
 ### Reproducible .NET analysis (SDK 8)
 
 The .NET analyzer resolves framework and package types with the .NET SDK it finds. `global.json` asks for the

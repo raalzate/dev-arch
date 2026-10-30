@@ -148,7 +148,7 @@ en el monorepo de origen, y la primera ejecución real lo destapó.
 
 | Id | Hallazgo | Estado |
 |---|---|---|
-| BUG-007 | Fallo intermitente de `twoRunsAreByteIdentical[dotnet-ecommerce]` | en observación; no se repite con el SDK 8 fijado |
+| BUG-007 | Fallo intermitente de `twoRunsAreByteIdentical[dotnet-ecommerce]` | cerrado 2026-10-30: no reproducido tras BUG-009 (CI verde y 6 corridas locales consecutivas); se reabre con el diff si vuelve |
 | BUG-008 | Números de la justificación según el locale de la JVM | corregido |
 | BUG-009 | Resolución .NET según los SDK instalados | corregido (SDK 8 canónico + aviso) |
 | BUG-010 | Fases de progreso perdidas cuando llegan junto con la respuesta | corregido |
@@ -156,8 +156,11 @@ en el monorepo de origen, y la primera ejecución real lo destapó.
 | BUG-012 | Puente MCP mudo al lanzarse por un enlace simbólico | corregido |
 | — | La detección automática solo mira la raíz del proyecto | **por diseño** (008): búsqueda anidada opcional con `detection.maxDepth` (TS-048 la verifica) |
 | BUG-014 | Un análisis rápido no mostraba fase "en ejecución" en la web | corregido |
+| 009 BUG-001 | Un fallo de Roslyn al construir el árbol de operaciones de una expresión descartaba todos los issues del tipo VB | corregido (deuda del motor 014b) |
+| 009 BUG-002 | `RegexMatchTimeout` en `SqlTableParser`: las tablas dependían de la carga de la máquina | corregido: límite de 8192 caracteres por literal, sin timeout |
+| 002 BUG-008 | Enumeraciones de archivos sin ordenar (`LoadCSharpAdhoc`, `Files.walk`) | corregido: orden ordinal en todas; comprobación de fuentes en `bugfix_BUG-008.feature` |
 
-Detalle de cada uno (síntoma, causa, corrección y prueba): [`specs/014-standalone-repo/bugs.md`](../specs/014-standalone-repo/bugs.md).
+Detalle de cada uno (síntoma, causa, corrección y prueba): [`specs/014-standalone-repo/bugs.md`](../specs/014-standalone-repo/bugs.md), [`specs/009-vb-legacy-completion/bugs.md`](../specs/009-vb-legacy-completion/bugs.md) y [`specs/002-dotnet-roslyn-analyzer/bugs.md`](../specs/002-dotnet-roslyn-analyzer/bugs.md) (BUG-007 y BUG-008).
 
 ## Cómo reproducir
 

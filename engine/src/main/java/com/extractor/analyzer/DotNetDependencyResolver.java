@@ -33,6 +33,7 @@ public class DotNetDependencyResolver extends DependencyResolver {
         try {
             Files.walk(projectRoot)
                     .filter(path -> path.getFileName().toString().endsWith(".csproj"))
+                    .sorted()
                     .forEach(this::parseCsprojFile);
         } catch (IOException e) {
             logger.warn("Error walking project tree for .csproj files: {}", e.getMessage());

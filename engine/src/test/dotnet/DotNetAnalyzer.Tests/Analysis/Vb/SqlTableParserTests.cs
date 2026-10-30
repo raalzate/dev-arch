@@ -52,4 +52,23 @@ public class SqlTableParserTests
     {
         SqlTableParser.Normalize(tableRef).Should().Be(expected);
     }
+
+    [Fact]
+    public void Literal_at_the_size_bound_is_parsed()
+    {
+        var prefix = "SELECT * FROM Customers WHERE Notes = '";
+        var sql = prefix + new string('x', SqlTableParser.MaxLiteralLength - prefix.Length - 1) + "'";
+        sql.Length.Should().Be(SqlTableParser.MaxLiteralLength);
+        SqlTableParser.Parse(sql).Should().Equal("Customers");
+    }
+
+    [Fact]
+    public void Literal_beyond_the_size_bound_is_ignored_deterministically()
+    {
+        var prefix = "SELECT * FROM Customers WHERE Notes = '";
+        var sql = prefix + new string('x', SqlTableParser.MaxLiteralLength - prefix.Length) + "'";
+        sql.Length.Should().Be(SqlTableParser.MaxLiteralLength + 1);
+        SqlTableParser.Parse(sql).Should().BeEmpty();
+        SqlTableParser.Parse(sql).Should().BeEmpty("the result depends on the input only");
+    }
 }

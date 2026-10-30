@@ -77,6 +77,7 @@ public class DependencyResolver {
         try {
             Files.walk(projectRoot)
                 .filter(path -> path.getFileName().toString().equals("pom.xml"))
+                .sorted()
                 .forEach(this::parseMavenPom);
         } catch (IOException e) {
             logger.warn("Error walking project tree for pom.xml files: {}", e.getMessage());
@@ -131,6 +132,7 @@ public class DependencyResolver {
             Files.walk(projectRoot)
                 .filter(path -> path.getFileName().toString().equals("build.gradle") ||
                                path.getFileName().toString().equals("build.gradle.kts"))
+                .sorted()
                 .forEach(this::parseGradleBuild);
         } catch (IOException e) {
             logger.warn("Error walking project tree for Gradle files: {}", e.getMessage());
