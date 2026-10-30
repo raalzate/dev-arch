@@ -92,7 +92,7 @@ description: "Task list for 020-stored-procedures"
 
 ## Phase 9: Polish & Cross-Cutting
 
-- [ ] T022 Determinismo y entorno: doble corrida byte-idéntica sobre la referencia externa (opt-in, macOS) y sobre el corpus sintético en CI Linux; `make test-engine` completo en SDK 8; Checkstyle (ratchet), SpotBugs 0, `dotnet format --verify-no-changes`
+- [x] T022 Determinismo y entorno: doble corrida byte-idéntica sobre la referencia externa (opt-in, macOS) y sobre el corpus sintético en CI Linux; `make test-engine` completo en SDK 8; Checkstyle (ratchet), SpotBugs 0, `dotnet format --verify-no-changes`
 - [x] T023 Registrar en `docs/ARCHITECTURE.md` (tabla de deuda) el índice mínimo de tipos C# de `CSharpProcedureCallSyntax` como extensión de la deuda de walkers (se retira si 016 abstrae sobre `IOperation`); actualizar la memoria de progreso del plan; abrir PR `020-stored-procedures` → `main` (tras el merge de `014b-engine-debt`)
 
 ---

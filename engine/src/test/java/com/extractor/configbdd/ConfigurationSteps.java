@@ -255,6 +255,12 @@ public class ConfigurationSteps {
         if (v.isTextual()) {
             return v.asText();
         }
+        if (v.isBoolean()) {
+            return Boolean.toString(v.asBoolean());
+        }
+        if (v.isNull()) {
+            return "null";
+        }
         List<String> items = new ArrayList<>();
         if (v.isArray()) {
             v.forEach(x -> items.add(x.asText()));
