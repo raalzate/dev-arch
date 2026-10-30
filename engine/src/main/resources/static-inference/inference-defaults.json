@@ -68,6 +68,7 @@
       "high" : 0.7,
       "medium" : 0.5
     },
+    "debtWeight" : 0.0,
     "rationale" : {
       "cohesionGood" : 0.7,
       "cohesionFair" : 0.5,
@@ -85,7 +86,9 @@
     "supportRatio" : 0.8,
     "infrastructureKeywords" : [ "config", "configuration", "security", "application", "exception", "error", "filter", "interceptor", "aspect", "swagger", "openapi", "main" ],
     "dataJaccardMode" : "legacy",
-    "legacyDataJaccard" : 0.8
+    "legacyDataJaccard" : 0.8,
+    "supportNamespaces" : [ ],
+    "minReferencingDomains" : 0
   },
   "naming" : {
     "infrastructureRatio" : 0.8,
@@ -102,7 +105,8 @@
     },
     "roleKeywords" : [ "service", "controller", "repository", "repo", "usecase", "operations", "listener", "publisher", "adapter", "factory", "handler", "db" ],
     "excludeTokens" : [ "entity", "model", "data", "dto", "event", "command", "query", "impl", "repository", "service", "controller", "api", "rest", "http", "adapter", "port", "localevents", "rabbit", "jpa", "repo", "dao", "operations", "listener", "publisher", "handler", "factory", "db", "activityupdaterimpl", "usecase", "primaryports", "secondaryports", "userprofilejpa", "tweetcrud", "suggestion", "suggestions" ],
-    "minTokenLength" : 3
+    "minTokenLength" : 3,
+    "strategy" : "tokens"
   },
   "dataAccess" : {
     "procedures" : "auto",
@@ -124,5 +128,9 @@
   "dependencies" : {
     "enabled" : "auto",
     "eol" : [ ]
+  },
+  "inference" : {
+    "preset" : "auto",
+    "presentationInCohesion" : true
   }
 }

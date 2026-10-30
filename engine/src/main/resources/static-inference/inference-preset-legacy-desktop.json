@@ -1,0 +1,35 @@
+{
+  "evidence" : {
+    "weights" : {
+      "table" : 0.40,
+      "call" : 0.30,
+      "token" : 0.20,
+      "event" : 0.10
+    }
+  },
+  "consolidation" : {
+    "domainMergeMaxSize" : 120,
+    "maxMergedSizeWithoutSimilarity" : 120
+  },
+  "viability" : {
+    "weights" : {
+      "cohesion" : 0.40,
+      "coupling" : 0.30,
+      "data" : 0.15
+    },
+    "debtWeight" : 0.15
+  },
+  "recommendation" : {
+    "supportNamespaces" : [ "Common", "Commons", "Shared", "Utils", "Utilities" ],
+    "minReferencingDomains" : 3
+  },
+  "naming" : {
+    "strategy" : "domain"
+  },
+  "dataAccess" : {
+    "entityHeuristic" : true
+  },
+  "inference" : {
+    "presentationInCohesion" : false
+  }
+}

@@ -24,6 +24,9 @@ public class ViabilityScorer {
     /** Data access parameters (020). */
     private final DataAccessConfig dataAccess;
 
+    /** Whether presentation members count in cohesion and density (023, FR-010). */
+    private final boolean presentationInCohesion;
+
     public ViabilityScorer(List<Cluster> allClusters, List<Component> allComponents) {
         this(allClusters, allComponents, InferenceConfig.defaults().viability());
     }
@@ -52,8 +55,29 @@ public class ViabilityScorer {
     public ViabilityScorer(final List<Cluster> allClusters,
             final List<Component> allComponents,
             final ViabilityConfig viability, final DataAccessConfig dataAccess) {
+        this(allClusters, allComponents, viability, dataAccess, true);
+    }
+
+    /**
+     * Scorer with the whole configuration (023: debt weight, presentation exclusion).
+     *
+     * @param allClusters   every cluster
+     * @param allComponents every component of the graph
+     * @param inference     the inference configuration
+     */
+    public ViabilityScorer(final List<Cluster> allClusters,
+            final List<Component> allComponents, final InferenceConfig inference) {
+        this(allClusters, allComponents, inference.viability(), inference.dataAccess(),
+                inference.inference().presentationInCohesion());
+    }
+
+    private ViabilityScorer(final List<Cluster> allClusters,
+            final List<Component> allComponents,
+            final ViabilityConfig viability, final DataAccessConfig dataAccess,
+            final boolean presentationInCohesion) {
         this.config = viability;
         this.dataAccess = dataAccess;
+        this.presentationInCohesion = presentationInCohesion;
         this.allClusters = allClusters;
         this.componentMap = allComponents.stream()
             .collect(Collectors.toMap(Component::getId, c -> c));
@@ -87,6 +111,12 @@ public class ViabilityScorer {
         double score = w.cohesion() * cohesionAdj + w.coupling() * (1 - externalCoupling)
                 + w.data() * dataCohesion;
 
+        // 023 (FR-042): the debt index is a third factor; weight 0 keeps the 1.2.0 score.
+        DebtTerms debt = config.debtWeight() > 0 ? calculateDebt(clusters) : null;
+        if (debt != null) {
+            score -= config.debtWeight() * debt.index;
+        }
+
         double internalDensity = calculateInternalEdgeDensity(clusters);
         if (totalSize < config.smallSize().below()) {
             score *= config.smallSize().penalty();
@@ -99,6 +129,9 @@ public class ViabilityScorer {
         ViabilityConfig.Thresholds t = config.thresholds();
         String viability = score >= t.high() ? "Alta" : (score >= t.medium() ? "Media" : "Baja");
         List<String> rationale = generateRationale(cohesionAdj, externalCoupling, dataCohesion, totalSize, qualityMetrics, viability);
+        if (debt != null) {
+            rationale.addAll(debt.lines());
+        }
 
         return new ViabilityResult(viability, score, rationale,
                 new Breakdown(cohesionAdj, externalCoupling, dataCohesion,
@@ -126,10 +159,52 @@ public class ViabilityScorer {
                 + config.cohesionBlend().density() * internalDensity;
     }
 
-    private double calculateInternalEdgeDensity(List<Cluster> clusters) {
-        Set<String> allMembers = clusters.stream()
+    /**
+     * Debt index of the members (023, FR-041/FR-043).
+     *
+     * @param clusters the clusters of the proposal
+     * @return the index and its rationale lines
+     */
+    private DebtTerms calculateDebt(List<Cluster> clusters) {
+        List<Component> members = clusters.stream()
             .flatMap(c -> c.getMembers().stream())
-            .collect(Collectors.toSet());
+            .distinct().sorted()
+            .map(componentMap::get)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+        double index = DebtIndex.of(members);
+        List<Map.Entry<String, Double>> top = members.stream()
+            .map(c -> Map.entry(c.getId(), DebtIndex.of(c)))
+            .sorted(Map.Entry.<String, Double>comparingByValue().reversed()
+                    .thenComparing(Map.Entry.comparingByKey()))
+            .limit(3)
+            .collect(Collectors.toList());
+        return new DebtTerms(index, top);
+    }
+
+    /**
+     * Debt index of a proposal and its most indebted members.
+     *
+     * @param index LOC-weighted index
+     * @param top   up to three (id, index) pairs, descending
+     */
+    private record DebtTerms(double index, List<Map.Entry<String, Double>> top) {
+        List<String> lines() {
+            List<String> lines = new ArrayList<>();
+            lines.add("Deuda técnica: " + DebtIndex.format(index));
+            if (!top.isEmpty()) {
+                lines.add("Mayor deuda: " + top.stream()
+                    .map(e -> e.getKey() + " (" + DebtIndex.format(e.getValue()) + ")")
+                    .collect(Collectors.joining(", ")));
+            }
+            return lines;
+        }
+    }
+
+    private double calculateInternalEdgeDensity(List<Cluster> clusters) {
+        Set<String> allMembers = PresentationLayer.cohesionMembers(clusters.stream()
+            .flatMap(c -> c.getMembers().stream())
+            .collect(Collectors.toSet()), componentMap, presentationInCohesion);
         
         int internalEdges = 0;
         for (String member : allMembers) {

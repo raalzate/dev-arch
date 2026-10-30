@@ -55,6 +55,8 @@ public class StoredProceduresSteps {
     /** Graph and architecture of the scenario; static so sibling glue packages (021 desktopbdd) can share them. */
     public static DependencyGraph graph;
     public static ConsolidatedArchitecture architecture;
+    /** Text of the last configuration passed to the inference (null = defaults); shared with 023 glue. */
+    public static String lastConfigJson;
     private String architectureJson;
     private InvalidConfigException rejection;
     private Path project;
@@ -98,11 +100,13 @@ public class StoredProceduresSteps {
 
     @When("the architecture is inferred with the default configuration")
     public void inferDefault() {
+        lastConfigJson = null;
         infer(InferenceConfig.defaults());
     }
 
     @When("the architecture is inferred with the configuration:")
     public void inferWith(String json) {
+        lastConfigJson = json;
         infer(InferenceConfigLoader.fromText(json));
     }
 

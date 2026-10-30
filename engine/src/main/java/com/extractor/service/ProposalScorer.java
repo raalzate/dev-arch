@@ -6,6 +6,7 @@ import com.extractor.inference.MetricsCalculator;
 import com.extractor.inference.MicroserviceRecommendationEngine;
 import com.extractor.inference.ViabilityScorer;
 import com.extractor.inference.config.InferenceConfig;
+import com.extractor.inference.config.Presets;
 import com.extractor.model.Component;
 import com.extractor.model.DependencyGraph;
 import com.extractor.model.DocumentMeta;
@@ -33,12 +34,14 @@ public final class ProposalScorer {
      * @return the score
      */
     public ProposalScore score(final DependencyGraph graph,
-            final List<String> components, final InferenceConfig config) {
+            final List<String> components, final InferenceConfig requested) {
         Set<String> wanted = validate(graph, components);
+        InferenceConfig config = Presets.resolve(requested, graph).config();
         List<Cluster> clusters = new ArrayList<>(
                 new InferenceEngine(config).analyze(graph).getCandidates());
         clusters.sort(Comparator.comparingInt(Cluster::getClusterId));
-        MetricsCalculator calculator = new MetricsCalculator(config.dataAccess());
+        MetricsCalculator calculator = new MetricsCalculator(config.dataAccess(),
+                config.inference().presentationInCohesion());
         List<Cluster> fragments = new ArrayList<>();
         Set<String> placed = new LinkedHashSet<>();
         int nextId = 0;

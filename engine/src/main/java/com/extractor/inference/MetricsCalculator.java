@@ -26,8 +26,23 @@ public class MetricsCalculator {
      * @param dataAccess data access parameters
      */
     public MetricsCalculator(final DataAccessConfig dataAccess) {
-        this.dataAccess = dataAccess;
+        this(dataAccess, true);
     }
+
+    /**
+     * Calculator with data access parameters and the presentation rule (023, FR-010).
+     *
+     * @param dataAccess             data access parameters
+     * @param presentationInCohesion whether presentation members count in the cohesion
+     */
+    public MetricsCalculator(final DataAccessConfig dataAccess,
+            final boolean presentationInCohesion) {
+        this.dataAccess = dataAccess;
+        this.presentationInCohesion = presentationInCohesion;
+    }
+
+    /** Whether presentation members count in the cohesion (023). */
+    private final boolean presentationInCohesion;
     
     /**
      * Calculates all metrics for a cluster.
@@ -63,13 +78,16 @@ public class MetricsCalculator {
         if (clusterMembers.size() <= 1) {
             return 0.0; // Single component has no internal cohesion
         }
+        // 023 (FR-010): presentation members neither emit nor receive cohesion calls.
+        Set<String> counted = presentationInCohesion ? clusterMembers
+            : PresentationLayer.cohesionMembers(clusterMembers, componentsById(graph), false);
         
         int internalCalls = 0;
         int totalPossibleCalls = 0;
         
         for (Edge edge : graph.getEdges()) {
-            boolean fromInCluster = clusterMembers.contains(edge.getFrom());
-            boolean toInCluster = clusterMembers.contains(edge.getTo());
+            boolean fromInCluster = counted.contains(edge.getFrom());
+            boolean toInCluster = counted.contains(edge.getTo());
             
             if (fromInCluster && toInCluster) {
                 internalCalls += edge.getWeight();
@@ -149,5 +167,13 @@ public class MetricsCalculator {
         return allComponents.stream()
                 .filter(comp -> memberIds.contains(comp.getId()))
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+    }
+
+    private static Map<String, Component> componentsById(DependencyGraph graph) {
+        Map<String, Component> byId = new HashMap<>();
+        for (Component c : graph.getComponents()) {
+            byId.putIfAbsent(c.getId(), c);
+        }
+        return byId;
     }
 }

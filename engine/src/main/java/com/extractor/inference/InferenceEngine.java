@@ -29,7 +29,8 @@ public class InferenceEngine {
      */
     public InferenceEngine(final InferenceConfig config) {
         this.clusteringAlgorithm = new ClusteringAlgorithm(config.clustering(), config.dataAccess());
-        this.metricsCalculator = new MetricsCalculator(config.dataAccess());
+        this.metricsCalculator = new MetricsCalculator(config.dataAccess(),
+                config.inference().presentationInCohesion());
         this.explanationGenerator = new ExplanationGenerator();
         this.rules = initializeRules();
         this.objectMapper = createObjectMapper();

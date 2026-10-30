@@ -142,7 +142,7 @@ Feature: Inference preset, domain naming, support libraries and debt index for t
       | 100  | WARNING, WARNING           | 0   | 5  | 0.286 |
       | 100  | CRITICAL, ERROR, INFO      | 2   | 20 | 0.856 |
       | 0    | INFO                       | 0   | 0  | 0.048 |
-      | 2000 | CRITICAL                   | 4   | 16 | 0.439 |
+      | 2000 | CRITICAL                   | 4   | 16 | 0.438 |
 
   @TS-014 @FR-051 @acceptance
   Scenario: The configuration guide documents the preset and the new parameters

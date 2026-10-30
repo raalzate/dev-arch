@@ -72,11 +72,28 @@ public final class InferenceConfigLoader {
             throw InvalidConfigException.parameter("(root)",
                     "must be an object");
         }
+        return fromJson(overrides, null);
+    }
+
+    /**
+     * Configuration layered as defaults ← {@code preset} ← {@code overrides}
+     * (023, FR-002: a preset never beats the user's explicit values).
+     *
+     * @param overrides the user's partial configuration (object)
+     * @param preset    a preset tree laid over the defaults first, or null
+     * @return the validated configuration remembering {@code overrides}
+     * @throws InvalidConfigException when either tree is invalid
+     */
+    public static InferenceConfig fromJson(final JsonNode overrides,
+            final JsonNode preset) {
         JsonNode merged = DEFAULT_TREE.deepCopy();
+        if (preset != null) {
+            merge((ObjectNode) merged, (ObjectNode) preset, "");
+        }
         merge((ObjectNode) merged, (ObjectNode) overrides, "");
         InferenceConfig config = convert(merged);
         InferenceConfigValidator.validate(config);
-        return config;
+        return config.withOverrides(overrides.deepCopy());
     }
 
     /**
