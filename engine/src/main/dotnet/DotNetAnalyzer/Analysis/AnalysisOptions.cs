@@ -29,13 +29,33 @@ public sealed record DataAccessOptions(ProceduresMode Procedures, string? Catalo
     public static readonly DataAccessOptions Default = new(ProceduresMode.Auto, null, CatalogMode.Complement);
 }
 
+/// <summary>Legacy debt rules mode (021-desktop-identity-layers).</summary>
+public enum DebtMode
+{
+    /// <summary>Active for Visual Basic compilations only (default).</summary>
+    Auto,
+    On,
+    Off,
+}
+
+/// <summary>The <c>debt</c> section read by the analyzer (021).</summary>
+public sealed record DebtOptions(DebtMode Enabled, int GodClassMinLoc, int GodClassMinComplexity)
+{
+    public static readonly DebtOptions Default = new(DebtMode.Auto, 1000, 15);
+}
+
 /// <summary>
 /// Options of an analysis (<c>dotnet-analyzer &lt;path&gt; [--config=&lt;file&gt;]</c>). Unknown sections and keys are
 /// ignored so later features can add theirs; invalid values are reported with their cause.
 /// </summary>
-public sealed record AnalysisOptions(DataAccessOptions DataAccess)
+public sealed record AnalysisOptions(DataAccessOptions DataAccess, DebtOptions Debt)
 {
-    public static readonly AnalysisOptions Default = new(DataAccessOptions.Default);
+    public static readonly AnalysisOptions Default = new(DataAccessOptions.Default, DebtOptions.Default);
+
+    /// <summary>020 constructor kept for callers that only set the data access section.</summary>
+    public AnalysisOptions(DataAccessOptions dataAccess) : this(dataAccess, DebtOptions.Default)
+    {
+    }
 
     /// <summary>Parses the JSON text of a configuration file.</summary>
     /// <exception cref="ArgumentException">when a known value is invalid.</exception>
@@ -74,7 +94,36 @@ public sealed record AnalysisOptions(DataAccessOptions DataAccess)
             dataAccess = new DataAccessOptions(procedures, catalog, mode);
         }
 
-        return new AnalysisOptions(dataAccess);
+        var debt = DebtOptions.Default;
+        if (obj["debt"] is JsonNode debtSection)
+        {
+            if (debtSection is not JsonObject d)
+                throw new ArgumentException("debt must be an object");
+            var enabled = Enum("debt.enabled", d["enabled"], debt.Enabled,
+                ("auto", DebtMode.Auto), ("on", DebtMode.On), ("off", DebtMode.Off));
+            var minLoc = debt.GodClassMinLoc;
+            var minComplexity = debt.GodClassMinComplexity;
+            if (d["godClass"] is JsonNode godClass)
+            {
+                if (godClass is not JsonObject g)
+                    throw new ArgumentException("debt.godClass must be an object");
+                minLoc = PositiveInt("debt.godClass.minLoc", g["minLoc"], minLoc);
+                minComplexity = PositiveInt("debt.godClass.minComplexity", g["minComplexity"], minComplexity);
+            }
+
+            debt = new DebtOptions(enabled, minLoc, minComplexity);
+        }
+
+        return new AnalysisOptions(dataAccess, debt);
+    }
+
+    private static int PositiveInt(string key, JsonNode? node, int fallback)
+    {
+        if (node == null)
+            return fallback;
+        if (node is JsonValue v && v.TryGetValue<int>(out var value) && value >= 1)
+            return value;
+        throw new ArgumentException($"{key} must be an integer >= 1");
     }
 
     /// <summary>Reads and parses a configuration file.</summary>

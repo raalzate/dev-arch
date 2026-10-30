@@ -52,8 +52,9 @@ public class StoredProceduresSteps {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private Path tmp;
-    private DependencyGraph graph;
-    private ConsolidatedArchitecture architecture;
+    /** Graph and architecture of the scenario; static so sibling glue packages (021 desktopbdd) can share them. */
+    public static DependencyGraph graph;
+    public static ConsolidatedArchitecture architecture;
     private String architectureJson;
     private InvalidConfigException rejection;
     private Path project;
@@ -66,6 +67,9 @@ public class StoredProceduresSteps {
     @Before
     public void createScratch() throws IOException {
         tmp = Files.createTempDirectory("devarch-020-engine-").toRealPath();
+        graph = null;
+        architecture = null;
+        lastProposal = null;
     }
 
     @After
@@ -181,7 +185,7 @@ public class StoredProceduresSteps {
         assertEquals(Arrays.stream(csv.split(",")).map(String::trim).toList(), c.getTablesUsed());
     }
 
-    private MicroserviceProposal lastProposal;
+    private static MicroserviceProposal lastProposal;
 
     private MicroserviceProposal proposalOf(String component) {
         for (MicroserviceProposal p : architecture.getProposals()) {

@@ -186,6 +186,25 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
         "Data access parameters (020-stored-procedures): stored procedure detection in the .NET analyzer, the optional procedure catalog and the weight of sp: resources in the inference.",
       )
       .optional(),
+    debt: z
+      .object({
+        enabled: z.enum(["auto", "on", "off"]).describe("auto = Visual Basic compilations only.").optional(),
+        godClass: z
+          .object({
+            minLoc: z.number().int().gte(1).describe("Lines of code above which a type may be a god class.").optional(),
+            minComplexity: z
+              .number()
+              .int()
+              .gte(1)
+              .describe("Maximum method complexity above which a type may be a god class.")
+              .optional(),
+          })
+          .strict()
+          .optional(),
+      })
+      .strict()
+      .describe("Legacy debt rules of the .NET analyzer (021-desktop-identity-layers).")
+      .optional(),
   })
   .strict()
   .describe(

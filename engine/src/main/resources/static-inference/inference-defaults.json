@@ -110,5 +110,12 @@
     "catalogMode" : "complement",
     "procedureWeight" : 1.0,
     "entityHeuristic" : false
+  },
+  "debt" : {
+    "enabled" : "auto",
+    "godClass" : {
+      "minLoc" : 1000,
+      "minComplexity" : 15
+    }
   }
 }

@@ -17,7 +17,7 @@ public record InferenceConfig(DetectionConfig detection,
         ClusteringConfig clustering, EvidenceConfig evidence,
         ConsolidationConfig consolidation, ViabilityConfig viability,
         RecommendationConfig recommendation, NamingConfig naming,
-        DataAccessConfig dataAccess) {
+        DataAccessConfig dataAccess, DebtConfig debt) {
 
     /**
      * The 1.2.0 values (FR-005).

@@ -52,6 +52,26 @@ public static class VbProjectContext
         return common;
     }
 
+    /// <summary>First <c>*.vbproj</c> (ordinal) directly in <paramref name="directory"/>, or null (021).</summary>
+    public static string? FindProjectFile(string? directory)
+    {
+        if (directory == null || !Directory.Exists(directory))
+            return null;
+        var files = Directory.GetFiles(directory, "*.vbproj");
+        Array.Sort(files, StringComparer.Ordinal);
+        return files.Length == 0 ? null : files[0];
+    }
+
+    /// <summary><c>*.vbproj</c> files under <paramref name="directory"/> (recursive, without <c>bin/</c> and <c>obj/</c>), ordinal (021).</summary>
+    public static IReadOnlyList<string> NestedProjectFiles(string directory)
+    {
+        if (!Directory.Exists(directory))
+            return Array.Empty<string>();
+        var files = Directory.GetFiles(directory, "*.vbproj", SearchOption.AllDirectories);
+        Array.Sort(files, StringComparer.Ordinal);
+        return files.Where(f => !IsBuildOutput(directory, f)).ToList();
+    }
+
     /// <summary><c>app.config</c> / <c>web.config</c> (any case) directly in <paramref name="directory"/>, ordinal by name.</summary>
     public static IReadOnlyList<string> ConfigFiles(string directory)
     {

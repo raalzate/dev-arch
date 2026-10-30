@@ -42,4 +42,16 @@ public class AnalysisOptionsTests
         AnalysisOptions.Parse("""{ "dataAccess": { "procedureCatalog": null } }""").DataAccess.CatalogPath.Should().BeNull();
         AnalysisOptions.Parse("""{ "dataAccess": { "procedureCatalog": "  " } }""").DataAccess.CatalogPath.Should().BeNull();
     }
+
+    [Fact]
+    public void Debt_section_is_read_with_defaults_and_validated()
+    {
+        AnalysisOptions.Parse("{}").Debt.Should().Be(DebtOptions.Default);
+        var options = AnalysisOptions.Parse("""{ "debt": { "enabled": "off", "godClass": { "minLoc": 5, "minComplexity": 3 } } }""");
+        options.Debt.Should().Be(new DebtOptions(DebtMode.Off, 5, 3));
+        var act = () => AnalysisOptions.Parse("""{ "debt": { "godClass": { "minLoc": 0 } } }""");
+        act.Should().Throw<ArgumentException>().WithMessage("debt.godClass.minLoc must be an integer >= 1*");
+        var bad = () => AnalysisOptions.Parse("""{ "debt": { "enabled": "maybe" } }""");
+        bad.Should().Throw<ArgumentException>().WithMessage("debt.enabled must be one of auto, on, off*");
+    }
 }

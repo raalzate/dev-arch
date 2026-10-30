@@ -3,15 +3,12 @@ package com.extractor.desktopbdd;
 import com.extractor.inference.ConsolidatedArchitecture;
 import com.extractor.inference.LegacyEntrypoint;
 import com.extractor.inference.MicroserviceProposal;
-import com.extractor.inference.config.InferenceConfig;
 import com.extractor.model.Component;
 import com.extractor.model.DependencyGraph;
-import com.extractor.service.InferenceInput;
-import com.extractor.service.InferenceService;
+import com.extractor.storedprocsbdd.StoredProceduresSteps;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** TS-020, TS-021: batch entry points of proposals (021). Configuration and bridge steps come from storedprocsbdd. */
 public class DesktopIdentitySteps {
 
-    private DependencyGraph graph;
-    private ConsolidatedArchitecture architecture;
     private LegacyEntrypoint entrypoint;
 
     @Given("a dependency graph with the annotated components:")
@@ -43,18 +38,13 @@ public class DesktopIdentitySteps {
                     .map(String::trim).filter(s -> !s.isEmpty()).toList()));
             components.add(c);
         }
-        graph = new DependencyGraph(components, new ArrayList<>());
-    }
-
-    @When("the architecture is inferred with the default configuration")
-    public void inferDefault() {
-        architecture = new InferenceService().infer(new InferenceInput(graph, Map.of(), List.of()),
-                InferenceConfig.defaults());
+        // Shared with the 020 glue, whose "inferred with the default configuration" step runs the inference.
+        StoredProceduresSteps.graph = new DependencyGraph(components, new ArrayList<>());
     }
 
     @Then("the proposal containing {string} has a legacy entry point of type {string}")
     public void entryPointType(String component, String type) {
-        MicroserviceProposal proposal = architecture.getProposals().stream()
+        MicroserviceProposal proposal = StoredProceduresSteps.architecture.getProposals().stream()
                 .filter(p -> p.getComponentNames().contains(component)).findFirst()
                 .orElseThrow(() -> new AssertionError(component + " is in no proposal"));
         entrypoint = proposal.getLegacyEntrypoint();

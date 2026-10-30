@@ -115,6 +115,9 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `dataAccess.catalogMode` | string | `complement` | complement, replace | extracción | `complement` conserva `sp:<nombre>` junto a las tablas; `replace` emite solo tablas (y `sp:` para los no resueltos). |
 | `dataAccess.procedureWeight` | double | `1.0` | >= 0 | agrupación | Peso de un recurso `sp:` respecto de una tabla en los datos compartidos, `tables_shared` y la cohesión de datos; 0 los ignora. |
 | `dataAccess.entityHeuristic` | boolean | `false` | true, false | nombres | Deduce la entidad de negocio del nombre del procedimiento (`usp_Policy_Read` → `Policy`) solo para nombrar propuestas. |
+| `debt.enabled` | string | `auto` | auto, on, off | extracción | Reglas de deuda legacy del analizador .NET (021): `auto` = solo compilaciones Visual Basic. |
+| `debt.godClass.minLoc` | int | `1000` | >= 1 | extracción | Líneas de código a partir de las cuales un tipo puede ser `GOD_CLASS` (junto con la complejidad). |
+| `debt.godClass.minComplexity` | int | `15` | >= 1 | extracción | Complejidad máxima de método a partir de la cual un tipo puede ser `GOD_CLASS` (junto con las líneas). |
 
 Las reglas internas de puntuación de clústeres (`HighCohesionRule`, `LowCouplingRule`, `SharedDataRule`) no forman parte de la configuración: su resultado no llega a ningún documento de salida.
 
