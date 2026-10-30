@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "6e7aaf01688c7fee1d6b755a28f59977801120f90b21cbfa655a805d6bc1c946",
+    "generated_at": "2026-10-30T19:19:36Z",
+    "features_dir": "specs/023-legacy-desktop-inference/tests/features",
+    "file_count": 1
+  }
+}

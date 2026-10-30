@@ -1,0 +1,4 @@
+# Contract: `inference` section, preset `legacy-desktop`, new parameters (023, additive to 1.0.0)
+New keys of `inference-config`: `inference.preset` (`auto|none|legacy-desktop`, default `auto`), `inference.presentationInCohesion` (boolean, default true), `viability.debtWeight` ([0,1], default 0), `naming.strategy` (`tokens|domain`, default `tokens`), `recommendation.supportNamespaces` (string[], default []), `recommendation.minReferencingDomains` (integer ≥ 0, default 0).
+Preset values: `engine/src/main/resources/static-inference/inference-preset-legacy-desktop.json` (versioned). Precedence: defaults ← preset ← explicit user configuration.
+Output conventions (no schema change): `summary` ends with `Preset de inferencia: legacy-desktop` when applied; `proposals[].rationale` contains `Deuda técnica: <0.000-1.000>` and `Mayor deuda: …` when `viability.debtWeight > 0`.
