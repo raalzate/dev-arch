@@ -15,23 +15,23 @@ import java.util.Map;
 public class LegacyWorld {
 
     /** Project under analysis. */
-    static Path project;
+    public static Path project;
     /** Engine analysis of {@link #project} (When step). */
-    static LegacyDotnet.EngineRun run;
+    public static LegacyDotnet.EngineRun run;
     /** Raw analyzer run of {@link #project}, when the scenario inspects the analyzer diagnostics. */
-    static LegacyDotnet.RawRun rawRun;
+    public static LegacyDotnet.RawRun rawRun;
     /** Whether the When step must also capture the raw analyzer diagnostics. */
-    static boolean captureDiagnostics;
+    public static boolean captureDiagnostics;
     /** Failure of the When step, when the scenario expects one. */
-    static Throwable error;
+    public static Throwable error;
     /** Wall-clock time of the When step. */
-    static Duration elapsed;
+    public static Duration elapsed;
     /** Free-form scenario data (expected values derived from the fixture sources). */
-    static Map<String, Object> data = new LinkedHashMap<>();
+    public static Map<String, Object> data = new LinkedHashMap<>();
     /** Tool responses (MCP) by tool name. */
-    static Map<String, JsonNode> responses = new LinkedHashMap<>();
+    public static Map<String, JsonNode> responses = new LinkedHashMap<>();
     /** Resources to close after the scenario. */
-    static List<AutoCloseable> closeables = new ArrayList<>();
+    public static List<AutoCloseable> closeables = new ArrayList<>();
 
     @Before
     public void reset() {
@@ -55,7 +55,7 @@ public class LegacyWorld {
     }
 
     @SuppressWarnings("unchecked")
-    static <T> T get(String key) {
+    public static <T> T get(String key) {
         Object value = data.get(key);
         if (value == null) {
             throw new AssertionError("scenario data '" + key + "' was not set by a previous step");

@@ -6,6 +6,7 @@ import { ApiError, errorResponse } from '../../../server/api-error';
 import { apiError, logRejection, NO_STORE } from '../../../server/http';
 import { LANGUAGES, type Language } from '../../../server/jobs/job-store';
 import { engineLaunchOrError, getRuntime } from '../../../server/runtime';
+import { parseExtractionConfig } from '../../../server/upload/extraction-config';
 import { checkApiToken } from '../../../server/security/api-token';
 import { historyEntries, type TechnologyCache } from '../../../server/jobs/history';
 import { inspectZip } from '../../../server/upload/safe-extract';
@@ -36,16 +37,31 @@ export async function POST(request: Request): Promise<Response> {
   if (denied) return denied;
 
   const contentType = (request.headers.get('content-type') ?? '').toLowerCase();
-  let language = new URL(request.url).searchParams.get('language') ?? 'auto';
+  const url = new URL(request.url);
+  let language = url.searchParams.get('language') ?? 'auto';
   let localPath: string | undefined;
+  // 026: extraction configuration (query `config` as JSON, or `config` of the JSON body); validated by the engine.
+  let extractionConfig: Record<string, unknown> | null;
+  try {
+    extractionConfig = parseExtractionConfig(url.searchParams.get('config'));
+  } catch (e) {
+    return apiError(400, 'INVALID_CONFIG', (e as Error).message);
+  }
   if (contentType.includes('application/json')) {
-    let body: { localPath?: unknown; language?: unknown };
+    let body: { localPath?: unknown; language?: unknown; config?: unknown };
     try {
       body = (await request.json()) as typeof body;
     } catch {
       return apiError(400, 'INVALID_REQUEST', 'The JSON body is not valid.');
     }
     if (typeof body.language === 'string') language = body.language;
+    if (body.config !== undefined) {
+      try {
+        extractionConfig = parseExtractionConfig(body.config);
+      } catch (e) {
+        return apiError(400, 'INVALID_CONFIG', (e as Error).message);
+      }
+    }
     if (typeof body.localPath !== 'string' || !body.localPath) {
       return apiError(400, 'INVALID_REQUEST', 'A JSON submission must contain "localPath".');
     }
@@ -77,7 +93,7 @@ export async function POST(request: Request): Promise<Response> {
 
   let jobId: string | null = null;
   try {
-    const job = await rt.store.create({ origin: localPath !== undefined ? 'localPath' : 'zip', language: language as Language });
+    const job = await rt.store.create({ origin: localPath !== undefined ? 'localPath' : 'zip', language: language as Language, extractionConfig });
     jobId = job.id;
     const p = rt.store.paths(job.id);
     if (localPath !== undefined) {

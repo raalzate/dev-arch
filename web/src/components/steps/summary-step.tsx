@@ -12,6 +12,7 @@ import { summarize } from '@/lib/modernization/summary';
 import type { TechnologyProfile } from '@/lib/modernization/technology';
 import { SeverityBadge, TechBadge, ViabilityBadge, num, severityColor } from '../badges';
 import { NoFindings, Section } from '../section';
+import { describeExtractionConfig } from '@/lib/extraction-options';
 
 const fmt = (n: number) => n.toLocaleString('es');
 
@@ -63,10 +64,12 @@ export function RiskyComponentRow({
 }
 
 export default function SummaryStep({
-  view, profile, canOpenSource, onOpenSource, onDetails, onGoProposals,
+  view, profile, canOpenSource, onOpenSource, onDetails, onGoProposals, extraction,
 }: {
   view: AnalysisView;
   profile: TechnologyProfile;
+  /** 026: extraction configuration the analysis was submitted with. */
+  extraction?: Record<string, unknown> | null;
   canOpenSource: boolean;
   onOpenSource: (file: string, id: string) => void;
   onDetails: (id: string) => void;
@@ -87,6 +90,11 @@ export default function SummaryStep({
           <span className="text-sm text-muted-foreground">
             Origen del análisis: <span className="font-mono">{profile.source}</span>
           </span>
+          {describeExtractionConfig(extraction).length > 0 && (
+            <span data-testid="extraction-summary" className="text-sm text-muted-foreground">
+              Opciones de extracción: {describeExtractionConfig(extraction).join(', ')}
+            </span>
+          )}
         </div>
         <div className="mt-4 flex flex-wrap gap-x-10 gap-y-4">
           <Metric id="components" label="Componentes" value={s.components} />

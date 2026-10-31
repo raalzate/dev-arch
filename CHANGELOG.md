@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Unreleased]
 
+### Añadido (feature 026, opciones de extracción en el web)
+- Formulario "Analizar" con sección "Opciones de extracción": análisis extendido (024), profundidad de búsqueda de proyectos (`detection.maxDepth`) y carpeta de ensamblados de referencia .NET Framework (025). `POST /api/analyses` acepta `config` (query o cuerpo JSON; 400 `INVALID_CONFIG` si no es un objeto ≤ 8 KB), lo guarda como `extractionConfig`, lo reenvía a `analyze_project` y mapea el rechazo del motor a `INFERENCE_CONFIG_INVALID`. El resumen muestra las opciones aplicadas.
+- Corregido BUG-013 (010): claves duplicadas en el informe imprimible con librerías de soporte homónimas.
+
 ### Añadido (feature 025, ensamblados de referencia y runner Windows manual)
 - `analysis.referenceAssemblies`: carpeta de ensamblados de referencia de .NET Framework usada por el fallback Adhoc VB en lugar de los del runtime (opt-in; resuelve `System.Data`, `System.Windows.Forms`, `System.ServiceModel`…). Sin la ruta, salida idéntica.
 - Workflow manual `.github/workflows/windows-fidelity.yml` para medir la fidelidad completa en Windows bajo demanda.

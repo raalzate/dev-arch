@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "d547568775019808c2aa60c96f71d78ea617de34613ec1a50bcb448304cd5058",
+    "generated_at": "2026-10-31T19:25:46Z",
+    "features_dir": "specs/026-web-extraction-options/tests/features",
+    "file_count": 1
+  }
+}

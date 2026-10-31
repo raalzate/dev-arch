@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { FolderArchive, Loader2, Upload } from 'lucide-react';
 import type { HistoryEntry, Language } from '@/lib/analyses-client';
+import { MAX_DEPTH, type ExtractionOptions } from '@/lib/extraction-options';
 import { STATUS_LABELS } from '@/lib/analyses-client';
 import ImportDialog from './import-dialog';
 
@@ -15,10 +16,61 @@ export interface UploadProps {
   onLanguage: (l: Language) => void;
   onAnalyze: () => void;
   busy: boolean;
+  /** 026: extraction options of the submission (absent = form without the section). */
+  extraction?: ExtractionOptions;
+  onExtraction?: (o: ExtractionOptions) => void;
 }
 
-export function UploadControls({ fileRef, language, onLanguage, onAnalyze, busy, compact }: UploadProps & { compact?: boolean }) {
+/** 026 (FR-010): collapsible section with the extraction options that change the result for the legacy profile. */
+export function ExtractionOptionsFields({ value, onChange, compact }: { value: ExtractionOptions; onChange: (o: ExtractionOptions) => void; compact?: boolean }) {
+  const active = value.extended || value.maxDepth > 0 || value.referenceAssemblies.trim() !== '';
+  return (
+    <details data-testid="extraction-options" className={`rounded-md border border-input bg-background text-sm ${compact ? 'px-2 py-1' : 'px-3 py-2'}`}>
+      <summary className="cursor-pointer select-none text-muted-foreground">
+        Opciones de extracción{active ? <span className="ml-1 rounded bg-primary/10 px-1.5 text-xs text-primary">activas</span> : null}
+      </summary>
+      <div className="mt-2 grid gap-2">
+        <label className="flex items-center gap-2">
+          <input
+            data-testid="extraction-extended"
+            type="checkbox"
+            checked={value.extended}
+            onChange={(e) => onChange({ ...value, extended: e.target.checked })}
+          />
+          <span>Análisis extendido (reglas oficiales, código muerto, duplicación, mantenibilidad)</span>
+        </label>
+        <label className="flex items-center gap-2">
+          <span className="whitespace-nowrap">Profundidad de búsqueda de proyectos</span>
+          <input
+            data-testid="extraction-max-depth"
+            type="number"
+            min={0}
+            max={MAX_DEPTH}
+            value={value.maxDepth}
+            onChange={(e) => onChange({ ...value, maxDepth: Math.min(MAX_DEPTH, Math.max(0, Number(e.target.value) || 0)) })}
+            className="h-8 w-16 rounded-md border border-input bg-background px-2"
+          />
+          <span className="text-xs text-muted-foreground">0 = solo la raíz del .zip</span>
+        </label>
+        <label className="flex flex-col gap-1">
+          <span>Carpeta de ensamblados de referencia .NET Framework (ruta en el servidor)</span>
+          <input
+            data-testid="extraction-reference-assemblies"
+            type="text"
+            value={value.referenceAssemblies}
+            placeholder="…/microsoft.netframework.referenceassemblies.net48/1.0.3/build/.NETFramework/v4.8"
+            onChange={(e) => onChange({ ...value, referenceAssemblies: e.target.value })}
+            className="h-8 rounded-md border border-input bg-background px-2 font-mono text-xs"
+          />
+        </label>
+      </div>
+    </details>
+  );
+}
+
+export function UploadControls({ fileRef, language, onLanguage, onAnalyze, busy, compact, extraction, onExtraction }: UploadProps & { compact?: boolean }) {
   const [name, setName] = useState<string | null>(null);
+  const options = extraction && onExtraction ? <ExtractionOptionsFields value={extraction} onChange={onExtraction} compact={compact} /> : null;
   const select = (
     <select
       data-testid="language-select"
@@ -64,6 +116,7 @@ export function UploadControls({ fileRef, language, onLanguage, onAnalyze, busy,
           <span className="truncate">{name ?? 'Nuevo .zip'}</span>
         </label>
         {select}
+        {options}
         {button}
       </div>
     );
@@ -85,6 +138,7 @@ export function UploadControls({ fileRef, language, onLanguage, onAnalyze, busy,
         {select}
         {button}
       </div>
+      {options}
     </div>
   );
 }

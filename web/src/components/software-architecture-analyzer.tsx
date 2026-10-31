@@ -36,6 +36,7 @@ import MapStep from './steps/map-step';
 import PlanStep from './steps/plan-step';
 import ProposalsStep from './steps/proposals-step';
 import SummaryStep from './steps/summary-step';
+import { DEFAULT_EXTRACTION, toExtractionConfig, type ExtractionOptions } from '@/lib/extraction-options';
 
 interface Docs {
   graph: DependencyGraph;
@@ -64,6 +65,7 @@ export default function SoftwareArchitectureAnalyzer() {
   const [analysis, setAnalysis] = useState<AnalysisStatus | null>(null);
   const [docs, setDocs] = useState<Docs | null>(null);
   const [language, setLanguage] = useState<Language>('auto');
+  const [extraction, setExtraction] = useState<ExtractionOptions>(DEFAULT_EXTRACTION);
   const [submitting, setSubmitting] = useState(false);
   const [expired, setExpired] = useState(false);
   const [needsToken, setNeedsToken] = useState(false);
@@ -185,7 +187,7 @@ export default function SoftwareArchitectureAnalyzer() {
     setAnalysis(null);
     setSubmitting(true);
     try {
-      const { jobId } = await submitAnalysis(file, language);
+      const { jobId } = await submitAnalysis(file, language, toExtractionConfig(extraction));
       void followAnalysis(jobId);
     } catch (e) {
       if (handleAuth(e, handleAnalyze)) return;
@@ -342,7 +344,10 @@ export default function SoftwareArchitectureAnalyzer() {
   };
 
   // --- render ---------------------------------------------------------------------------------------------
-  const uploadProps: UploadProps = { fileRef, language, onLanguage: setLanguage, onAnalyze: () => void handleAnalyze(), busy: submitting };
+  const uploadProps: UploadProps = {
+    fileRef, language, onLanguage: setLanguage, onAnalyze: () => void handleAnalyze(), busy: submitting,
+    extraction, onExtraction: setExtraction,
+  };
   const showLanding = !analysis && !comparison;
   const canOpenSource = !!analysis?.hasSources;
   const byId = useMemo(() => new Map((docs?.graph.components ?? []).map((c) => [c.id, c])), [docs]);
@@ -458,6 +463,7 @@ export default function SoftwareArchitectureAnalyzer() {
                   <SummaryStep
                     view={view}
                     profile={profile}
+                    extraction={analysis?.extractionConfig ?? null}
                     canOpenSource={canOpenSource}
                     onOpenSource={(file, id) => setSource({ file, id })}
                     onDetails={(id) => { setSelected(id); setStep('map'); }}

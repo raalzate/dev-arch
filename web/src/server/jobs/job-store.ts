@@ -39,6 +39,8 @@ export interface Job {
   uploadBytes: number | null;
   /** Time metrics of a finished analysis (011 FR-024); absent until it finishes. */
   metrics?: JobMetrics | null;
+  /** Extraction configuration sent with the submission (026); null or absent = engine defaults. */
+  extractionConfig?: Record<string, unknown> | null;
 }
 
 export interface JobPaths {
@@ -101,6 +103,7 @@ export class JobStore {
       id,
       origin: init.origin,
       language: init.language,
+      extractionConfig: init.extractionConfig ?? null,
       status,
       phase: init.phase ?? null,
       createdAt: nowIso,

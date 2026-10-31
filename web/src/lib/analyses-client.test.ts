@@ -103,6 +103,17 @@ test('submitAnalysis posts the ZIP as the body with its language, no-store and t
   assert.deepEqual(headersOf(calls[0]), { 'Content-Type': 'application/zip', Authorization: 'Bearer tok' });
 });
 
+test('submitAnalysis carries the extraction config URL-encoded in the query (026) and nothing without one', async () => {
+  replies.push(json({ jobId: 'j2', status: 'queued' }, 202));
+  await submitAnalysis(new Blob(['PK']), 'auto', { analysis: { extended: 'on' }, detection: { maxDepth: 3 } });
+  const url = new URL(calls[calls.length - 1].url, 'http://local');
+  assert.equal(url.searchParams.get('language'), 'auto');
+  assert.deepEqual(JSON.parse(url.searchParams.get('config')!), { analysis: { extended: 'on' }, detection: { maxDepth: 3 } });
+  replies.push(json({ jobId: 'j3', status: 'queued' }, 202));
+  await submitAnalysis(new Blob(['PK']), 'java', null);
+  assert.equal(calls[calls.length - 1].url, '/api/analyses?language=java');
+});
+
 test('without a token no Authorization header is sent', async () => {
   replies.push(json(status('running')));
   const s = await getStatus('a/b');

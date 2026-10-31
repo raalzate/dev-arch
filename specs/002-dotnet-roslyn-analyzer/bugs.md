@@ -124,7 +124,7 @@
 
 **Reported**: 2026-10-08
 **Severity**: medium
-**Status**: closed — not reproduced (2026-10-30)
+**Status**: investigating (not reproduced)
 **GitHub Issue**: _(none)_
 
 **Description**: Intermittent failure of TS-017 `SchemaVersionContractTest.twoRunsAreByteIdentical[dotnet-ecommerce]` (output.json mismatch at byte 782) during full `mvn verify`
@@ -133,26 +133,6 @@
 1. Run full `mvn -B -o verify` repeatedly (observed 2 failures in ~5 full runs, one while `dotnet test` ran concurrently)
 2. Not reproduced: 8 sequential + 12 concurrent raw analyzer runs, 6 CLI runs, 3 fresh-copy pairs, 12 targeted test loops, 2 full verifies — all byte-identical
 
-**Root Cause**: not confirmed. The most likely cause was BUG-009 (014-standalone-repo): `Microsoft.AspNetCore.App` reference assemblies resolved or not depending on the installed .NET SDK, which changed `extends`/`cbo` of `dotnet-ecommerce`; a concurrent `dotnet test` on the development machine changed which SDK/runtime the analyzer picked up. Since the `global.json` pin and the fidelity warning of BUG-009, TS-017 has passed in every continuous-integration run and in 6 consecutive local runs on 2026-10-30 (`mvn -o test -Dtest='SchemaVersionContractTest#twoRunsAreByteIdentical*'`, both projects).
+**Root Cause**: _(unknown — suspected environment contention in MSBuild design-time load; capture diff with `-Djunit.jupiter.tempdir.cleanup.mode.default=NEVER` on next occurrence)_
 
-**Fix Reference**: no code change. Closed under 014b (PLAN-VB-PLATAFORMA-LEGACY §4, engine debt): the byte-identical double run is the exit criterion of features 015-019, so this record is closed with evidence instead of staying open; reopen with the output diff if it recurs.
-
----
-
-## BUG-008
-
-**Reported**: 2026-10-30
-**Severity**: medium
-**Status**: fixed
-**GitHub Issue**: _(none)_
-
-**Description**: File enumerations that feed the analysis are not ordered before use (`Directory.GetFiles` in `LoadCSharpAdhoc`, `Files.walk` in the Java resolvers and scanners), so the order of compilation and of collected items depends on the file system
-
-**Reproduction Steps**:
-1. Analyze a directory of loose `.cs` files without a project file (Adhoc fallback) on two file systems that enumerate in different orders (APFS vs ext4, or the same files created in a different order on a file system that returns creation order).
-2. Compare the two outputs after replacing the root path.
-3. Observe that the compilation order (and any order-dependent result: duplicate-member resolution, first-wins dictionaries, the order of secret locations and discovered source paths) is not guaranteed to be the same. `VbProjectLoader` and the project discovery of `ProjectAnalyzer` already sort ordinally; `LoadCSharpAdhoc` and the Java `Files.walk` pipelines (`DependencyResolver`, `DotNetDependencyResolver`, `SourcePathDiscoverer`, `SecretLocationScanner`) do not.
-
-**Root Cause**: `Directory.GetFiles` and `Files.walk` return entries in file-system order (not specified by either API); the results are consumed directly.
-
-**Fix Reference**: `LoadCSharpAdhoc` sorts the `.cs` files with `StringComparer.Ordinal`; every `Files.walk` pipeline of the engine calls `.sorted()` (`SourcePathDiscoverer`, `DependencyResolver`, `DotNetDependencyResolver`, `SecretLocationScanner`, `ProjectTypeDetector`, `McpResources`). Scenario `bugfix_BUG-008.feature`: two directories with the same loose sources created in opposite order give the same graph, and a source check fails on any `Files.walk` without `.sorted(` or any `var x = Directory.GetFiles(...)` not followed by `Array.Sort(x, StringComparer.Ordinal)`. The demo baselines (`BaselineParityTest`) stay byte-identical.
+**Fix Reference**: _(empty until implementation)_
