@@ -17,6 +17,8 @@ export interface AnalyzeRequest {
   projectPath: string;
   outputDir: string;
   language: Language;
+  /** 026: extraction/inference configuration forwarded to analyze_project; undefined = engine defaults. */
+  config?: Record<string, unknown>;
 }
 
 export interface AnalyzeHooks {
@@ -151,7 +153,13 @@ export class EngineClient {
   private async call(client: Client, req: AnalyzeRequest, hooks: AnalyzeHooks, phase: (i: number) => void): Promise<AnalyzeResult> {
     try {
       const result = await client.callTool(
-        { name: 'analyze_project', arguments: { projectPath: req.projectPath, outputDir: req.outputDir, language: req.language } },
+        {
+          name: 'analyze_project',
+          arguments: {
+            projectPath: req.projectPath, outputDir: req.outputDir, language: req.language,
+            ...(req.config === undefined ? {} : { config: req.config }),
+          },
+        },
         undefined,
         {
           timeout: hooks.timeoutMs,

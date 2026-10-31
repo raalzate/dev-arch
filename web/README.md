@@ -213,3 +213,12 @@ Desarrollado como parte del proyecto de Maestría en Ingeniería de Software
 - [Google Gemini](https://deepmind.google/technologies/gemini/) por la capacidad de IA
 - [Firebase Genkit](https://firebase.google.com/docs/genkit) por la integración de IA
 - [D3.js](https://d3js.org/) por las visualizaciones de grafos
+
+## Opciones de extracción (feature 026)
+
+Al analizar un .zip, la sección **Opciones de extracción** permite activar el análisis extendido del analizador .NET
+(`analysis.extended = on`: reglas oficiales, código muerto, duplicación, índice de mantenibilidad), la profundidad de
+búsqueda de proyectos anidados (`detection.maxDepth`, 0-5) y la carpeta de ensamblados de referencia de .NET
+Framework (`analysis.referenceAssemblies`, ruta en el servidor). Solo los valores distintos del valor por defecto se
+envían (`POST /api/analyses?config=<JSON>`); el análisis conserva la configuración (`extractionConfig`) y el resumen
+la muestra. Referencia de parámetros: `engine/CONFIGURATION.md`.

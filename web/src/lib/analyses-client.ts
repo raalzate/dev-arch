@@ -25,6 +25,8 @@ export interface AnalysisStatus {
   summary: { componentCount: number; edgeCount: number; proposalCount: number; endpointCount: number } | null;
   projectRoot: string | null;
   hasSources: boolean;
+  /** Extraction configuration the analysis was submitted with (026); null = engine defaults. */
+  extractionConfig?: Record<string, unknown> | null;
 }
 
 export interface ImportViolation {
@@ -102,9 +104,17 @@ async function request(input: string, init: RequestInit = {}): Promise<Response>
   return res;
 }
 
+/** Query string of a submission (026: the extraction config travels URL-encoded in `config`). */
+export function submissionQuery(language: Language, config?: Record<string, unknown> | null): string {
+  const q = `?language=${encodeURIComponent(language)}`;
+  return config ? `${q}&config=${encodeURIComponent(JSON.stringify(config))}` : q;
+}
+
 /** Uploads the ZIP as the request body (no multipart) and returns the registered analysis. */
-export async function submitAnalysis(file: Blob, language: Language): Promise<{ jobId: string; status: AnalysisState }> {
-  const res = await request(`/api/analyses?language=${encodeURIComponent(language)}`, {
+export async function submitAnalysis(
+  file: Blob, language: Language, config?: Record<string, unknown> | null,
+): Promise<{ jobId: string; status: AnalysisState }> {
+  const res = await request(`/api/analyses${submissionQuery(language, config)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/zip' },
     body: file,

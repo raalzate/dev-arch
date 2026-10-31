@@ -11,6 +11,7 @@ import { git } from '../support/git.ts';
 import { layout } from '../support/layout.ts';
 import { tempDir } from '../support/tools.ts';
 import type { DevArchWorld } from '../support/world.ts';
+import { jobId, lastResponse, waitForJob } from './native-runtime-common.steps.ts';
 
 const STEP_IDS = ['summary', 'map', 'proposals', 'findings', 'plan'];
 const VB_FIXTURE = 'src/test/dotnet/DotNetAnalyzer.Tests/Fixtures/VbLegacy/SyntheticDesktop';
@@ -78,6 +79,15 @@ When('the user uploads the ZIP of the VB synthetic desktop project and the analy
 });
 
 When('the analysis completes', async function (this: DevArchWorld) {
+  // 026 shares the sentence from the API harness: without a browser session the submitted job is awaited instead.
+  const open = (this.data.sessions as unknown[] | undefined)?.length ?? 0;
+  if (open === 0 && this.data.jobId) {
+    const res = lastResponse(this);
+    assert.equal(res.status, 202, JSON.stringify(res.json));
+    const job = await waitForJob(this, jobId(this));
+    assert.equal(job.status, 'completed', JSON.stringify(job.error));
+    return;
+  }
   await waitResults(first(this));
 });
 

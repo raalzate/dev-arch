@@ -179,7 +179,7 @@ export class JobRunner {
       if (this.disposed) throw new JobFailure('INTERRUPTED', 'The web server stopped while the analysis was active.');
       await fs.mkdir(p.out, { recursive: true });
       const result = await this.engine.analyze(
-        { jobId: id, projectPath: projectRoot, outputDir: p.out, language: job.language },
+        { jobId: id, projectPath: projectRoot, outputDir: p.out, language: job.language, config: job.extractionConfig ?? undefined },
         {
           timeoutMs: this.config.analysisTimeoutMs,
           onPhase: (phase: Phase) => {
@@ -240,6 +240,10 @@ export class JobRunner {
     const tidy = (m: string) => redactText(summarize(m), roots, [this.config.dataDir]);
     if (e instanceof JobFailure) return { code: e.code, message: tidy(e.message) };
     if (e instanceof EngineNotBuiltError) return { code: 'ENGINE_NOT_BUILT', message: e.message };
+    if (e instanceof EngineToolError && /Invalid inference configuration|configuration/i.test(e.message) && /must be|unknown parameter|not valid JSON|must have/i.test(e.message)) {
+      // 026 (FR-004): the engine rejected the submitted configuration; keep its message for the user.
+      return { code: 'INFERENCE_CONFIG_INVALID', message: tidy(e.message) };
+    }
     if (e instanceof EngineToolError) {
       if (e.ambiguous) return { code: 'AMBIGUOUS_PROJECT', message: tidy(e.message) };
       if (/No space left on device|ENOSPC|Disk quota exceeded/i.test(e.message)) {

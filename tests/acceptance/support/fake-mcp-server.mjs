@@ -65,10 +65,14 @@ server.registerTool(
   'analyze_project',
   {
     description: 'stub analyze_project',
-    inputSchema: { projectPath: z.string(), outputDir: z.string().optional(), language: z.string().optional() },
+    inputSchema: { projectPath: z.string(), outputDir: z.string().optional(), language: z.string().optional(), config: z.record(z.any()).optional() },
   },
-  async ({ projectPath, outputDir, language }, extra) => {
-    const ctl = control();
+  async ({ projectPath, outputDir, language, config }, extra) => {
+    // 026: the call (with its extraction config, when any) is recorded like the inference tools.
+    const ctl = recordCall('analyze_project', config === undefined ? { projectPath, language } : { projectPath, language, config });
+    if (config !== undefined && ctl.rejectConfig) {
+      return { content: [{ type: 'text', text: String(ctl.rejectConfig) }], isError: true };
+    }
     const start = Date.now();
     if (ctl.crash) process.exit(3);
     const token = extra?._meta?.progressToken;
