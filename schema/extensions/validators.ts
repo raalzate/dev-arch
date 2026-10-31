@@ -314,6 +314,23 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
           .array(z.string().regex(new RegExp("^[^:]+:[^:]+$")))
           .describe("Layer:RULE entries removed for components of that fine layer.")
           .optional(),
+        referenceAssemblies: z
+          .union([
+            z
+              .string()
+              .describe(
+                "025: directory of .NET Framework reference assemblies (*.dll and Facades/*.dll) used by the VB Adhoc fallback instead of the host runtime assemblies; null = default.",
+              ),
+            z
+              .null()
+              .describe(
+                "025: directory of .NET Framework reference assemblies (*.dll and Facades/*.dll) used by the VB Adhoc fallback instead of the host runtime assemblies; null = default.",
+              ),
+          ])
+          .describe(
+            "025: directory of .NET Framework reference assemblies (*.dll and Facades/*.dll) used by the VB Adhoc fallback instead of the host runtime assemblies; null = default.",
+          )
+          .optional(),
       })
       .strict()
       .describe("Extended static analysis of the .NET analyzer (024-extended-static-analysis).")

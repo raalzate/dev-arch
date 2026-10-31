@@ -22,6 +22,7 @@
     <Compile Include="Rules\Culture.vb" />
     <Compile Include="Rules\Wasteful.vb" />
     <Compile Include="Rules\BusyController.vb" />
+    <Compile Include="Rules\SqlQuery.vb" />
     <Compile Include="Dead\Orphans.vb" />
     <Compile Include="Dead\Helpers.vb" />
     <Compile Include="Dup\CopyA.vb" />

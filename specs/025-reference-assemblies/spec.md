@@ -33,7 +33,7 @@ En macOS/Linux el cargador VB de fidelidad reducida compila contra los ensamblad
 
 ## Success Criteria *(mandatory)*
 
-- **SC-001**: Referencia (opt-in, con la carpeta): ≥ 1 issue con `[CWE-` y doble corrida idéntica; cifras en `docs/EVALUATIONS.md` §13.
+- **SC-001**: Referencia (opt-in, con la carpeta): ≥ 1 issue con `[CWE-` y doble corrida idéntica; cifras en `docs/EVALUATIONS.md` §13. *Resultado 2026-10-30: 15 issues con CWE, 7 categorías, doble corrida idéntica — cumplido.*
 - **SC-002**: `test-for-demo/*`, líneas base y goldens existentes sin cambios.
 
 ## Clarifications

@@ -253,6 +253,10 @@ export interface InferenceConfig {
      * Layer:RULE entries removed for components of that fine layer.
      */
     layerSuppressions?: string[];
+    /**
+     * 025: directory of .NET Framework reference assemblies (*.dll and Facades/*.dll) used by the VB Adhoc fallback instead of the host runtime assemblies; null = default.
+     */
+    referenceAssemblies?: string | null;
   };
 }
 /**

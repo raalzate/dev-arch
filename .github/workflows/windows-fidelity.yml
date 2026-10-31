@@ -1,0 +1,42 @@
+name: dev-arch - Windows fidelity (manual)
+
+# 025-reference-assemblies (plan transversal 3): on-demand measurement of the full-fidelity path (MSBuildWorkspace
+# with Visual Studio and the VB workload) for the .NET analyzer. Manual only: no recurring cost; promoting it to an
+# automatic job is decision 7.3 of PLAN-VB-PLATAFORMA-LEGACY.md.
+on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: "dotnet test --filter expression (empty = whole .NET test project)"
+        required: false
+        default: ""
+
+jobs:
+  dotnet-windows:
+    name: .NET analyzer tests on Windows
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run the .NET test project
+        shell: pwsh
+        run: |
+          $filter = "${{ github.event.inputs.filter }}"
+          if ($filter -ne "") {
+            dotnet test engine/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj --filter "$filter" --logger "trx;LogFileName=windows-fidelity.trx" --results-directory artifacts
+          } else {
+            dotnet test engine/src/test/dotnet/DotNetAnalyzer.Tests/DotNetAnalyzer.Tests.csproj --logger "trx;LogFileName=windows-fidelity.trx" --results-directory artifacts
+          }
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-fidelity-results
+          path: artifacts

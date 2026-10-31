@@ -18,6 +18,7 @@ Module Program
         Culture.Run()
         Wasteful.Run()
         Console.WriteLine(BusyController.Classify(3))
+        Console.WriteLine(SqlQuery.Count("Policies"))
     End Sub
 
 End Module

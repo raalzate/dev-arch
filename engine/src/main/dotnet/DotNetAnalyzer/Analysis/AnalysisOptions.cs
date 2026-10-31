@@ -74,9 +74,15 @@ public sealed record DependenciesOptions(PassMode Enabled, IReadOnlyList<string>
 /// ignored so later features can add theirs; invalid values are reported with their cause.
 /// </summary>
 /// <summary>024: extended static analysis (official analyzers, dead code, duplication, maintainability, SARIF, layer suppressions).</summary>
-public sealed record AnalysisSection(PassMode Extended, IReadOnlyList<string> Rules, int DuplicateMinTokens, IReadOnlyList<string> Sarif, IReadOnlyList<string> LayerSuppressions)
+public sealed record AnalysisSection(PassMode Extended, IReadOnlyList<string> Rules, int DuplicateMinTokens, IReadOnlyList<string> Sarif, IReadOnlyList<string> LayerSuppressions, string? ReferenceAssemblies)
 {
-    public static readonly AnalysisSection Default = new(PassMode.Off, Array.Empty<string>(), 30, Array.Empty<string>(), Array.Empty<string>());
+    public static readonly AnalysisSection Default = new(PassMode.Off, Array.Empty<string>(), 30, Array.Empty<string>(), Array.Empty<string>(), null);
+
+    /// <summary>024 constructor.</summary>
+    public AnalysisSection(PassMode extended, IReadOnlyList<string> rules, int duplicateMinTokens, IReadOnlyList<string> sarif, IReadOnlyList<string> layerSuppressions)
+        : this(extended, rules, duplicateMinTokens, sarif, layerSuppressions, null)
+    {
+    }
 }
 
 public sealed record AnalysisOptions(DataAccessOptions DataAccess, DebtOptions Debt, IntegrationsOptions Integrations, DependenciesOptions Dependencies, AnalysisSection Analysis)
@@ -210,7 +216,14 @@ public sealed record AnalysisOptions(DataAccessOptions DataAccess, DebtOptions D
                 if (entry.IndexOf(':') <= 0 || entry.IndexOf(':') == entry.Length - 1)
                     throw new ArgumentException("analysis.layerSuppressions entries must have the form Layer:RULE");
             }
-            analysis = new AnalysisSection(extended, rules, minTokens, sarif, suppressions);
+            string? referenceAssemblies = null;
+            if (an["referenceAssemblies"] is JsonNode refsNode)
+            {
+                if (refsNode is not JsonValue rv || rv.TryGetValue<string>(out var refsText) == false)
+                    throw new ArgumentException("analysis.referenceAssemblies must be a string or null");
+                referenceAssemblies = string.IsNullOrWhiteSpace(refsText) ? null : refsText.Trim();
+            }
+            analysis = new AnalysisSection(extended, rules, minTokens, sarif, suppressions, referenceAssemblies);
         }
 
         return new AnalysisOptions(dataAccess, debt, integrations, dependencies, analysis);

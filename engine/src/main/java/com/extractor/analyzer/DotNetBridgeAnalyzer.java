@@ -108,6 +108,8 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
             section.put("duplicateMinTokens", analysis.duplicateMinTokens());
             section.put("sarif", analysis.sarif());
             section.put("layerSuppressions", analysis.layerSuppressions());
+            section.put("referenceAssemblies", analysis.referenceAssemblies() == null ? null
+                    : Path.of(analysis.referenceAssemblies()).toAbsolutePath().normalize().toString());
             root.put("analysis", section);
         }
         Path file = Files.createTempFile("dev-arch-analyzer-config-", ".json");

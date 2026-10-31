@@ -144,6 +144,7 @@
     "rules" : [ ],
     "duplicateMinTokens" : 30,
     "sarif" : [ ],
-    "layerSuppressions" : [ ]
+    "layerSuppressions" : [ ],
+    "referenceAssemblies" : null
   }
 }

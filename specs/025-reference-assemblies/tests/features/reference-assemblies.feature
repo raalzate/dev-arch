@@ -41,7 +41,7 @@ Feature: .NET Framework reference assemblies for the Adhoc fallback
       { "analysis": { "referenceAssemblies": "no/such/folder" } }
       """
     Then the analyzer reports a user warning starting with "Reference assemblies directory not found: no/such/folder"
-    And the component "Acme.Extended.Rules.SqlQuery" has loc 12
+    And the component "Acme.Extended.Rules.SqlQuery" has loc 11
 
   @TS-004 @FR-010 @SC-001 @acceptance
   Scenario: Double run with reference assemblies is byte-identical
