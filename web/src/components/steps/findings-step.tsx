@@ -253,7 +253,7 @@ export default function FindingsStep({
 
   return (
     <SelectedContext.Provider value={selectedId}>
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+    <div className={`grid gap-5 ${details ? 'xl:grid-cols-[minmax(0,1fr)_320px]' : ''}`}>
       <div className="min-w-0 space-y-4">
         <div className="grid gap-4 lg:grid-cols-2">
           {inventory.map((s) => (
@@ -294,7 +294,7 @@ export default function FindingsStep({
         )}
         <NoFindings step="findings" empty={empty} />
       </div>
-      <div className="min-w-0">{details}</div>
+      {details && <div className="min-w-0">{details}</div>}
     </div>
     </SelectedContext.Provider>
   );

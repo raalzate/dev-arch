@@ -65,7 +65,7 @@ function AttrValue({ a }: { a: Attr }) {
 }
 
 export default function ComponentDetails({
-  component, profile, canOpenSource, onOpenSource, onSelect, onClose,
+  component, profile, canOpenSource, onOpenSource, onSelect, onClose, embedded = false,
 }: {
   component: Component;
   profile: TechnologyProfile;
@@ -73,14 +73,16 @@ export default function ComponentDetails({
   onOpenSource: (file: string, id: string) => void;
   onSelect: (id: string) => void;
   onClose: () => void;
+  /** 028: inside the drawer (header handled by the drawer; sections collapsible). */
+  embedded?: boolean;
 }) {
   const c = component;
   const attrs = componentAttributes(c, profile);
   const calls = (title: string, ids: string[], testId: string) =>
     ids.length > 0 && (
-      <div>
-        <h4 className="text-xs font-medium text-muted-foreground">{title} ({ids.length})</h4>
-        <ul className="mt-1 max-h-40 space-y-0.5 overflow-auto">
+      <details open data-testid="detail-section" className="group">
+        <summary className="cursor-pointer select-none text-xs font-medium text-muted-foreground">{title} ({ids.length})</summary>
+        <ul className="mt-1 max-h-60 space-y-0.5 overflow-auto">
           {ids.map((id) => (
             <li key={id}>
               <button type="button" data-testid={testId} onClick={() => onSelect(id)} className="max-w-full truncate text-left font-mono text-xs hover:underline">
@@ -89,15 +91,17 @@ export default function ComponentDetails({
             </li>
           ))}
         </ul>
-      </div>
+      </details>
     );
   return (
-    <aside data-testid="component-details" aria-label={`Detalle de ${c.id}`} className="min-w-0 space-y-4 overflow-hidden rounded-md border border-border bg-card p-4">
+    <aside data-testid="component-details" aria-label={`Detalle de ${c.id}`} className={`min-w-0 space-y-4 overflow-hidden ${embedded ? '' : 'rounded-md border border-border bg-card p-4'}`}>
       <div className="flex items-start gap-2">
         <h3 className="min-w-0 flex-1 break-all font-mono text-sm font-medium">{c.id}</h3>
-        <button type="button" onClick={onClose} aria-label="Cerrar detalle" className="rounded p-1 text-muted-foreground hover:bg-accent">
-          <X className="h-4 w-4" />
-        </button>
+        {!embedded && (
+          <button type="button" onClick={onClose} aria-label="Cerrar detalle" className="rounded p-1 text-muted-foreground hover:bg-accent">
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
       <dl className="grid grid-cols-[minmax(6rem,auto)_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
         {attrs.map((a) => (
@@ -108,9 +112,9 @@ export default function ComponentDetails({
         ))}
       </dl>
       {c.code_issues.length > 0 && (
-        <div>
-          <h4 className="text-xs font-medium text-muted-foreground">Problemas de código ({c.code_issues.length})</h4>
-          <ul className="mt-1 max-h-48 space-y-1 overflow-auto text-xs">
+        <details open data-testid="detail-section">
+          <summary className="cursor-pointer select-none text-xs font-medium text-muted-foreground">Problemas de código ({c.code_issues.length})</summary>
+          <ul className="mt-1 max-h-64 space-y-1 overflow-auto text-xs">
             {c.code_issues.map((i, k) => (
               <li key={k} className="flex gap-2">
                 <SeverityBadge severity={i.severity} />
@@ -118,13 +122,13 @@ export default function ComponentDetails({
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       )}
       {calls('Llamadas entrantes', c.calls_in, 'calls-in-item')}
       {calls('Llamadas salientes', c.calls_out, 'calls-out-item')}
       {c.files.length > 0 && (
-        <div>
-          <h4 className="text-xs font-medium text-muted-foreground">Archivos</h4>
+        <details open data-testid="detail-section">
+          <summary className="cursor-pointer select-none text-xs font-medium text-muted-foreground">Archivos ({c.files.length})</summary>
           <ul className="mt-1 space-y-1">
             {c.files.map((f) => (
               <li key={f} className="flex items-center gap-2 font-mono text-xs">
@@ -137,7 +141,7 @@ export default function ComponentDetails({
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       )}
     </aside>
   );
