@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dev-arch</title>
+<meta name="description" content="dev-arch: análisis estático determinista para modernizar sistemas legacy Java y .NET. La base de verdad sobre la que la IA puede refactorizar sin inventar.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AD%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root {
+  --paper:#edeff3; --surface:#ffffff; --surface-2:#e3e7ee; --ink:#131922; --ink-soft:#47525f; --ink-faint:#7c8794;
+  --rule:#ccd3dd; --rule-soft:#dde2ea; --accent:#2b59c3; --accent-ink:#1f4393; --verde:#1e7a3c; --rojo:#b3261e; --ocre:#8a6d2b;
+  --term-bg:#10161d; --term-ink:#c9d3de; --term-faint:#6b7885; --term-rule:#232d38;
+  --bar-bg:#1f4393; --bar-ink:#ffffff; --bar-ink-2:rgba(255,255,255,.72); --bar-rule:rgba(255,255,255,.22);
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif; --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --step--1:clamp(.78rem,.76rem + .1vw,.84rem); --step-0:clamp(1rem,.97rem + .15vw,1.08rem); --step-1:clamp(1.2rem,1.14rem + .3vw,1.4rem);
+  --step-2:clamp(1.5rem,1.38rem + .6vw,1.95rem); --step-3:clamp(2rem,1.7rem + 1.5vw,3.1rem); --step-4:clamp(2.6rem,2rem + 3vw,4.6rem);
+  --measure:68ch; --pad:clamp(1.15rem,4vw,2.5rem); --topbar-h:3.25rem;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper:#0f141a; --surface:#161d25; --surface-2:#1e262f; --ink:#e6ebf1; --ink-soft:#a7b2be; --ink-faint:#76818d; --rule:#2b343e; --rule-soft:#222a33;
+  --accent:#7ea6ff; --accent-ink:#a9c3ff; --verde:#5cc47c; --rojo:#ef8a80; --ocre:#d3ae5e; --term-bg:#0a0e13; --term-ink:#ccd6e0; --term-faint:#6b7885; --term-rule:#1b232c;
+  --bar-bg:#121a22; --bar-ink:#e6ebf1; --bar-ink-2:#9aa6b3; --bar-rule:#2b343e; } }
+:root[data-theme="dark"] {
+  --paper:#0f141a; --surface:#161d25; --surface-2:#1e262f; --ink:#e6ebf1; --ink-soft:#a7b2be; --ink-faint:#76818d; --rule:#2b343e; --rule-soft:#222a33;
+  --accent:#7ea6ff; --accent-ink:#a9c3ff; --verde:#5cc47c; --rojo:#ef8a80; --ocre:#d3ae5e; --term-bg:#0a0e13; --term-ink:#ccd6e0; --term-faint:#6b7885; --term-rule:#1b232c;
+  --bar-bg:#121a22; --bar-ink:#e6ebf1; --bar-ink-2:#9aa6b3; --bar-rule:#2b343e; }
+*,*::before,*::after{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:var(--step-0);line-height:1.62;font-synthesis:none}
+h1,h2,h3,.display{font-family:var(--f-display);font-weight:700;line-height:1.05;text-wrap:balance;letter-spacing:-.015em;margin:0}
+p{margin:0} a{color:var(--accent-ink);text-decoration-thickness:1px;text-underline-offset:.18em}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+code,kbd,samp{font-family:var(--f-mono);font-size:.88em}
+.wrap{max-width:78rem;margin:0 auto;padding-inline:var(--pad)} .col{max-width:var(--measure)}
+section{border-top:1px solid var(--rule-soft)}
+.sec-inner{display:grid;grid-template-columns:4.5rem minmax(0,1fr);gap:clamp(1rem,3vw,2.75rem);padding-block:clamp(2.75rem,6vw,5rem)}
+.rail{font-family:var(--f-mono);font-size:var(--step--1);color:var(--ink-faint);border-right:1px solid var(--rule-soft);padding-right:.75rem;text-align:right;line-height:1.5;position:sticky;top:calc(var(--topbar-h) + 1.25rem);align-self:start}
+.rail b{display:block;font-weight:700;color:var(--ink-soft);font-size:1.35em}
+@media (max-width:46rem){.sec-inner{grid-template-columns:1fr;gap:1rem}.rail{position:static;border-right:0;border-bottom:1px solid var(--rule-soft);text-align:left;padding:0 0 .5rem}.rail b{display:inline;font-size:1em}}
+.eyebrow{font-family:var(--f-mono);font-size:var(--step--1);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+.lede{font-size:var(--step-1);color:var(--ink-soft)} .stack{display:flex;flex-direction:column;gap:1.1rem}
+header .wrap{max-width:96rem}
+.hero{padding-block:clamp(2.5rem,7vw,5.5rem) clamp(2rem,5vw,3.5rem);display:grid;gap:clamp(2rem,5vw,3.5rem);grid-template-columns:minmax(0,1fr)}
+@media (min-width:60rem){.hero{grid-template-columns:minmax(0,27rem) minmax(0,1fr);align-items:start}}
+.hero h1{font-size:var(--step-4)} .hero h1 .sub{display:block;font-family:var(--f-mono);font-weight:500;font-size:var(--step--1);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:1rem}
+.thesis{font-size:var(--step-1);margin-top:1.25rem} .thesis em{font-style:normal;box-shadow:inset 0 -.45em 0 color-mix(in srgb,var(--accent) 18%,transparent)}
+.hero-meta{margin-top:1.75rem;display:flex;flex-wrap:wrap;gap:.5rem .75rem;font-family:var(--f-mono);font-size:var(--step--1);color:var(--ink-faint)}
+.chip{border:1px solid var(--rule);padding:.18rem .5rem;border-radius:2px;background:var(--surface)}
+.hero-cta{margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:.6rem .8rem;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--f-mono);font-size:var(--step--1);text-decoration:none;border-radius:3px;padding:.55rem .9rem;border:1px solid var(--rule);transition:transform .12s ease,box-shadow .12s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 2px 0 var(--rule)} .btn-1{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700} .btn-2{background:var(--surface);color:var(--ink)} .btn-nota{font-size:var(--step--1);color:var(--ink-faint)}
+.term{background:var(--term-bg);color:var(--term-ink);border-radius:4px;overflow:hidden;box-shadow:0 1px 0 var(--rule),0 18px 40px -28px rgba(9,14,20,.55)}
+.term-tabs{display:flex;border-bottom:1px solid var(--term-rule);flex-wrap:wrap}
+.term-tabs button{flex:1 1 auto;appearance:none;background:transparent;border:0;border-bottom:2px solid transparent;color:var(--term-faint);font-family:var(--f-mono);font-size:var(--step--1);letter-spacing:.06em;text-transform:uppercase;padding:.7rem .9rem;cursor:pointer}
+.term-tabs button[aria-selected="true"]{color:var(--term-ink);border-bottom-color:var(--accent)}
+.term-body{padding:1.1rem 1.15rem 1.35rem;overflow-x:auto} .term-body pre{margin:0;font-family:var(--f-mono);font-size:clamp(.72rem,.68rem + .25vw,.84rem);line-height:1.75;white-space:pre}
+.term-body .dim{color:var(--term-faint)} .term-body .ok{color:#5cc47c} .term-body .no{color:#ef8a80} .term-body .sk{color:#d3ae5e} .term-body .cmd{color:var(--term-ink);font-weight:700}
+.term-note{border-top:1px solid var(--term-rule);padding:.8rem 1.15rem;font-family:var(--f-mono);font-size:var(--step--1);color:var(--term-faint);line-height:1.55}
+.pieces{display:grid;gap:1px;background:var(--rule-soft);border:1px solid var(--rule-soft);border-radius:3px;grid-template-columns:minmax(0,1fr);margin-top:1.75rem}
+@media (min-width:50rem){.pieces{grid-template-columns:repeat(2,minmax(0,1fr))}} @media (min-width:72rem){.pieces.c3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.piece{background:var(--surface);padding:1.25rem 1.35rem 1.4rem;display:flex;flex-direction:column;gap:.5rem} .piece h3{font-size:var(--step-1)}
+.piece .mark{font-family:var(--f-mono);font-size:var(--step--1);color:var(--accent-ink);letter-spacing:.08em;text-transform:uppercase}
+.piece p{color:var(--ink-soft);font-size:var(--step--1)}
+.kpis{display:grid;gap:1px;background:var(--rule-soft);border:1px solid var(--rule-soft);border-radius:3px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:1.5rem}
+@media (min-width:50rem){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.kpi{background:var(--surface);padding:1rem 1.15rem} .kpi b{display:block;font-family:var(--f-display);font-size:var(--step-2);line-height:1.1} .kpi span{font-family:var(--f-mono);font-size:var(--step--1);color:var(--ink-faint)}
+.steps{display:grid;gap:1.25rem;margin-top:1.75rem}
+.step{display:grid;gap:1rem;align-items:start;background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;padding:1.1rem 1.2rem}
+@media (min-width:56rem){.step{grid-template-columns:minmax(0,22rem) minmax(0,1fr)}}
+.step img{width:100%;height:auto;border:1px solid var(--rule-soft);border-radius:3px;background:#fff}
+.step .n{font-family:var(--f-mono);color:var(--accent-ink);font-size:var(--step--1);letter-spacing:.08em;text-transform:uppercase}
+.step h3{font-size:var(--step-1);margin:.25rem 0 .4rem} .step p{color:var(--ink-soft);font-size:var(--step--1)}
+pre.code{margin:1rem 0 0;background:var(--term-bg);color:var(--term-ink);border-radius:4px;padding:1rem 1.15rem;font-family:var(--f-mono);font-size:clamp(.72rem,.68rem + .25vw,.84rem);line-height:1.7;overflow-x:auto}
+pre.code .dim{color:var(--term-faint)}
+.table-scroll{overflow-x:auto;margin-top:1.5rem;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:var(--step--1)} th,td{text-align:left;padding:.6rem .9rem;border-top:1px solid var(--rule-soft);vertical-align:top} th{font-family:var(--f-mono);font-weight:500;color:var(--ink-faint);letter-spacing:.06em;text-transform:uppercase;border-top:0} td code{font-size:.92em}
+.foot{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-between;padding-block:1.5rem 3rem;font-family:var(--f-mono);font-size:var(--step--1);color:var(--ink-faint)} .foot a{color:var(--ink-soft)}
+.skip{position:absolute;left:-9999px} .skip:focus{left:.5rem;top:.5rem;z-index:60;background:var(--surface);color:var(--ink);padding:.5rem .8rem;border:1px solid var(--rule);border-radius:3px}
+.topbar{position:sticky;top:0;z-index:40;background:var(--bar-bg);color:var(--bar-ink);box-shadow:0 1px 0 var(--bar-rule)}
+.topbar-inner{max-width:96rem;margin:0 auto;padding-inline:clamp(.75rem,2vw,1.25rem);min-height:var(--topbar-h);display:flex;align-items:center;gap:.75rem}
+.topbar a{color:var(--bar-ink)} .brand{font-family:var(--f-display);font-weight:700;font-size:1.02rem;letter-spacing:-.01em;text-decoration:none;white-space:nowrap} .brand .ver{font-family:var(--f-mono);font-weight:500;font-size:.68em;color:var(--bar-ink-2);margin-left:.45rem}
+.tabs{display:flex;gap:1rem;margin-left:1.25rem;font-family:var(--f-mono);font-size:var(--step--1);overflow-x:auto;scrollbar-width:none} .tabs::-webkit-scrollbar{display:none}
+.tabs a{color:var(--bar-ink-2);text-decoration:none;white-space:nowrap;padding:.9rem 0 .8rem;border-bottom:2px solid transparent} .tabs a:hover{color:var(--bar-ink)} .tabs a[aria-current="true"]{color:var(--bar-ink);border-bottom-color:var(--bar-ink)}
+.topbar .push{margin-left:auto}
+.search{position:relative;display:flex;align-items:center} .search input{font-family:var(--f-mono);font-size:var(--step--1);color:var(--bar-ink);background:color-mix(in srgb,var(--bar-ink) 12%,transparent);border:1px solid var(--bar-rule);border-radius:3px;padding:.38rem .55rem .38rem 1.85rem;width:clamp(7rem,16vw,12rem)} .search input::placeholder{color:var(--bar-ink-2)} .search::before{content:"⌕";position:absolute;left:.5rem;font-size:1.05rem;line-height:1;color:var(--bar-ink-2);pointer-events:none}
+.topbar .repo{font-family:var(--f-mono);font-size:var(--step--1);text-decoration:none;color:var(--bar-ink-2);white-space:nowrap} .topbar .repo:hover{color:var(--bar-ink)}
+.theme{appearance:none;background:transparent;border:1px solid var(--bar-rule);border-radius:3px;color:var(--bar-ink);font-family:var(--f-mono);font-size:var(--step--1);padding:.35rem .5rem;cursor:pointer}
+.drawer-btn{display:none;appearance:none;background:transparent;border:1px solid var(--bar-rule);border-radius:3px;color:var(--bar-ink);font-size:1rem;line-height:1;padding:.4rem .55rem;cursor:pointer}
+.shell{max-width:96rem;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);align-items:start}
+@media (min-width:64rem){.shell{grid-template-columns:16rem minmax(0,1fr)}}
+.sidenav{font-family:var(--f-mono);font-size:var(--step--1);line-height:1.5;position:sticky;top:var(--topbar-h);align-self:start;max-height:calc(100vh - var(--topbar-h));overflow-y:auto;padding:1.4rem .75rem 3rem;border-right:1px solid var(--rule-soft)}
+.sidenav .nav-title{text-transform:uppercase;letter-spacing:.1em;color:var(--ink-faint);margin:0 0 .5rem .5rem} .sidenav .grupo{text-transform:uppercase;letter-spacing:.09em;color:var(--ink-faint);margin:1.35rem 0 .35rem .5rem} .sidenav .grupo:first-of-type{margin-top:.25rem}
+.sidenav a{display:block;padding:.34rem .5rem;color:var(--ink-soft);text-decoration:none;border-left:2px solid transparent} .sidenav a:hover{background:var(--surface);color:var(--ink)} .sidenav a[aria-current="true"]{color:var(--accent-ink);background:var(--surface);border-left-color:var(--accent);font-weight:700} .sidenav .ext::after{content:" ↗";color:var(--ink-faint)}
+.sidenav a[hidden],.sidenav .grupo[hidden]{display:none} .sidenav .vacio{color:var(--ink-faint);padding:.5rem;display:none} .sidenav[data-filtrando="vacio"] .vacio{display:block}
+@media (max-width:63.98rem){.drawer-btn{display:inline-flex}.sidenav{display:none;position:static;max-height:none;border-right:0;border-bottom:1px solid var(--rule-soft)}.sidenav[data-open="true"]{display:block}.tabs{display:none}}
+.content{min-width:0} .note{border-left:3px solid var(--ocre);background:var(--surface);padding:.9rem 1.1rem;border-radius:3px;color:var(--ink-soft);font-size:var(--step--1)}
+.v{font-family:var(--f-mono);font-size:var(--step--1);padding:.1rem .45rem;border-radius:2px;border:1px solid var(--rule)} .v.ok{color:var(--verde)} .v.no{color:var(--rojo)} .v.sk{color:var(--ocre)}
+</style>
+</head>
+<body>
+<a class="skip" href="#contenido">Ir al contenido</a>
+<div class="topbar"><div class="topbar-inner">
+  <button class="drawer-btn" type="button" id="drawer-btn" aria-controls="sidenav" aria-expanded="false" aria-label="Abrir la navegación">☰</button>
+  <a class="brand" href="#top">dev-arch<span class="ver">v1.2.0</span></a>
+  <nav class="tabs" id="tabs" aria-label="Secciones del sitio">
+    <a href="#tesis" data-grupo="empezar">Empezar</a>
+    <a href="#recorrido" data-grupo="producto">Producto</a>
+    <a href="#legacy" data-grupo="metodo">Método</a>
+    <a href="#documentacion" data-grupo="referencia">Referencia</a>
+  </nav>
+  <span class="push"></span>
+  <label class="search"><span class="skip">Buscar en la navegación</span><input id="buscar" type="search" placeholder="Buscar…  /" autocomplete="off" spellcheck="false"></label>
+  <button class="theme" type="button" id="theme" aria-label="Cambiar tema">◐</button>
+  <a class="repo" href="https://github.com/raalzate/dev-arch" aria-label="El repositorio en GitHub"><span class="repo-txt">GitHub&nbsp;</span>↗</a>
+</div></div>
+
+<header id="top"><div class="wrap"><div class="hero">
+  <div>
+    <h1><span class="sub">Análisis estático determinista</span>Medir<br>antes de<br>refactorizar.</h1>
+    <p class="thesis"><em>La IA refactoriza; solo un análisis determinista sabe cómo está el sistema sin inventar.</em></p>
+    <p class="hero-cta">
+      <a class="btn btn-1" href="#quickstart">Quick start — 3 comandos</a>
+      <a class="btn btn-2" href="https://github.com/raalzate/dev-arch/blob/main/docs/EVALUATIONS.md">Ver las evaluaciones</a>
+      <a class="btn btn-2" href="https://github.com/raalzate/dev-arch">Ver el repo ↗</a>
+      <span class="btn-nota">misma entrada, misma salida, byte a byte</span>
+    </p>
+    <p class="hero-meta">
+      <span class="chip">Java 17 · Spoon</span><span class="chip">.NET 8 · Roslyn</span><span class="chip">C# · VB.NET · .NET Framework 4.8</span>
+      <span class="chip">contrato JSON 1.0.0</span><span class="chip">MCP para agentes</span><span class="chip">Docker</span><span class="chip">salida determinista</span>
+    </p>
+  </div>
+  <figure class="term" style="margin:0">
+    <div class="term-tabs" role="tablist" aria-label="Dos formas de usarlo">
+      <button role="tab" data-v="cli" aria-selected="true" aria-controls="term-out">⌘ línea de comandos</button>
+      <button role="tab" data-v="mcp" aria-selected="false" aria-controls="term-out">⚡ agente (MCP)</button>
+    </div>
+    <div class="term-body" id="term-out" role="tabpanel"><pre><code id="term-code"></code></pre></div>
+    <figcaption class="term-note" id="term-note"></figcaption>
+  </figure>
+</div></div></header>
+
+<div class="shell">
+<aside class="sidenav" id="sidenav" aria-label="Navegación de la documentación">
+  <p class="nav-title">Navegación</p>
+  <nav id="nav-arbol">
+    <p class="grupo" data-grupo="empezar">Empezar</p>
+    <a href="#tesis" data-grupo="empezar" data-k="tesis ia determinista fuente de verdad">La tesis</a>
+    <a href="#evidencia" data-grupo="empezar" data-k="evidencia numeros pruebas determinismo cobertura">La evidencia</a>
+    <a href="#quickstart" data-grupo="empezar" data-k="instalar quickstart docker make build doctor">Quick start</a>
+    <p class="grupo" data-grupo="producto">Producto</p>
+    <a href="#recorrido" data-grupo="producto" data-k="recorrido cinco pasos resumen mapa propuestas hallazgos plan web">Los cinco pasos</a>
+    <a href="#buscar" data-grupo="producto" data-k="buscador panel lateral mapa grande ux">Proyectos grandes</a>
+    <a href="#agentes" data-grupo="producto" data-k="agentes claude code mcp herramientas">Agentes por MCP</a>
+    <p class="grupo" data-grupo="metodo">Método</p>
+    <a href="#ciclo" data-grupo="metodo" data-k="modernizacion continua ciclo analizar refactorizar comparar guardrail">Modernización continua</a>
+    <a href="#legacy" data-grupo="metodo" data-k="vb legacy procedimientos capas deuda integraciones eol preset extendido ensamblados">Perfil .NET Framework legacy</a>
+    <a href="#configuracion" data-grupo="metodo" data-k="configuracion pesos umbrales preset inference config">Configuración de la inferencia</a>
+    <a href="#arquitectura" data-grupo="metodo" data-k="arquitectura engine schema web docker specs">Cómo está hecho</a>
+    <p class="grupo" data-grupo="referencia">Referencia</p>
+    <a href="#documentacion" data-grupo="referencia" data-k="documentos documentacion indice">Documentos</a>
+    <a href="#limites" data-grupo="referencia" data-k="limites fidelidad reducida decisiones pendientes">Límites declarados</a>
+    <p class="grupo" data-grupo="externo">En el repo</p>
+    <a class="ext" href="https://github.com/raalzate/dev-arch/blob/main/docs/INSTALL.md" data-grupo="externo" data-k="install">INSTALL.md</a>
+    <a class="ext" href="https://github.com/raalzate/dev-arch/blob/main/docs/AGENTS-MCP.md" data-grupo="externo" data-k="agents mcp">AGENTS-MCP.md</a>
+    <a class="ext" href="https://github.com/raalzate/dev-arch/blob/main/docs/VB-LEGACY.md" data-grupo="externo" data-k="vb legacy">VB-LEGACY.md</a>
+    <a class="ext" href="https://github.com/raalzate/dev-arch/blob/main/engine/CONFIGURATION.md" data-grupo="externo" data-k="configuration">CONFIGURATION.md</a>
+    <a class="ext" href="https://github.com/raalzate/dev-arch/blob/main/docs/EVALUATIONS.md" data-grupo="externo" data-k="evaluations">EVALUATIONS.md</a>
+    <a class="ext" href="https://github.com/raalzate/dev-arch/blob/main/docs/SCHEMA.md" data-grupo="externo" data-k="schema contrato">SCHEMA.md</a>
+  </nav>
+  <p class="vacio">Sin resultados. La tabla de <a href="#documentacion">documentos</a> tiene todo.</p>
+</aside>
+
+<main class="content" id="contenido">
+
+<section id="tesis"><div class="wrap sec-inner">
+  <p class="rail"><b>=</b>misma entrada, misma salida</p>
+  <div class="col stack">
+    <p class="eyebrow">La tesis</p>
+    <h2 style="font-size:var(--step-2)">Un modelo estima; dev-arch mide.</h2>
+    <p>Un modelo de lenguaje es excelente escribiendo y transformando código, pero cuando se le pregunta <em>cómo está</em> un sistema grande responde con una estimación: lee una parte, completa el resto por probabilidad y puede alucinar dependencias, capas o tablas. Una decisión de arquitectura apoyada en una descripción inventada es peor que ninguna.</p>
+    <p>dev-arch no genera: <strong>mide</strong>. Recorre el árbol sintáctico completo (Spoon para Java, Roslyn para C# y VB.NET) y construye el grafo real de dependencias, las capas, las tablas y procedimientos que toca cada componente, los contratos REST, los secretos expuestos y los problemas de código. Sobre ese grafo aplica una inferencia con pesos y umbrales explícitos para proponer microservicios con su viabilidad y su justificación.</p>
+    <p>El agente (Claude Code u otro cliente MCP) decide <em>cómo</em> refactorizar; dev-arch le dice <em>qué hay</em> y <em>si quedó mejor</em>. Como la salida es reproducible byte a byte, dos análisis se comparan: eso convierte el motor en un guardrail objetivo y hace posible la <a href="#ciclo">modernización continua</a>.</p>
+  </div>
+</div></section>
+
+<section id="evidencia"><div class="wrap sec-inner">
+  <p class="rail"><b>1110</b>componentes de la referencia VB</p>
+  <div class="col stack" style="max-width:none">
+    <p class="eyebrow">La evidencia</p>
+    <h2 style="font-size:var(--step-2)">Números que se verifican en cada ejecución de la CI.</h2>
+    <div class="kpis">
+      <div class="kpi"><b>byte a byte</b><span>doble corrida idéntica, Java y .NET, también entre máquinas</span></div>
+      <div class="kpi"><b>1.0.0</b><span>contrato JSON versionado para web, CLI y agentes</span></div>
+      <div class="kpi"><b>899</b><span>procedimientos almacenados detectados en el corpus VB de referencia</span></div>
+      <div class="kpi"><b>97 %</b><span>cobertura de la web; suites Java, .NET y de aceptación en cada push</span></div>
+    </div>
+    <p class="note" style="margin-top:1.25rem">Las cifras del corpus de referencia (.NET Framework 4.8, Visual Basic, 1110 componentes) y su reproducción paso a paso están en <a href="https://github.com/raalzate/dev-arch/blob/main/docs/EVALUATIONS.md">EVALUATIONS.md</a>, incluidos los criterios que quedaron parciales.</p>
+  </div>
+</div></section>
+
+<section id="quickstart"><div class="wrap sec-inner">
+  <p class="rail"><b>3</b>comandos</p>
+  <div class="col stack">
+    <p class="eyebrow">Quick start</p>
+    <h2 style="font-size:var(--step-2)">Compila, arranca y analiza.</h2>
+    <p>Local (JDK 17, Maven, .NET SDK 8, Node 20+) o Docker. <code>npm run doctor</code> lista cada requisito con su comando de instalación.</p>
+<pre class="code"><code><span class="dim"># local</span>
+git clone https://github.com/raalzate/dev-arch.git &amp;&amp; cd dev-arch
+make build                 <span class="dim"># motor Java + analizador .NET + web</span>
+make dev                   <span class="dim"># http://localhost:9002</span>
+
+<span class="dim"># o con Docker</span>
+docker compose -f docker/compose.yaml up -d
+
+<span class="dim"># un análisis desde la línea de comandos</span>
+java -jar engine/target/java-dependency-extractor.jar ./mi-proyecto salida.json --language=auto</code></pre>
+    <p>Abre la web, sube el .zip del proyecto y recorre los cinco pasos. Detalle y solución de problemas en <a href="https://github.com/raalzate/dev-arch/blob/main/docs/INSTALL.md">INSTALL.md</a>.</p>
+  </div>
+</div></section>
+
+<section id="recorrido"><div class="wrap sec-inner">
+  <p class="rail"><b>5</b>preguntas, un análisis</p>
+  <div class="col stack" style="max-width:none">
+    <p class="eyebrow">El producto</p>
+    <h2 style="font-size:var(--step-2)">Cinco pasos sobre el mismo análisis determinista.</h2>
+    <div class="steps">
+      <article class="step"><img src="images/step-1-summary.png" alt="Resumen del análisis" loading="lazy"><div><p class="n">1 · Resumen</p><h3>¿En qué estado está el sistema legacy?</h3><p>Componentes, líneas, dependencias, endpoints, propuestas y la salud del código: críticos, errores, advertencias, secretos, tablas y dependencias externas. Avisos del análisis y de fidelidad.</p></div></article>
+      <article class="step"><img src="images/step-2-map.png" alt="Mapa del sistema" loading="lazy"><div><p class="n">2 · Mapa del sistema</p><h3>¿Dónde está el acoplamiento real?</h3><p>Grafo de dependencias agrupado por capa o por propuesta, filtros por tipo de dependencia, resaltado por severidad y detalle de cada componente en un panel lateral.</p></div></article>
+      <article class="step"><img src="images/step-3-proposals.png" alt="Propuestas" loading="lazy"><div><p class="n">3 · Propuestas</p><h3>¿Qué se puede extraer y con qué viabilidad?</h3><p>Microservicios candidatos con métricas, señales y justificación; parámetros de inferencia ajustables y re-inferencia sin volver a analizar.</p></div></article>
+      <article class="step"><img src="images/step-4-findings.png" alt="Hallazgos" loading="lazy"><div><p class="n">4 · Hallazgos</p><h3>¿Qué riesgos y contratos hay que atender?</h3><p>Problemas de código por severidad o patrón, secretos, contratos REST, puntos de entrada legacy e inventario tecnológico.</p></div></article>
+      <article class="step"><img src="images/step-5-plan.png" alt="Plan" loading="lazy"><div><p class="n">5 · Plan</p><h3>¿En qué orden modernizar?</h3><p>Etapas por viabilidad, librerías de soporte y exportación a Markdown/JSON para la propuesta.</p></div></article>
+    </div>
+  </div>
+</div></section>
+
+<section id="buscar"><div class="wrap sec-inner">
+  <p class="rail"><b>⌕</b>todo el análisis</p>
+  <div class="col stack">
+    <p class="eyebrow">Proyectos grandes</p>
+    <h2 style="font-size:var(--step-2)">Mil componentes sin perder el hilo.</h2>
+    <p>Buscador léxico en la barra superior sobre componentes, propuestas, problemas, tablas y procedimientos, puntos de entrada y advertencias, con navegación directa al paso y al componente. Mapa con zoom fluido, detalle en un panel lateral no modal con historial, y listas paginadas con la selección siempre visible.</p>
+  </div>
+</div></section>
+
+<section id="agentes"><div class="wrap sec-inner">
+  <p class="rail"><b>MCP</b>el agente razona sobre hechos</p>
+  <div class="col stack">
+    <p class="eyebrow">Agentes</p>
+    <h2 style="font-size:var(--step-2)">Conecta Claude Code u otro cliente MCP.</h2>
+<pre class="code"><code>curl -fsSo ~/.dev-arch-mcp.mjs http://127.0.0.1:9002/dev-arch-mcp.mjs
+claude mcp add dev-arch -- node ~/.dev-arch-mcp.mjs --url http://127.0.0.1:9002</code></pre>
+    <p>Luego, dentro del agente: <em>«Analiza este proyecto con dev-arch y dame las propuestas y los hallazgos críticos»</em>. Herramientas: <code>analyze_project</code>, <code>get_dependency_graph</code>, <code>get_architecture_proposal</code>, <code>get_api_contracts</code>, <code>get_component_metrics</code>, <code>reinfer_architecture</code>, <code>score_proposal</code>. Instancias remotas con token: <a href="https://github.com/raalzate/dev-arch/blob/main/docs/AGENTS-MCP.md">AGENTS-MCP.md</a>.</p>
+    <img src="images/agent-claude-code.png" alt="Claude Code analizando un proyecto con dev-arch por MCP" loading="lazy" style="width:100%;height:auto;border:1px solid var(--rule-soft);border-radius:3px">
+  </div>
+</div></section>
+
+<section id="ciclo"><div class="wrap sec-inner">
+  <p class="rail"><b>↻</b>analizar · refactorizar · comparar</p>
+  <div class="col stack">
+    <p class="eyebrow">Método</p>
+    <h2 style="font-size:var(--step-2)">Modernización continua.</h2>
+    <p>Ejecutado en cada cambio —en la CI o por el agente tras cada refactorización— el análisis se convierte en un guardrail: no deja que aumenten los hallazgos críticos, que crezca el acoplamiento, que baje la cohesión ni que una propuesta pierda viabilidad. El historial de la web compara dos análisis lado a lado.</p>
+    <div class="pieces c3">
+      <div class="piece"><span class="mark">1 · Analizar</span><h3>Grafo determinista</h3><p>Componentes, capas, datos, contratos, problemas.</p></div>
+      <div class="piece"><span class="mark">2 · Decidir</span><h3>Propuestas y plan</h3><p>Viabilidad explicada, parámetros ajustables.</p></div>
+      <div class="piece"><span class="mark">3 · Refactorizar</span><h3>Agente de IA</h3><p>Cambios pequeños, sobre hechos.</p></div>
+      <div class="piece"><span class="mark">4 · Comparar</span><h3>Reanalizar</h3><p>Mejora → siguiente paso; retroceso → corregir.</p></div>
+    </div>
+    <p><a href="https://github.com/raalzate/dev-arch/blob/main/docs/CONTINUOUS-MODERNIZATION.md">CONTINUOUS-MODERNIZATION.md</a></p>
+  </div>
+</div></section>
+
+<section id="legacy"><div class="wrap sec-inner">
+  <p class="rail"><b>VB</b>.NET Framework 4.8</p>
+  <div class="col stack" style="max-width:none">
+    <p class="eyebrow">Perfil legacy</p>
+    <h2 style="font-size:var(--step-2)">Lo que un monolito de escritorio VB.NET necesita.</h2>
+    <p class="col">Soporte para la plataforma típica de escritorio .NET Framework: formularios, controladores, adaptadores ADO.NET con procedimientos almacenados, Enterprise Library, servicios SOAP/WCF, proyectos anidados. Funciona también sin Windows (fallback Adhoc con fidelidad reducida, mejorable con ensamblados de referencia).</p>
+    <div class="pieces c3">
+      <div class="piece"><span class="mark">Datos</span><h3>Procedimientos almacenados</h3><p><code>sp:&lt;nombre&gt;</code> por componente, catálogo opcional sp → tablas, peso en la inferencia.</p></div>
+      <div class="piece"><span class="mark">Identidad</span><h3>Capas y puntos de entrada</h3><p>Namespace raíz, Presentación/Reportes/Batch, <code>Sub Main</code>, seis reglas de deuda legacy.</p></div>
+      <div class="piece"><span class="mark">Integraciones</span><h3>SOAP, WCF, REST y EOL</h3><p>Referencias de servicio, URL por configuración, proyectos ausentes y dependencias fin de vida.</p></div>
+      <div class="piece"><span class="mark">Inferencia</span><h3>Preset <code>legacy-desktop</code></h3><p>Cortes verticales por entidad, nombres por dominio, librerías de soporte e índice de deuda.</p></div>
+      <div class="piece"><span class="mark">Análisis</span><h3>Extendido (opt-in)</h3><p>Reglas oficiales .NET, código muerto, duplicación, índice de mantenibilidad, importación SARIF.</p></div>
+      <div class="piece"><span class="mark">Fidelidad</span><h3>Ensamblados de referencia</h3><p>Carpeta net48 opcional para resolver <code>System.Data</code>, <code>Windows.Forms</code>, <code>ServiceModel</code>.</p></div>
+    </div>
+    <p><a href="https://github.com/raalzate/dev-arch/blob/main/docs/VB-LEGACY.md">VB-LEGACY.md</a> · <a href="https://github.com/raalzate/dev-arch/blob/main/docs/EVALUATIONS.md">medidas sobre el corpus de referencia</a></p>
+  </div>
+</div></section>
+
+<section id="configuracion"><div class="wrap sec-inner">
+  <p class="rail"><b>{}</b>sin configuración, 1.2.0 exacto</p>
+  <div class="col stack">
+    <p class="eyebrow">Configuración</p>
+    <h2 style="font-size:var(--step-2)">Cada peso y umbral, explícito.</h2>
+    <p>La inferencia es un objeto JSON parcial: agrupación, evidencia, consolidación, viabilidad, nombres, acceso a datos, deuda, integraciones y análisis extendido. Sin configuración el motor es byte a byte la versión anterior; un preset versionado (<code>legacy-desktop</code>) se aplica entre los valores por defecto y los tuyos.</p>
+<pre class="code"><code>{
+  "detection":  { "maxDepth": 3 },
+  "analysis":   { "extended": "on", "referenceAssemblies": "~/.nuget/.../v4.8" },
+  "inference":  { "preset": "auto" },
+  "viability":  { "thresholds": { "high": 0.7, "medium": 0.5 } }
+}</code></pre>
+    <p>Referencia completa: <a href="https://github.com/raalzate/dev-arch/blob/main/engine/CONFIGURATION.md">engine/CONFIGURATION.md</a>.</p>
+  </div>
+</div></section>
+
+<section id="arquitectura"><div class="wrap sec-inner">
+  <p class="rail"><b>4</b>áreas, un contrato</p>
+  <div class="col stack" style="max-width:none">
+    <p class="eyebrow">Cómo está hecho</p>
+    <h2 style="font-size:var(--step-2)">Motor, contrato, web y despliegue.</h2>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Área</th><th>Qué es</th></tr></thead>
+      <tbody>
+        <tr><td><code>engine/</code></td><td>Motor determinista: Java 17 + Spoon y analizador .NET 8 + Roslyn (C#/VB.NET); CLI y servidor MCP por stdio</td></tr>
+        <tr><td><code>schema/</code></td><td>Contrato JSON versionado de todas las salidas, con tipos TypeScript generados y listas versionadas (EOL, reglas)</td></tr>
+        <tr><td><code>web/</code></td><td>Next.js: recorrido de modernización, API de análisis asíncronos, servidor MCP para agentes</td></tr>
+        <tr><td><code>docker/</code></td><td>Imagen todo-en-uno y Compose</td></tr>
+        <tr><td><code>specs/</code></td><td>Especificaciones por feature con escenarios BDD bloqueados por hash (TDD); principios en <code>CONSTITUTION.md</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div></section>
+
+<section id="documentacion"><div class="wrap sec-inner">
+  <p class="rail"><b>docs</b>en el repo</p>
+  <div class="col stack" style="max-width:none">
+    <p class="eyebrow">Referencia</p>
+    <h2 style="font-size:var(--step-2)">Documentos.</h2>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Documento</th><th>Para qué</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/docs/INSTALL.md">INSTALL.md</a></td><td>Instalación local y Docker, SDK 8 reproducible, solución de problemas</td></tr>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/docs/AGENTS-MCP.md">AGENTS-MCP.md</a></td><td>Conectar Claude Code y otros agentes; herramientas MCP; token</td></tr>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/docs/ARCHITECTURE.md">ARCHITECTURE.md</a></td><td>Pasadas del motor, inferencia, deuda conocida</td></tr>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/docs/VB-LEGACY.md">VB-LEGACY.md</a></td><td>Perfil .NET Framework legacy: procedimientos, capas, integraciones, preset, análisis extendido, ensamblados de referencia</td></tr>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/engine/CONFIGURATION.md">CONFIGURATION.md</a></td><td>Todos los parámetros de la inferencia y el preset</td></tr>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/docs/SCHEMA.md">SCHEMA.md</a></td><td>Contrato JSON 1.0.0 y convenciones aditivas</td></tr>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/docs/CONTINUOUS-MODERNIZATION.md">CONTINUOUS-MODERNIZATION.md</a></td><td>El ciclo analizar → refactorizar → comparar</td></tr>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/docs/EVALUATIONS.md">EVALUATIONS.md</a></td><td>Determinismo, batería de pruebas y medidas sobre el corpus de referencia</td></tr>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/docs/PLAN-VB-DECISIONS.md">PLAN-VB-DECISIONS.md</a></td><td>Decisiones pendientes del plan legacy con opciones e impacto</td></tr>
+        <tr><td><a href="https://github.com/raalzate/dev-arch/blob/main/CHANGELOG.md">CHANGELOG.md</a></td><td>Cambios por feature</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div></section>
+
+<section id="limites"><div class="wrap sec-inner">
+  <p class="rail"><b>—</b>lo que no hace</p>
+  <div class="col stack">
+    <p class="eyebrow">Límites declarados</p>
+    <h2 style="font-size:var(--step-2)">Mide; no decide por ti.</h2>
+    <p><span class="v sk">fidelidad reducida</span> Sin Windows, los proyectos .NET Framework se compilan en modo Adhoc: los tipos del framework no se resuelven salvo que indiques una carpeta de ensamblados de referencia; terceros (DevExpress, Enterprise Library) requieren sus binarios.</p>
+    <p><span class="v sk">viabilidad honesta</span> Un monolito en capas de un solo dominio seguirá dando propuestas de viabilidad baja: el preset mejora los cortes y los nombres, no inventa cohesión.</p>
+    <p><span class="v no">no es un refactorizador</span> dev-arch no cambia código; entrega hechos y comparaciones para que lo haga una persona o un agente.</p>
+    <p><span class="v ok">determinista por contrato</span> Toda salida se valida contra el esquema 1.0.0 y se compara byte a byte en las pruebas de regresión.</p>
+  </div>
+</div></section>
+
+<div class="wrap"><footer class="foot">
+  <span>dev-arch · proyecto de maestría en modernización de software asistida por IA</span>
+  <span><a href="https://github.com/raalzate/dev-arch">github.com/raalzate/dev-arch</a> · <a href="https://raalzate.github.io/agent-harness/">agent-harness</a></span>
+</footer></div>
+</main>
+</div>
+
+<script>
+(function(){
+  var cli = '<span class="dim">$</span> <span class="cmd">java -jar engine/target/java-dependency-extractor.jar ./policy-manager out.json --language=dotnet</span>\n' +
+    '<span class="dim">[info]</span> Detected .NET project (C# + VB)\n' +
+    '<span class="dim">[info]</span> VbProjectLoader: compiled 14 projects (Adhoc fallback)\n' +
+    '<span class="dim">[info]</span> Stored procedures: on for Visual Basic (auto) → 899 distinct sp:\n' +
+    '<span class="dim">[info]</span> Preset de inferencia: legacy-desktop\n' +
+    '<span class="ok">✓</span> out.json                  1110 components · 1251 edges\n' +
+    '<span class="ok">✓</span> out_architecture.json     44 proposals · 16 support libraries\n' +
+    '<span class="ok">✓</span> out_entrypoints.json      1 legacy entry point (batch)\n' +
+    '<span class="sk">!</span> 1 warning: reduced fidelity (no MSBuild on this host)\n' +
+    '<span class="dim">$</span> <span class="cmd">java -jar … ./policy-manager out2.json --language=dotnet &amp;&amp; cmp out.json out2.json</span>\n' +
+    '<span class="ok">✓</span> byte-identical';
+  var mcp = '<span class="dim">&gt;</span> <span class="cmd">Analiza este proyecto con dev-arch y dame los hallazgos críticos</span>\n\n' +
+    '<span class="dim">⚡ dev-arch · analyze_project</span>  projectPath=./policy-manager language=dotnet\n' +
+    '<span class="ok">✓</span> 1110 componentes · 44 propuestas · 4984 hallazgos\n\n' +
+    'Críticos (9): SQL concatenado en 4 adaptadores (CWE-89), secretos en\n' +
+    'app.config (5). Dependencias fin de vida: Enterprise Library 3.1,\n' +
+    'ActiveReports 3, ReportViewer. Abre el análisis en la web:\n' +
+    '<span class="dim">http://127.0.0.1:9002/?analysis=e0799170-…</span>';
+  var notes = { cli: 'Dos corridas, mismo archivo. La reproducibilidad es la base del guardrail.', mcp: 'El agente razona sobre el grafo real; el enlace abre el mismo análisis en la web.' };
+  var code = document.getElementById('term-code'), note = document.getElementById('term-note');
+  function show(v){ code.innerHTML = v === 'mcp' ? mcp : cli; note.textContent = notes[v]; document.querySelectorAll('.term-tabs button').forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.v === v)); }); }
+  document.querySelectorAll('.term-tabs button').forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.v); }); });
+  show('cli');
+  var root = document.documentElement, theme = document.getElementById('theme');
+  try { var saved = localStorage.getItem('dev-arch-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  theme.addEventListener('click', function(){ var dark = root.getAttribute('data-theme') === 'dark' || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches); var next = dark ? 'light' : 'dark'; root.setAttribute('data-theme', next); try { localStorage.setItem('dev-arch-theme', next); } catch (e) {} });
+  var btn = document.getElementById('drawer-btn'), side = document.getElementById('sidenav');
+  btn.addEventListener('click', function(){ var open = side.getAttribute('data-open') === 'true'; side.setAttribute('data-open', String(!open)); btn.setAttribute('aria-expanded', String(!open)); });
+  var links = Array.prototype.slice.call(document.querySelectorAll('#nav-arbol a[href^="#"]')), tabs = Array.prototype.slice.call(document.querySelectorAll('#tabs a'));
+  var io = new IntersectionObserver(function(entries){ entries.forEach(function(e){ if (!e.isIntersecting) return; var id = '#' + e.target.id; var cur = null; links.forEach(function(a){ var on = a.getAttribute('href') === id; a.setAttribute('aria-current', String(on)); if (on) cur = a; }); tabs.forEach(function(t){ t.setAttribute('aria-current', String(!!cur && t.dataset.grupo === cur.dataset.grupo)); }); }); }, { rootMargin: '-40% 0px -55% 0px' });
+  document.querySelectorAll('main section[id]').forEach(function(s){ io.observe(s); });
+  var q = document.getElementById('buscar');
+  function filtra(){ var t = (q.value || '').toLowerCase().trim(); var any = false; var all = Array.prototype.slice.call(document.querySelectorAll('#nav-arbol a')); all.forEach(function(a){ var hit = !t || (a.textContent + ' ' + (a.dataset.k || '')).toLowerCase().indexOf(t) >= 0; a.hidden = !hit; any = any || hit; }); document.querySelectorAll('#nav-arbol .grupo').forEach(function(g){ var vis = Array.prototype.some.call(document.querySelectorAll('#nav-arbol a[data-grupo="' + g.dataset.grupo + '"]'), function(a){ return !a.hidden; }); g.hidden = !!t && !vis; }); side.setAttribute('data-filtrando', t ? (any ? 'si' : 'vacio') : ''); if (t) { side.setAttribute('data-open', 'true'); } }
+  q.addEventListener('input', filtra);
+  document.addEventListener('keydown', function(e){ if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); } });
+})();
+</script>
+</body>
+</html>
