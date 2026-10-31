@@ -214,7 +214,7 @@ Corrida local 2026-10-30 (macOS, SDK 8, fidelidad reducida):
 
 Hallazgo: los clientes generados se consumen desde otros proyectos con `Imports <Referencia>` y nombres sin calificar,
 y las URL REST llegan por campos (`BaseURL`) inicializados desde `appSettings`; sin esas dos resoluciones (referencias
-globales e inicializadores) la detección era 1 integración. La prueba opt-in `VbCorpusSmokeTests` ("022 SC-001") fija
+globales e inicializadores) la detección era 1 integración. La prueba opt-in `VbLegacyPlanCorpusTests` ("022 SC-001") fija
 los umbrales (≥ 12 integraciones, ≥ 11 proyectos ausentes, ≥ 3 EOL, sin direcciones).
 
 ## 11. Feature 023 (preset `legacy-desktop`, nombres por dominio, soporte, índice de deuda) sobre el corpus de referencia VB
