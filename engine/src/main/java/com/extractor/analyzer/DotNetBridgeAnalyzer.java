@@ -17,6 +17,8 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import com.extractor.inference.config.DataAccessConfig;
 import com.extractor.inference.config.DebtConfig;
+import com.extractor.inference.config.DependenciesConfig;
+import com.extractor.inference.config.IntegrationsConfig;
 import com.extractor.inference.config.InferenceConfig;
 import java.nio.file.Files;
 import java.util.LinkedHashMap;
@@ -52,6 +54,8 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
     private final List<String> warnings = new ArrayList<>();
     private final DataAccessConfig dataAccess;
     private final DebtConfig debt;
+    private final IntegrationsConfig integrations;
+    private final DependenciesConfig dependencies;
 
     /**
      * Writes the analyzer section of the configuration to a temporary file (020, research D3), or returns null
@@ -60,7 +64,9 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
     private Path writeConfigIfNeeded() throws IOException {
         boolean sendDataAccess = dataAccess != null && dataAccess.affectsAnalyzer();
         boolean sendDebt = debt != null && debt.affectsAnalyzer();
-        if (!sendDataAccess && !sendDebt) {
+        boolean sendIntegrations = integrations != null && integrations.affectsAnalyzer();
+        boolean sendDependencies = dependencies != null && dependencies.affectsAnalyzer();
+        if (!sendDataAccess && !sendDebt && !sendIntegrations && !sendDependencies) {
             return null;
         }
         Map<String, Object> root = new LinkedHashMap<>();
@@ -80,6 +86,17 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
             section.put("enabled", debt.enabled());
             section.put("godClass", godClass);
             root.put("debt", section);
+        }
+        if (sendIntegrations) {
+            Map<String, Object> section = new LinkedHashMap<>();
+            section.put("outbound", integrations.outbound());
+            root.put("integrations", section);
+        }
+        if (sendDependencies) {
+            Map<String, Object> section = new LinkedHashMap<>();
+            section.put("enabled", dependencies.enabled());
+            section.put("eol", dependencies.eol());
+            root.put("dependencies", section);
         }
         Path file = Files.createTempFile("dev-arch-analyzer-config-", ".json");
         objectMapper.writeValue(file.toFile(), root);
@@ -137,10 +154,28 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
      */
     public DotNetBridgeAnalyzer(DotNetToolLocator locator, Duration timeout, DataAccessConfig dataAccess,
             DebtConfig debt) {
+        this(locator, timeout, dataAccess, debt, InferenceConfig.defaults().integrations(),
+                InferenceConfig.defaults().dependencies());
+    }
+
+    /**
+     * Bridge with every analyzer section (022).
+     *
+     * @param locator      locates the dotnet-analyzer executable
+     * @param timeout      maximum wall-clock time the subprocess may run
+     * @param dataAccess   data access parameters
+     * @param debt         legacy debt rule parameters
+     * @param integrations outbound integration parameters
+     * @param dependencies external dependency parameters
+     */
+    public DotNetBridgeAnalyzer(DotNetToolLocator locator, Duration timeout, DataAccessConfig dataAccess,
+            DebtConfig debt, IntegrationsConfig integrations, DependenciesConfig dependencies) {
         this.locator = locator;
         this.timeout = timeout;
         this.dataAccess = dataAccess;
         this.debt = debt;
+        this.integrations = integrations;
+        this.dependencies = dependencies;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }

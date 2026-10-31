@@ -1,4 +1,5 @@
 using DotNetAnalyzer.Analysis;
+using DotNetAnalyzer.Tests.SchemaContract;
 using FluentAssertions;
 using Xunit;
 
@@ -157,5 +158,28 @@ public class VbCorpusSmokeTests
             "the console process module is a batch entry point");
         graph.Edges.Count.Should().BeGreaterOrEqualTo(1100, "per-project compilation must keep the inter-project edges");
         timed.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(90));
+    }
+
+    /// <summary>
+    /// 022 SC-001 (opt-in): outbound integrations, missing projects and end-of-life dependencies of the reference
+    /// corpus; no full address ever reaches the output.
+    /// </summary>
+    [Fact(DisplayName = "022 SC-001: integrations, missing projects and EOL dependencies of the reference corpus")]
+    public async Task ExternalIntegrations_OnTheReferenceCorpus()
+    {
+        var root = Path.Combine(FindRepoRoot(), "test-for-demo", "vb-demo-legacy");
+        Directory.Exists(root).Should().BeTrue($"Reference corpus not found: {root}");
+        var analyzer = new ProjectAnalyzer();
+        var graph = await analyzer.AnalyzeProjectAsync(root);
+
+        var integrations = graph.Components.SelectMany(c => c.Annotations).Where(a => a.StartsWith("Integration:", StringComparison.Ordinal)).Distinct().ToList();
+        integrations.Count.Should().BeGreaterOrEqualTo(12, "outbound integrations: " + string.Join(", ", integrations));
+        analyzer.UserWarnings.Should().Contain(w => w.StartsWith("Referenced projects not included in the analyzed sources: ", StringComparison.Ordinal));
+        var missing = analyzer.UserWarnings.First(w => w.StartsWith("Referenced projects", StringComparison.Ordinal));
+        missing.Split(':', 2)[1].Split(',').Length.Should().BeGreaterOrEqualTo(11);
+        graph.Components.SelectMany(c => c.Annotations).Where(a => a.StartsWith("Dependency:eol:", StringComparison.Ordinal)).Distinct()
+            .Count().Should().BeGreaterOrEqualTo(3);
+        var json = GraphJson.Serialize(graph);
+        json.Should().NotContain("http://").And.NotContain("https://").And.NotContain("net.tcp://");
     }
 }

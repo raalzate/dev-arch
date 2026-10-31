@@ -157,6 +157,25 @@ export interface InferenceConfig {
       minComplexity?: number;
     };
   };
+  /**
+   * Outbound integration detection of the .NET analyzer (022-external-integrations).
+   */
+  integrations?: {
+    /**
+     * auto = Visual Basic compilations only.
+     */
+    outbound?: "auto" | "on" | "off";
+  };
+  /**
+   * External dependency and end-of-life detection of the .NET analyzer (022-external-integrations).
+   */
+  dependencies?: {
+    enabled?: "auto" | "on" | "off";
+    /**
+     * Name prefixes added to schema/eol-dependencies.json.
+     */
+    eol?: string[];
+  };
 }
 /**
  * Successful score_proposal response (008-configurable-inference): evaluation of a user-defined proposal with the formulas of the engine's proposals.

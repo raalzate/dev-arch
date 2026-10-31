@@ -26,6 +26,10 @@ public class ProjectAnalyzer
 
     private readonly List<string> _userWarnings = new();
     private AnalysisOptions _options = AnalysisOptions.Default;
+    private string _analyzedRoot = ".";
+    private readonly SortedSet<string> _missingProjects = new(StringComparer.Ordinal);
+    private EolCatalog? _eolCatalog;
+    private Dictionary<string, string>? _serviceReferences;
     private ProcedureCatalog? _procedureCatalog;
     private bool _procedureCatalogLoaded;
 
@@ -51,6 +55,10 @@ public class ProjectAnalyzer
     public async Task<DependencyGraph> AnalyzeProjectAsync(string projectPath, AnalysisOptions options)
     {
         _options = options;
+        _analyzedRoot = Path.GetFullPath(Directory.Exists(projectPath) ? projectPath : Path.GetDirectoryName(projectPath) ?? ".");
+        _missingProjects.Clear();
+        _serviceReferences = null;
+        _eolCatalog = null;
         var compilations = new List<Compilation>();
         bool usedFallback = false;
         _userWarnings.Clear();
@@ -218,6 +226,26 @@ public class ProjectAnalyzer
                 if (vbIndex != null && VbDebtAnalyzer.Enabled(_options.Debt, compilation.Language))
                     RunVbPass("VbDebtAnalyzer", () => VbDebtAnalyzer.Analyze(vbIndex, components, vbProject, _options.Debt));
 
+                // Pass 12b (022): outbound integrations; auto = Visual Basic only.
+                Console.Error.WriteLine($"[info] {VbIntegrationAnalyzer.StateDiagnostic(_options.Integrations, compilation.Language)}");
+                if (vbIndex != null && VbIntegrationAnalyzer.Enabled(_options.Integrations, compilation.Language))
+                {
+                    RunVbPass("VbIntegrationAnalyzer", () => _userWarnings.AddRange(VbIntegrationAnalyzer.Analyze(
+                        vbIndex, components, vbProject, AppConfigParser.ClientEndpoints(vbDirectory), AllServiceReferences())));
+                }
+
+                // Pass 12c (022): external dependencies, end of life, missing projects; auto = Visual Basic only.
+                Console.Error.WriteLine($"[info] {VbDependencyAnalyzer.StateDiagnostic(_options.Dependencies, compilation.Language)}");
+                if (vbIndex != null && VbDependencyAnalyzer.Enabled(_options.Dependencies, compilation.Language))
+                {
+                    RunVbPass("VbDependencyAnalyzer", () =>
+                    {
+                        _eolCatalog ??= EolCatalog.Load(_options.Dependencies.Eol);
+                        foreach (var missing in VbDependencyAnalyzer.Analyze(vbIndex, components, vbProject, _analyzedRoot, _eolCatalog))
+                            _missingProjects.Add(missing);
+                    });
+                }
+
                 allComponents.AddRange(components);
                 allEdges.AddRange(edges);
                 allEndpoints.AddRange(endpoints);
@@ -260,6 +288,20 @@ public class ProjectAnalyzer
             .OrderBy(e => e.Method, StringComparer.Ordinal)
             .ThenBy(e => e.Path, StringComparer.Ordinal)
             .ToList();
+
+        // 022: one warning for the referenced projects missing from the analyzed sources, one for Setup projects.
+        if (_missingProjects.Count > 0)
+            _userWarnings.Add("Referenced projects not included in the analyzed sources: " + string.Join(", ", _missingProjects));
+        if (vbCompilations.Count > 0 && VbDependencyAnalyzer.Enabled(_options.Dependencies, LanguageNames.VisualBasic))
+        {
+            var setups = Directory.Exists(_analyzedRoot)
+                ? Directory.GetFiles(_analyzedRoot, "*.vdproj", SearchOption.AllDirectories)
+                    .Where(f => !VbProjectContext.IsBuildOutput(_analyzedRoot, f))
+                    .Select(Path.GetFileName).OrderBy(n => n, StringComparer.Ordinal).ToList()
+                : new List<string?>();
+            if (setups.Count > 0)
+                _userWarnings.Add("Setup project(s) without support since Visual Studio 2010: " + string.Join(", ", setups));
+        }
 
         // 020: user warnings of every pass, ordinal and without duplicates (contracts/dotnet-warnings-channel.md).
         var orderedWarnings = _userWarnings.Distinct(StringComparer.Ordinal).OrderBy(w => w, StringComparer.Ordinal).ToList();
@@ -434,6 +476,22 @@ public class ProjectAnalyzer
         }
 
         return compilations;
+    }
+
+    /// <summary>Service references of every project under the analyzed root, loaded once per analysis (022).</summary>
+    private Dictionary<string, string> AllServiceReferences()
+    {
+        if (_serviceReferences == null)
+        {
+            _serviceReferences = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var file in VbProjectContext.NestedProjectFiles(_analyzedRoot))
+            {
+                foreach (var (name, kind) in VbProjectFile.Load(file).ServiceReferences)
+                    _serviceReferences.TryAdd(name, kind);
+            }
+        }
+
+        return _serviceReferences;
     }
 
     /// <summary>Loads the procedure catalog once per analysis (null without a configured catalog).</summary>

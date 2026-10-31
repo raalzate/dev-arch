@@ -205,6 +205,19 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
       .strict()
       .describe("Legacy debt rules of the .NET analyzer (021-desktop-identity-layers).")
       .optional(),
+    integrations: z
+      .object({ outbound: z.enum(["auto", "on", "off"]).describe("auto = Visual Basic compilations only.").optional() })
+      .strict()
+      .describe("Outbound integration detection of the .NET analyzer (022-external-integrations).")
+      .optional(),
+    dependencies: z
+      .object({
+        enabled: z.enum(["auto", "on", "off"]).optional(),
+        eol: z.array(z.string().min(1)).describe("Name prefixes added to schema/eol-dependencies.json.").optional(),
+      })
+      .strict()
+      .describe("External dependency and end-of-life detection of the .NET analyzer (022-external-integrations).")
+      .optional(),
   })
   .strict()
   .describe(

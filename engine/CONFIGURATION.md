@@ -118,6 +118,9 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `debt.enabled` | string | `auto` | auto, on, off | extracción | Reglas de deuda legacy del analizador .NET (021): `auto` = solo compilaciones Visual Basic. |
 | `debt.godClass.minLoc` | int | `1000` | >= 1 | extracción | Líneas de código a partir de las cuales un tipo puede ser `GOD_CLASS` (junto con la complejidad). |
 | `debt.godClass.minComplexity` | int | `15` | >= 1 | extracción | Complejidad máxima de método a partir de la cual un tipo puede ser `GOD_CLASS` (junto con las líneas). |
+| `integrations.outbound` | string | `auto` | auto, on, off | extracción | Integraciones salientes (SOAP/WCF/REST) del analizador .NET (022): `auto` = solo compilaciones Visual Basic. |
+| `dependencies.enabled` | string | `auto` | auto, on, off | extracción | Dependencias externas, proyectos ausentes y fin de vida (022): `auto` = solo compilaciones Visual Basic. |
+| `dependencies.eol` | string[] | `(vacía)` | no vacías | extracción | Prefijos de nombre añadidos a la lista versionada `schema/eol-dependencies.json` (issue `EOL_DEPENDENCY`). |
 
 Las reglas internas de puntuación de clústeres (`HighCohesionRule`, `LowCouplingRule`, `SharedDataRule`) no forman parte de la configuración: su resultado no llega a ningún documento de salida.
 

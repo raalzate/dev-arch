@@ -199,6 +199,24 @@ todas las compilaciones anteriores no cambia la resolución pero no es lo que ha
 deben compartir el ámbito de componentes de todas las compilaciones VB: con el ámbito por compilación se perdían las
 971 aristas entre proyectos. La prueba opt-in `VbCorpusSmokeTests` ("021 SC-001/SC-006") fija estos umbrales.
 
+## 10. Feature 022 (integraciones externas, dependencias EOL, proyectos ausentes) sobre el corpus de referencia VB
+
+Corrida local 2026-10-30 (macOS, SDK 8, fidelidad reducida):
+
+| Métrica | Valor |
+|---|---|
+| Integraciones salientes distintas (`Integration:*`) | 19 (WCF 3: Articulo140Service, BanguatServiceReference, OFACService; SOAP 2: Milliman*; REST 14 claves de configuración + `dynamic`) |
+| Componentes con integraciones | 30 |
+| Proyectos referenciados ausentes de la entrega | 36 (una advertencia) |
+| Dependencias EOL distintas | 13 (Enterprise Library 3.1, ActiveReports 3, ReportViewer) |
+| Direcciones completas en la salida | ninguna (solo hosts y claves) |
+| Doble corrida | byte a byte idéntica; ~17 s |
+
+Hallazgo: los clientes generados se consumen desde otros proyectos con `Imports <Referencia>` y nombres sin calificar,
+y las URL REST llegan por campos (`BaseURL`) inicializados desde `appSettings`; sin esas dos resoluciones (referencias
+globales e inicializadores) la detección era 1 integración. La prueba opt-in `VbCorpusSmokeTests` ("022 SC-001") fija
+los umbrales (≥ 12 integraciones, ≥ 11 proyectos ausentes, ≥ 3 EOL, sin direcciones).
+
 ## Cómo reproducir
 
 ```bash

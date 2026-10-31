@@ -57,7 +57,9 @@ public sealed class VbProjectSteps
     public void GivenTheProjectFile(string fileName, string content)
     {
         var dir = _context.ScratchDir ?? throw new InvalidOperationException("No scratch VB project");
-        File.WriteAllText(Path.Combine(dir, fileName), content.Replace("\r\n", "\n"), new UTF8Encoding(false));
+        var path = Path.Combine(dir, fileName.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!); // 022: files in sub-folders (Service References, Setup)
+        File.WriteAllText(path, content.Replace("\r\n", "\n"), new UTF8Encoding(false));
     }
 
     [Given(@"^a VB legacy project with a class ""([^""]+)"" containing the string literal ""(.*)""$")]

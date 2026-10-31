@@ -9,6 +9,8 @@ import com.extractor.analyzer.ProjectTypeDetector;
 import com.extractor.inference.config.DataAccessConfig;
 import com.extractor.inference.config.InferenceConfig;
 import com.extractor.inference.config.DebtConfig;
+import com.extractor.inference.config.DependenciesConfig;
+import com.extractor.inference.config.IntegrationsConfig;
 import com.extractor.inference.config.DetectionConfig;
 import com.extractor.model.DependencyGraph;
 import com.extractor.model.SecretLocation;
@@ -221,9 +223,77 @@ public final class ExtractionService {
 
     private LanguageAnalyzer createDotNetAnalyzer(final DataAccessConfig dataAccess,
             final DebtConfig debt) {
+        return createDotNetAnalyzer(dataAccess, debt,
+                InferenceConfig.defaults().integrations(),
+                InferenceConfig.defaults().dependencies());
+    }
+
+    private LanguageAnalyzer createDotNetAnalyzer(final DataAccessConfig dataAccess,
+            final DebtConfig debt, final IntegrationsConfig integrations,
+            final DependenciesConfig dependencies) {
         return new DotNetBridgeAnalyzer(
                 new DotNetToolLocator(getJarDirectory()),
-                DotNetBridgeAnalyzer.DEFAULT_TIMEOUT, dataAccess, debt);
+                DotNetBridgeAnalyzer.DEFAULT_TIMEOUT, dataAccess, debt, integrations,
+                dependencies);
+    }
+
+    /**
+     * Extraction with every analyzer section of the configuration (022).
+     *
+     * @param projectRoot project directory (already validated)
+     * @param options     analysis options (language)
+     * @param config      inference configuration (detection and analyzer sections)
+     * @param listener    receives DETECTION and EXTRACTION
+     * @return the extraction result
+     * @throws Exception when the analysis fails
+     */
+    public ExtractionResult extract(final Path projectRoot,
+            final AnalysisOptions options, final InferenceConfig config,
+            final AnalysisProgressListener listener) throws Exception {
+        listener.onPhase(AnalysisPhase.DETECTION);
+        List<String> warnings = new ArrayList<>();
+        LanguageAnalyzer analyzer;
+        if (options.language() == AnalysisLanguage.JAVA) {
+            analyzer = new JavaSpoonAnalyzer();
+        } else if (options.language() == AnalysisLanguage.DOTNET) {
+            analyzer = createDotNetAnalyzer(config.dataAccess(), config.debt(),
+                    config.integrations(), config.dependencies());
+        } else {
+            Detection detected = new ProjectTypeDetector().detect(projectRoot,
+                    config.detection().maxDepth());
+            if (detected.warning() != null) {
+                warnings.add(detected.warning());
+            }
+            analyzer = switch (detected.type()) {
+                case JAVA -> new JavaSpoonAnalyzer();
+                case DOTNET -> createDotNetAnalyzer(config.dataAccess(), config.debt(),
+                        config.integrations(), config.dependencies());
+                case AMBIGUOUS -> throw new IllegalArgumentException(
+                        detected.ambiguityMessage(projectRoot));
+                case UNKNOWN -> {
+                    LOGGER.info("No project type markers found in '{}', "
+                            + "defaulting to Java analyzer", projectRoot);
+                    yield new JavaSpoonAnalyzer();
+                }
+            };
+        }
+        return finish(projectRoot, analyzer, warnings, listener);
+    }
+
+    private ExtractionResult finish(final Path projectRoot, final LanguageAnalyzer analyzer,
+            final List<String> warnings, final AnalysisProgressListener listener) throws Exception {
+        listener.onPhase(AnalysisPhase.EXTRACTION);
+        DependencyGraph graph = analyzer.analyzeProject(projectRoot);
+        warnings.addAll(analyzer.getWarnings());
+        if (graph.getComponents().isEmpty()) {
+            Path name = projectRoot.toAbsolutePath().normalize().getFileName();
+            warnings.add("No analyzable source files found in '"
+                    + (name == null ? "." : name) + "'");
+        }
+        Map<String, String> dependencies =
+                analyzer.getDependencyResolver().getAllDependencies();
+        return new ExtractionResult(graph, dependencies,
+                scanSecrets(projectRoot), warnings);
     }
 
     /**

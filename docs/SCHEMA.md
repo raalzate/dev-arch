@@ -125,6 +125,18 @@ together with a re-lock of TS-028.
 _None yet — 1.0.0 is the first formal version. It describes the v1.1.0 output plus the additive
 `meta.schema_version` (and the new `meta` objects of the architecture and entrypoints documents)._
 
+## `inference-config` — sections `integrations` and `dependencies` (feature 022, additive)
+
+| Key | Type | Default | Meaning |
+|---|---|---|---|
+| `integrations.outbound` | `auto` \| `on` \| `off` | `auto` | outbound integration detection (SOAP/WCF/REST); `auto` = Visual Basic only |
+| `dependencies.enabled` | `auto` \| `on` \| `off` | `auto` | external dependencies, end of life and missing projects |
+| `dependencies.eol` | string[] | `[]` | name prefixes added to `schema/eol-dependencies.json` |
+
+Output conventions without schema change: annotations `Integration:<wcf|soap|rest>:<target>`, `Dependency:eol:<name>`;
+`external_dependencies` entries (third-party names, `service:`, `http:`, `project:`); `code_issues[].rule`
+`EOL_DEPENDENCY` (`type` `DEPENDENCY`).
+
 ## `inference-config` — section `debt` (feature 021, additive)
 
 | Key | Type | Default | Meaning |

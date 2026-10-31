@@ -44,16 +44,46 @@ public sealed record DebtOptions(DebtMode Enabled, int GodClassMinLoc, int GodCl
     public static readonly DebtOptions Default = new(DebtMode.Auto, 1000, 15);
 }
 
+/// <summary>Three-state activation shared by the 022 sections.</summary>
+public enum PassMode
+{
+    Auto,
+    On,
+    Off,
+}
+
+/// <summary>The <c>integrations</c> section (022).</summary>
+public sealed record IntegrationsOptions(PassMode Outbound)
+{
+    public static readonly IntegrationsOptions Default = new(PassMode.Auto);
+}
+
+/// <summary>The <c>dependencies</c> section (022).</summary>
+public sealed record DependenciesOptions(PassMode Enabled, IReadOnlyList<string> Eol)
+{
+    public static readonly DependenciesOptions Default = new(PassMode.Auto, Array.Empty<string>());
+
+    public bool Equals(DependenciesOptions? other) =>
+        other != null && Enabled == other.Enabled && Eol.SequenceEqual(other.Eol, StringComparer.Ordinal);
+
+    public override int GetHashCode() => HashCode.Combine(Enabled, Eol.Count);
+}
+
 /// <summary>
 /// Options of an analysis (<c>dotnet-analyzer &lt;path&gt; [--config=&lt;file&gt;]</c>). Unknown sections and keys are
 /// ignored so later features can add theirs; invalid values are reported with their cause.
 /// </summary>
-public sealed record AnalysisOptions(DataAccessOptions DataAccess, DebtOptions Debt)
+public sealed record AnalysisOptions(DataAccessOptions DataAccess, DebtOptions Debt, IntegrationsOptions Integrations, DependenciesOptions Dependencies)
 {
-    public static readonly AnalysisOptions Default = new(DataAccessOptions.Default, DebtOptions.Default);
+    public static readonly AnalysisOptions Default = new(DataAccessOptions.Default, DebtOptions.Default, IntegrationsOptions.Default, DependenciesOptions.Default);
 
     /// <summary>020 constructor kept for callers that only set the data access section.</summary>
-    public AnalysisOptions(DataAccessOptions dataAccess) : this(dataAccess, DebtOptions.Default)
+    public AnalysisOptions(DataAccessOptions dataAccess) : this(dataAccess, DebtOptions.Default, IntegrationsOptions.Default, DependenciesOptions.Default)
+    {
+    }
+
+    /// <summary>021 constructor.</summary>
+    public AnalysisOptions(DataAccessOptions dataAccess, DebtOptions debt) : this(dataAccess, debt, IntegrationsOptions.Default, DependenciesOptions.Default)
     {
     }
 
@@ -114,7 +144,40 @@ public sealed record AnalysisOptions(DataAccessOptions DataAccess, DebtOptions D
             debt = new DebtOptions(enabled, minLoc, minComplexity);
         }
 
-        return new AnalysisOptions(dataAccess, debt);
+        var integrations = IntegrationsOptions.Default;
+        if (obj["integrations"] is JsonNode integrationsSection)
+        {
+            if (integrationsSection is not JsonObject io)
+                throw new ArgumentException("integrations must be an object");
+            integrations = new IntegrationsOptions(Enum("integrations.outbound", io["outbound"], integrations.Outbound,
+                ("auto", PassMode.Auto), ("on", PassMode.On), ("off", PassMode.Off)));
+        }
+
+        var dependencies = DependenciesOptions.Default;
+        if (obj["dependencies"] is JsonNode dependenciesSection)
+        {
+            if (dependenciesSection is not JsonObject dp)
+                throw new ArgumentException("dependencies must be an object");
+            var enabled = Enum("dependencies.enabled", dp["enabled"], dependencies.Enabled,
+                ("auto", PassMode.Auto), ("on", PassMode.On), ("off", PassMode.Off));
+            var eol = new List<string>();
+            if (dp["eol"] is JsonNode eolNode)
+            {
+                if (eolNode is not JsonArray array)
+                    throw new ArgumentException("dependencies.eol must be an array of strings");
+                foreach (var item in array)
+                {
+                    var text = (item as JsonValue)?.TryGetValue<string>(out var t) == true ? t : null;
+                    if (string.IsNullOrWhiteSpace(text))
+                        throw new ArgumentException("dependencies.eol must be an array of non-blank strings");
+                    eol.Add(text.Trim());
+                }
+            }
+
+            dependencies = new DependenciesOptions(enabled, eol.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(e => e, StringComparer.Ordinal).ToList());
+        }
+
+        return new AnalysisOptions(dataAccess, debt, integrations, dependencies);
     }
 
     private static int PositiveInt(string key, JsonNode? node, int fallback)

@@ -117,5 +117,12 @@
       "minLoc" : 1000,
       "minComplexity" : 15
     }
+  },
+  "integrations" : {
+    "outbound" : "auto"
+  },
+  "dependencies" : {
+    "enabled" : "auto",
+    "eol" : [ ]
   }
 }

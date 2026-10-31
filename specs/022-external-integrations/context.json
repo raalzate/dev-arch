@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "d6506c0651003a8b363145a5d8e34558c3d599c9cb3834b08fbdfa12599e5146",
+    "generated_at": "2026-10-30T18:46:35Z",
+    "features_dir": "specs/022-external-integrations/tests/features",
+    "file_count": 4
+  }
+}
