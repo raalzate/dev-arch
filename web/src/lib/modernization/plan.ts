@@ -47,7 +47,7 @@ export interface ModernizationPlan {
   totals: { components: number; loc: number; edges: number; endpoints: number; proposals: number };
   severityCounts: Record<Severity, number>;
   stages: Stage[];
-  supportLibraries: { name: string; components: number }[];
+  supportLibraries: { id: number; name: string; components: number }[];
   warnings: string[];
   parameters: InferenceParameters | null;
 }
@@ -117,7 +117,7 @@ export function buildPlan(view: AnalysisView, profile: TechnologyProfile, opts: 
     },
     severityCounts: severityCounts(comps),
     stages,
-    supportLibraries: view.architecture.support_libraries.map((l) => ({ name: l.name, components: l.components.length })),
+    supportLibraries: view.architecture.support_libraries.map((l) => ({ id: l.id, name: l.name, components: l.components.length })),
     warnings: [...view.warnings],
     parameters: opts.parameters ?? null,
   };
