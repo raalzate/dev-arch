@@ -29,20 +29,22 @@ export function StatusCluster({ status }: { status: AnalysisStatus }) {
 }
 
 export function TopBar({
-  project, profile, status, onHistory, upload,
+  project, profile, status, onHistory, upload, search,
 }: {
   project: string | null;
   profile: TechnologyProfile | null;
   status: AnalysisStatus | null;
   onHistory: () => void;
   upload: React.ReactNode;
+  /** 027: lexical search box, present only with a loaded analysis. */
+  search?: React.ReactNode;
 }) {
   return (
     <header data-testid="top-bar" className="sticky top-0 z-30 border-b border-border bg-card pt-3 print:hidden">
       <div className="flex h-[52px] items-center gap-3 px-4">
         <span className="flex items-center gap-2">
           <BrandMark className="h-6 w-6 shrink-0" />
-          <span className="text-md font-semibold tracking-tight">dev-arch</span>
+          <span className="whitespace-nowrap text-md font-semibold tracking-tight">dev-arch</span>
         </span>
         {project && (
           <>
@@ -53,6 +55,7 @@ export function TopBar({
         {profile && <TechBadge profile={profile} />}
         {status && <StatusCluster status={status} />}
         <div className="ml-auto flex items-center gap-2">
+          {search}
           {upload}
           <button
             type="button"

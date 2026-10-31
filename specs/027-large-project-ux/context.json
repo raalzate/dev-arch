@@ -1,7 +1,7 @@
 {
   "testify": {
-    "assertion_hash": "ed0711cd335bba5403c88e17175cbbd0827da5ac9e19a72cf62a6f734e366fc5",
-    "generated_at": "2026-10-31T20:46:40Z",
+    "assertion_hash": "1119b0b9a7ffa16fb8b17670c2460dd80600cf290cb221ebe75d735af24a45df",
+    "generated_at": "2026-10-31T20:48:10Z",
     "features_dir": "specs/027-large-project-ux/tests/features",
     "file_count": 1
   }

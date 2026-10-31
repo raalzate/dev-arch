@@ -141,7 +141,7 @@ export default function MapStep({
             discontinuas son inyecciones o registros en el contenedor.
           </p>
         </div>
-        <div>{details ?? <p className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">Selecciona un componente en el mapa o en las tablas para ver su detalle.</p>}</div>
+        <div className="min-w-0">{details ?? <p className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">Selecciona un componente en el mapa o en las tablas para ver su detalle.</p>}</div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

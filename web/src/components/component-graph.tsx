@@ -7,6 +7,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import type { Component, DependencyGraph } from '@static-inference/schema';
 import { edgeKey, edgeTypes, strokeWidth, type GroupMode } from '@/lib/modernization/graph-model';
+import { hoverDimmingEnabled } from '@/lib/modernization/paging';
 
 type GraphEdge = DependencyGraph['edges'][number];
 
@@ -45,8 +46,10 @@ export default function ComponentGraph({
   mode: GroupMode;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [transform, setTransform] = useState<d3.ZoomTransform>(d3.zoomIdentity);
+  // 027 (FR-010): the zoom transform is applied to the canvas group imperatively; React never re-renders for pan/zoom.
+  const canvasRef = useRef<SVGGElement>(null);
   const [hover, setHover] = useState<string | null>(null);
+  const dimOnHover = hoverDimmingEnabled(components.length);
   const width = 1000;
   const height = 620;
 
@@ -68,7 +71,9 @@ export default function ComponentGraph({
       .force('y', d3.forceY<SimNode>((d) => center.get(d.group)?.y ?? height / 2).strength(0.12))
       .force('collide', d3.forceCollide<SimNode>((d) => d.r + 2))
       .stop();
-    const ticks = Math.min(300, Math.max(120, Math.ceil(Math.log(sim.alphaMin()) / Math.log(1 - sim.alphaDecay()))));
+    // 027: big graphs settle with fewer ticks (layout cost is O(ticks × (nodes + links))); positions stay deterministic.
+    const settle = Math.ceil(Math.log(sim.alphaMin()) / Math.log(1 - sim.alphaDecay()));
+    const ticks = nodes.length > 500 ? Math.min(90, settle) : Math.min(300, Math.max(120, settle));
     for (let i = 0; i < ticks; i++) sim.tick();
     return new Map(nodes.map((n) => [n.id, n]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,7 +82,9 @@ export default function ComponentGraph({
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
-    const zoom = d3.zoom<SVGSVGElement, unknown>().scaleExtent([0.3, 6]).on('zoom', (ev) => setTransform(ev.transform));
+    const zoom = d3.zoom<SVGSVGElement, unknown>().scaleExtent([0.3, 6]).on('zoom', (ev) => {
+      canvasRef.current?.setAttribute('transform', ev.transform.toString());
+    });
     const sel = d3.select(svg);
     sel.call(zoom);
     return () => {
@@ -85,8 +92,9 @@ export default function ComponentGraph({
     };
   }, []);
 
-  const maxWeight = Math.max(1, ...edges.map((e) => e.weight));
-  const focus = hover ?? selectedId;
+  const maxWeight = useMemo(() => Math.max(1, ...edges.map((e) => e.weight)), [edges]);
+  // Large maps dim neighbours only around the selected node; the hover just labels the node (027).
+  const focus = dimOnHover ? (hover ?? selectedId) : selectedId;
   const neighbours = useMemo(() => {
     if (!focus) return null;
     const s = new Set([focus]);
@@ -112,7 +120,46 @@ export default function ComponentGraph({
           <path d="M0,0 L10,5 L0,10 z" fill="var(--map-edge)" />
         </marker>
       </defs>
-      <g transform={transform.toString()}>
+      <g ref={canvasRef}>
+        <EdgesLayer edges={edges} layout={layout} neighbours={neighbours} maxWeight={maxWeight} />
+        <NodesLayer
+          components={components}
+          layout={layout}
+          groups={groups}
+          highlighted={highlighted}
+          selectedId={selectedId}
+          neighbours={neighbours}
+          showLabels={showLabels}
+          onSelect={onSelect}
+          onHover={setHover}
+        />
+        {hover && !showLabels && layout.get(hover) && (
+          <text
+            x={(layout.get(hover)!.x ?? 0) + layout.get(hover)!.r + 3}
+            y={(layout.get(hover)!.y ?? 0) + 4}
+            className="pointer-events-none fill-foreground font-mono"
+            fontSize={11}
+            paintOrder="stroke"
+            stroke="hsl(var(--background))"
+            strokeWidth={3}
+          >
+            {hover.split('.').pop()}
+          </text>
+        )}
+      </g>
+    </svg>
+  );
+}
+
+const EdgesLayer = React.memo(function EdgesLayer({
+  edges, layout, neighbours, maxWeight,
+}: {
+  edges: readonly GraphEdge[];
+  layout: Map<string, SimNode>;
+  neighbours: Set<string> | null;
+  maxWeight: number;
+}) {
+  return (
         <g>
           {edges.map((e, i) => {
             const a = layout.get(e.from);
@@ -146,6 +193,23 @@ export default function ComponentGraph({
             );
           })}
         </g>
+  );
+});
+
+const NodesLayer = React.memo(function NodesLayer({
+  components, layout, groups, highlighted, selectedId, neighbours, showLabels, onSelect, onHover,
+}: {
+  components: readonly Component[];
+  layout: Map<string, SimNode>;
+  groups: string[];
+  highlighted: Set<string>;
+  selectedId: string | null;
+  neighbours: Set<string> | null;
+  showLabels: boolean;
+  onSelect: (id: string) => void;
+  onHover: (id: string | null) => void;
+}) {
+  return (
         <g>
           {components.map((c) => {
             const n = layout.get(c.id);
@@ -162,8 +226,8 @@ export default function ComponentGraph({
                 transform={`translate(${n.x},${n.y})`}
                 opacity={dim ? 0.25 : 1}
                 onClick={() => onSelect(c.id)}
-                onMouseEnter={() => setHover(c.id)}
-                onMouseLeave={() => setHover(null)}
+                onMouseEnter={() => onHover(c.id)}
+                onMouseLeave={() => onHover(null)}
                 className="cursor-pointer"
               >
                 <circle
@@ -173,7 +237,7 @@ export default function ComponentGraph({
                   strokeWidth={hl || selected ? 3 : 1.5}
                 />
                 <title>{`${c.id}\n${n.group}${c.code_issues.length ? `\n${c.code_issues.length} problemas` : ''}`}</title>
-                {(showLabels || selected || hover === c.id) && (
+                {(showLabels || selected) && (
                   <text x={n.r + 3} y={4} className="fill-foreground font-mono" fontSize={11} paintOrder="stroke" stroke="hsl(var(--background))" strokeWidth={3}>
                     {c.id.split('.').pop()}
                   </text>
@@ -182,7 +246,5 @@ export default function ComponentGraph({
             );
           })}
         </g>
-      </g>
-    </svg>
   );
-}
+});

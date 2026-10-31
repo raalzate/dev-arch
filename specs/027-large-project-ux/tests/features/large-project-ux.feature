@@ -26,7 +26,7 @@ Feature: Lexical search and large-project ergonomics of the modernization flow
     When the lexical search runs for "adapter inexistente"
     Then there are no results
     When the lexical search runs for "adapter"
-    Then the result titles in order are "Acme.Pagos.PolíticaPagoAdapter, Acme.Ventas.ClienteAdapter, LATE_BINDING en Acme.Ventas.ClienteAdapter, sp:usp_Politica_PagoRead, sp:usp_Cliente_Read"
+    Then the result titles in order are "Acme.Pagos.PolíticaPagoAdapter, Acme.Ventas.ClienteAdapter, LATE_BINDING en Acme.Ventas.ClienteAdapter, sp:usp_Cliente_Read, sp:usp_Politica_PagoRead"
 
   @TS-003 @FR-002 @acceptance
   Scenario Outline: Each result carries its navigation target

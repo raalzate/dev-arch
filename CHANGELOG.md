@@ -4,6 +4,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Unreleased]
 
+### Añadido (feature 027, experiencia con proyectos grandes)
+- Buscador léxico en la barra superior sobre todo el análisis (componentes, propuestas, librerías de soporte, problemas, tablas y procedimientos, puntos de entrada, advertencias) con resultados agrupados y navegación al paso y componente.
+- Mapa del sistema: zoom y arrastre sin volver a dibujar (transformación imperativa), capas memoizadas, atenuación por ratón solo hasta 300 componentes, menos iteraciones de layout en grafos grandes.
+- Panel de detalle alineado con listas largas (valores partidos, listas desplazables); en Hallazgos el componente seleccionado se resalta (`aria-current`) y los grupos de problemas se paginan de 150 en 150.
+
 ### Añadido (feature 026, opciones de extracción en el web)
 - Formulario "Analizar" con sección "Opciones de extracción": análisis extendido (024), profundidad de búsqueda de proyectos (`detection.maxDepth`) y carpeta de ensamblados de referencia .NET Framework (025). `POST /api/analyses` acepta `config` (query o cuerpo JSON; 400 `INVALID_CONFIG` si no es un objeto ≤ 8 KB), lo guarda como `extractionConfig`, lo reenvía a `analyze_project` y mapea el rechazo del motor a `INFERENCE_CONFIG_INVALID`. El resumen muestra las opciones aplicadas.
 - Corregido BUG-013 (010): claves duplicadas en el informe imprimible con librerías de soporte homónimas.

@@ -5,6 +5,7 @@
 import React, { useMemo, useState } from 'react';
 import type { ApiEndpoint, Component, Proposal, SecretLocation } from '@static-inference/schema';
 import { groupIssues, type IssueGroupMode } from '@/lib/modernization/findings';
+import { PAGE, paginate } from '@/lib/modernization/paging';
 import { edgeTypes } from '@/lib/modernization/graph-model';
 import { layerLabel } from '@/lib/modernization/layers';
 import { FINDINGS_TABS, resolveSections, type AnalysisView, type IssueRow } from '@/lib/modernization/sections';
@@ -22,33 +23,65 @@ const TAB_LABELS: Record<string, string> = {
 
 const ENTRY_LABELS: Record<string, string> = { rest: 'API REST', messaging: 'Mensajería', service: 'Servicio', internal: 'Interno' };
 
+/** Selected component shared by every list of the step (027 FR-030). */
+const SelectedContext = React.createContext<string | null>(null);
+
 function CompLink({ id, onSelect }: { id: string; onSelect: (id: string) => void }) {
+  const selected = React.useContext(SelectedContext) === id;
   return (
-    <button type="button" onClick={() => onSelect(id)} className="max-w-full truncate text-left font-mono text-xs hover:underline" title={id}>
+    <button
+      type="button"
+      onClick={() => onSelect(id)}
+      aria-current={selected ? 'true' : undefined}
+      data-selected={selected ? 'true' : undefined}
+      className={`max-w-full truncate rounded px-1 text-left font-mono text-xs hover:underline ${selected ? 'bg-accent font-semibold ring-1 ring-primary/40' : ''}`}
+      title={id}
+    >
       {id}
     </button>
   );
 }
 
-function ComponentList({ items, profile, onSelect, extra }: { items: Component[]; profile: TechnologyProfile; onSelect: (id: string) => void; extra?: (c: Component) => React.ReactNode }) {
+/** "Mostrar más" pagination of long lists (027 FR-030). */
+function Paged<T>({ rows, render, className }: { rows: readonly T[]; render: (shown: T[]) => React.ReactNode; className?: string }) {
+  const [pages, setPages] = useState(1);
+  const { shown, remaining } = paginate(rows, pages, PAGE);
   return (
-    <ul className="max-h-72 divide-y divide-border overflow-auto">
-      {items.map((c) => (
-        <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 py-1.5">
-          <CompLink id={c.id} onSelect={onSelect} />
-          <span className="text-xs text-muted-foreground">{layerLabel(c.layer, profile)}</span>
-          {extra && <span className="ml-auto text-xs text-muted-foreground">{extra(c)}</span>}
-        </li>
-      ))}
-    </ul>
+    <div className={className}>
+      {render(shown)}
+      {remaining > 0 && (
+        <button type="button" data-testid="show-more" onClick={() => setPages((p) => p + 1)} className="mt-2 w-full rounded border border-dashed border-border py-1.5 text-xs text-muted-foreground hover:bg-accent">
+          Mostrar más ({Math.min(PAGE, remaining)} de {remaining} restantes)
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ComponentList({ items, profile, onSelect, extra }: { items: Component[]; profile: TechnologyProfile; onSelect: (id: string) => void; extra?: (c: Component) => React.ReactNode }) {
+  const selected = React.useContext(SelectedContext);
+  return (
+    <Paged rows={items} className="max-h-72 overflow-auto" render={(shown) => (
+      <ul className="divide-y divide-border">
+        {shown.map((c) => (
+          <li key={c.id} aria-current={c.id === selected ? 'true' : undefined} className={`flex flex-wrap items-center gap-x-3 gap-y-0.5 py-1.5 ${c.id === selected ? 'bg-accent/60' : ''}`}>
+            <CompLink id={c.id} onSelect={onSelect} />
+            <span className="text-xs text-muted-foreground">{layerLabel(c.layer, profile)}</span>
+            {extra && <span className="ml-auto min-w-0 truncate text-xs text-muted-foreground">{extra(c)}</span>}
+          </li>
+        ))}
+      </ul>
+    )} />
   );
 }
 
 function IssueRows({ issues, onSelect }: { issues: IssueRow[]; onSelect: (id: string) => void }) {
+  const selected = React.useContext(SelectedContext);
   return (
+    <Paged rows={issues} render={(shown) => (
     <ul className="divide-y divide-border">
-      {issues.map((i, k) => (
-        <li key={k} className="space-y-0.5 py-2 text-xs">
+      {shown.map((i, k) => (
+        <li key={k} aria-current={i.componentId === selected ? 'true' : undefined} className={`space-y-0.5 py-2 text-xs ${i.componentId === selected ? 'bg-accent/60' : ''}`}>
           <div className="flex min-w-0 items-center gap-2">
             <SeverityBadge severity={i.severity} />
             <span className="min-w-0 truncate"><CompLink id={i.componentId} onSelect={onSelect} /></span>
@@ -59,6 +92,7 @@ function IssueRows({ issues, onSelect }: { issues: IssueRow[]; onSelect: (id: st
         </li>
       ))}
     </ul>
+    )} />
   );
 }
 
@@ -99,12 +133,14 @@ function IssuesTab({ issues, onSelect }: { issues: IssueRow[]; onSelect: (id: st
 }
 
 export default function FindingsStep({
-  view, profile, onSelect, details,
+  view, profile, onSelect, details, selectedId = null,
 }: {
   view: AnalysisView;
   profile: TechnologyProfile;
   onSelect: (id: string) => void;
   details: React.ReactNode;
+  /** 027: component highlighted in every list of the step. */
+  selectedId?: string | null;
 }) {
   const { visible, empty } = resolveSections('findings', profile, view);
   const inventory = visible.filter((v) => !(FINDINGS_TABS as readonly string[]).includes(v.def.id));
@@ -216,6 +252,7 @@ export default function FindingsStep({
   };
 
   return (
+    <SelectedContext.Provider value={selectedId}>
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="min-w-0 space-y-4">
         <div className="grid gap-4 lg:grid-cols-2">
@@ -257,7 +294,8 @@ export default function FindingsStep({
         )}
         <NoFindings step="findings" empty={empty} />
       </div>
-      <div>{details}</div>
+      <div className="min-w-0">{details}</div>
     </div>
+    </SelectedContext.Provider>
   );
 }
