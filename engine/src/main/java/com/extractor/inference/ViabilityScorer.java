@@ -186,9 +186,10 @@ public class ViabilityScorer {
             .map(componentMap::get)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
-        double index = DebtIndex.of(members);
+        double mw = config.maintainabilityWeight();
+        double index = DebtIndex.of(members, mw);
         List<Map.Entry<String, Double>> top = members.stream()
-            .map(c -> Map.entry(c.getId(), DebtIndex.of(c)))
+            .map(c -> Map.entry(c.getId(), DebtIndex.of(c, mw)))
             .sorted(Map.Entry.<String, Double>comparingByValue().reversed()
                     .thenComparing(Map.Entry.comparingByKey()))
             .limit(3)

@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.MSBuild;
 using DotNetAnalyzer.Analysis.Common;
 using DotNetAnalyzer.Analysis.Data;
+using DotNetAnalyzer.Analysis.Sarif;
 using DotNetAnalyzer.Analysis.Vb;
 using DotNetAnalyzer.Model;
 
@@ -29,6 +30,8 @@ public class ProjectAnalyzer
     private string _analyzedRoot = ".";
     private readonly SortedSet<string> _missingProjects = new(StringComparer.Ordinal);
     private EolCatalog? _eolCatalog;
+    /// <summary>024: the official analyzer rules in effect (loaded once per analysis).</summary>
+    private ExtendedRuleSet? _ruleSet;
     private Dictionary<string, string>? _serviceReferences;
     private ProcedureCatalog? _procedureCatalog;
     private bool _procedureCatalogLoaded;
@@ -246,6 +249,20 @@ public class ProjectAnalyzer
                     });
                 }
 
+                // Pass 11d (024): extended static analysis; auto = Visual Basic only.
+                Console.Error.WriteLine($"[info] {VbExtendedAnalyzer.StateDiagnostic(_options.Analysis, compilation.Language)}");
+                if (vbIndex != null && VbExtendedAnalyzer.Enabled(_options.Analysis, compilation.Language))
+                {
+                    RunVbPass("VbExtendedAnalyzer", () =>
+                    {
+                        _ruleSet ??= ExtendedRuleSet.Load(_options.Analysis.Rules, _userWarnings);
+                        VbExtendedAnalyzer.Analyze(compilation, vbIndex, components, _ruleSet);
+                    });
+                    RunVbPass("VbDeadCodeAnalyzer", () => VbDeadCodeAnalyzer.Analyze(vbIndex, components));
+                    RunVbPass("VbDuplicationAnalyzer", () => VbDuplicationAnalyzer.Analyze(vbIndex, components, _options.Analysis.DuplicateMinTokens));
+                    RunVbPass("VbMaintainabilityCalculator", () => VbMaintainabilityCalculator.Calculate(vbIndex, components));
+                }
+
                 allComponents.AddRange(components);
                 allEdges.AddRange(edges);
                 allEndpoints.AddRange(endpoints);
@@ -259,6 +276,23 @@ public class ProjectAnalyzer
         // 021: calls_in / calls_out across compilations (the per-compilation lists only saw their own components).
         if (crossScope != null)
             BuildCallLists(allComponents, allEdges);
+
+        // 024: SARIF import and layer suppressions act on every component after all passes; issues re-sorted.
+        if (_options.Analysis.Sarif.Count > 0)
+            SarifImporter.Import(_options.Analysis.Sarif, _analyzedRoot, allComponents, _userWarnings);
+        LayerSuppressions.Apply(allComponents, _options.Analysis.LayerSuppressions);
+        if (_options.Analysis.Sarif.Count > 0 || _options.Analysis.LayerSuppressions.Count > 0
+            || allComponents.Any(c => c.CodeIssues.Any(i => i.Rule.StartsWith("CA", StringComparison.Ordinal)
+                                                             || i.Rule == VbDeadCodeAnalyzer.Rule || i.Rule == VbDuplicationAnalyzer.Rule)))
+        {
+            foreach (var component in allComponents)
+            {
+                component.CodeIssues = component.CodeIssues
+                    .OrderBy(i => i.Location ?? string.Empty, StringComparer.Ordinal)
+                    .ThenBy(i => i.Rule, StringComparer.Ordinal)
+                    .ToList();
+            }
+        }
 
         // Determinism (Constitución IV, SC-008): final ordering pass over every
         // list serialized into the JSON output. Done once, here, after all passes.

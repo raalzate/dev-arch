@@ -22,6 +22,12 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
           .boolean()
           .describe("023: in the entity path, a component without procedures joins the cluster it calls most.")
           .optional(),
+        procedureGrouping: z
+          .enum(["transitive", "entity"])
+          .describe(
+            "023: transitive = components sharing procedures (transitively) form one cluster; entity = components grouped by the stem of their dominant procedure entity.",
+          )
+          .optional(),
       })
       .strict()
       .optional(),
@@ -145,6 +151,14 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
         ignoreSupportCoupling: z
           .boolean()
           .describe("023: calls to support-library members do not count as external coupling.")
+          .optional(),
+        maintainabilityWeight: z
+          .number()
+          .gte(0)
+          .lte(1)
+          .describe(
+            "024: weight of (1 - MI/100) added to the debt index when the component carries Maintainability:<n>.",
+          )
           .optional(),
       })
       .strict()
@@ -275,6 +289,34 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
       })
       .strict()
       .describe("Inference-wide parameters and preset (023-legacy-desktop-inference).")
+      .optional(),
+    analysis: z
+      .object({
+        extended: z
+          .enum(["auto", "on", "off"])
+          .describe("off by default (opt-in); auto = Visual Basic compilations only; on = every compilation.")
+          .optional(),
+        rules: z
+          .array(z.string().min(1))
+          .describe("Official analyzer rule ids to evaluate; empty = the versioned list schema/extended-rules.json.")
+          .optional(),
+        duplicateMinTokens: z
+          .number()
+          .int()
+          .gte(10)
+          .describe("Minimum normalized tokens of a duplicated method.")
+          .optional(),
+        sarif: z
+          .array(z.string().min(1))
+          .describe("SARIF 2.1.0 reports merged into code_issues (paths relative to the analyzed project).")
+          .optional(),
+        layerSuppressions: z
+          .array(z.string().regex(new RegExp("^[^:]+:[^:]+$")))
+          .describe("Layer:RULE entries removed for components of that fine layer.")
+          .optional(),
+      })
+      .strict()
+      .describe("Extended static analysis of the .NET analyzer (024-extended-static-analysis).")
       .optional(),
   })
   .strict()

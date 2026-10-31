@@ -60,7 +60,8 @@ public static class VbDependencyAnalyzer
                 component.CodeIssues.Add(new CodeIssue
                 {
                     Rule = "EOL_DEPENDENCY",
-                    Type = "DEPENDENCY",
+                    // BUG-010: the contract enum is closed; an unsupported dependency is a security risk.
+                    Type = "SECURITY",
                     Severity = "WARNING",
                     Message = $"Dependency '{name}' has reached end of life: {rule!.Reason}. Plan its replacement.",
                     Line = 0,

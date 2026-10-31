@@ -20,6 +20,7 @@ import java.util.Objects;
  * @param integrations   outbound integrations (022)
  * @param dependencies   external dependencies (022)
  * @param inference      inference-wide parameters and preset (023)
+ * @param analysis       extended static analysis of the .NET analyzer (024)
  * @param overrides      the user's explicit configuration tree (never serialized;
  *                       null when the configuration is the defaults), kept so a
  *                       preset can be layered beneath it (023, FR-002)
@@ -30,7 +31,8 @@ public record InferenceConfig(DetectionConfig detection,
         RecommendationConfig recommendation, NamingConfig naming,
         DataAccessConfig dataAccess, DebtConfig debt,
         IntegrationsConfig integrations, DependenciesConfig dependencies,
-        InferenceSection inference, @JsonIgnore JsonNode overrides) {
+        InferenceSection inference, AnalysisConfig analysis,
+        @JsonIgnore JsonNode overrides) {
 
     /**
      * The same configuration remembering the explicit user tree.
@@ -41,7 +43,7 @@ public record InferenceConfig(DetectionConfig detection,
     public InferenceConfig withOverrides(final JsonNode tree) {
         return new InferenceConfig(detection, clustering, evidence, consolidation,
                 viability, recommendation, naming, dataAccess, debt, integrations,
-                dependencies, inference, tree);
+                dependencies, inference, analysis, tree);
     }
 
     /** Equality ignores {@code overrides}: two configurations with the same values are equal. */
@@ -64,14 +66,15 @@ public record InferenceConfig(DetectionConfig detection,
                 && Objects.equals(debt, other.debt)
                 && Objects.equals(integrations, other.integrations)
                 && Objects.equals(dependencies, other.dependencies)
-                && Objects.equals(inference, other.inference);
+                && Objects.equals(inference, other.inference)
+                && Objects.equals(analysis, other.analysis);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(detection, clustering, evidence, consolidation, viability,
                 recommendation, naming, dataAccess, debt, integrations, dependencies,
-                inference);
+                inference, analysis);
     }
 
     /**

@@ -6,6 +6,7 @@ import com.extractor.analyzer.DotNetToolLocator;
 import com.extractor.analyzer.JavaSpoonAnalyzer;
 import com.extractor.analyzer.LanguageAnalyzer;
 import com.extractor.analyzer.ProjectTypeDetector;
+import com.extractor.inference.config.AnalysisConfig;
 import com.extractor.inference.config.DataAccessConfig;
 import com.extractor.inference.config.InferenceConfig;
 import com.extractor.inference.config.DebtConfig;
@@ -231,10 +232,17 @@ public final class ExtractionService {
     private LanguageAnalyzer createDotNetAnalyzer(final DataAccessConfig dataAccess,
             final DebtConfig debt, final IntegrationsConfig integrations,
             final DependenciesConfig dependencies) {
+        return createDotNetAnalyzer(dataAccess, debt, integrations, dependencies,
+                InferenceConfig.defaults().analysis());
+    }
+
+    private LanguageAnalyzer createDotNetAnalyzer(final DataAccessConfig dataAccess,
+            final DebtConfig debt, final IntegrationsConfig integrations,
+            final DependenciesConfig dependencies, final AnalysisConfig analysis) {
         return new DotNetBridgeAnalyzer(
                 new DotNetToolLocator(getJarDirectory()),
                 DotNetBridgeAnalyzer.DEFAULT_TIMEOUT, dataAccess, debt, integrations,
-                dependencies);
+                dependencies, analysis);
     }
 
     /**
@@ -256,8 +264,7 @@ public final class ExtractionService {
         if (options.language() == AnalysisLanguage.JAVA) {
             analyzer = new JavaSpoonAnalyzer();
         } else if (options.language() == AnalysisLanguage.DOTNET) {
-            analyzer = createDotNetAnalyzer(config.dataAccess(), config.debt(),
-                    config.integrations(), config.dependencies());
+            analyzer = createDotNetAnalyzer(config.dataAccess(), config.debt(), config.integrations(), config.dependencies(), config.analysis());
         } else {
             Detection detected = new ProjectTypeDetector().detect(projectRoot,
                     config.detection().maxDepth());
@@ -266,8 +273,7 @@ public final class ExtractionService {
             }
             analyzer = switch (detected.type()) {
                 case JAVA -> new JavaSpoonAnalyzer();
-                case DOTNET -> createDotNetAnalyzer(config.dataAccess(), config.debt(),
-                        config.integrations(), config.dependencies());
+                case DOTNET -> createDotNetAnalyzer(config.dataAccess(), config.debt(), config.integrations(), config.dependencies(), config.analysis());
                 case AMBIGUOUS -> throw new IllegalArgumentException(
                         detected.ambiguityMessage(projectRoot));
                 case UNKNOWN -> {

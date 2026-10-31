@@ -29,7 +29,7 @@
       "code_issues": [
         {
           "pattern": "EOL_DEPENDENCY",
-          "type": "DEPENDENCY",
+          "type": "SECURITY",
           "severity": "WARNING",
           "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
           "line": 0
@@ -68,7 +68,7 @@
       "code_issues": [
         {
           "pattern": "EOL_DEPENDENCY",
-          "type": "DEPENDENCY",
+          "type": "SECURITY",
           "severity": "WARNING",
           "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
           "line": 0
@@ -107,7 +107,7 @@
       "code_issues": [
         {
           "pattern": "EOL_DEPENDENCY",
-          "type": "DEPENDENCY",
+          "type": "SECURITY",
           "severity": "WARNING",
           "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
           "line": 0
@@ -148,7 +148,7 @@
       "code_issues": [
         {
           "pattern": "EOL_DEPENDENCY",
-          "type": "DEPENDENCY",
+          "type": "SECURITY",
           "severity": "WARNING",
           "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
           "line": 0
@@ -189,7 +189,7 @@
       "code_issues": [
         {
           "pattern": "EOL_DEPENDENCY",
-          "type": "DEPENDENCY",
+          "type": "SECURITY",
           "severity": "WARNING",
           "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
           "line": 0
@@ -236,7 +236,7 @@
       "code_issues": [
         {
           "pattern": "EOL_DEPENDENCY",
-          "type": "DEPENDENCY",
+          "type": "SECURITY",
           "severity": "WARNING",
           "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
           "line": 0
@@ -275,7 +275,7 @@
       "code_issues": [
         {
           "pattern": "EOL_DEPENDENCY",
-          "type": "DEPENDENCY",
+          "type": "SECURITY",
           "severity": "WARNING",
           "message": "Dependency \u0027Microsoft.Practices.EnterpriseLibrary.Data\u0027 has reached end of life: Enterprise Library 5 and earlier reached end of life in 2013. Plan its replacement.",
           "line": 0

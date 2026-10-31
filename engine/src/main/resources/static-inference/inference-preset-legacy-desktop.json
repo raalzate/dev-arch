@@ -25,7 +25,8 @@
     "thresholds": {
       "high": 0.6,
       "medium": 0.4
-    }
+    },
+    "maintainabilityWeight": 0.1
   },
   "recommendation": {
     "supportNamespaces": [
@@ -52,5 +53,12 @@
     "attachCallersToTargets": true,
     "singleDomainRatio": 0.25,
     "procedureGrouping": "entity"
+  },
+  "analysis": {
+    "layerSuppressions": [
+      "Presentación:HIGH_CYCLOMATIC_COMPLEXITY",
+      "Presentación:UNUSED_PUBLIC_MEMBER",
+      "Reportes:UNUSED_PUBLIC_MEMBER"
+    ]
   }
 }

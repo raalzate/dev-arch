@@ -396,6 +396,12 @@
         "ignoreSupportCoupling": {
           "type": "boolean",
           "description": "023: calls to support-library members do not count as external coupling."
+        },
+        "maintainabilityWeight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "024: weight of (1 - MI/100) added to the debt index when the component carries Maintainability:<n>."
         }
       }
     },
@@ -616,6 +622,50 @@
         "presentationInCohesion": {
           "type": "boolean",
           "description": "false = Layer:Presentación/Layer:Reportes members do not count in cohesion or internal density."
+        }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Extended static analysis of the .NET analyzer (024-extended-static-analysis).",
+      "properties": {
+        "extended": {
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ],
+          "description": "off by default (opt-in); auto = Visual Basic compilations only; on = every compilation."
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Official analyzer rule ids to evaluate; empty = the versioned list schema/extended-rules.json."
+        },
+        "duplicateMinTokens": {
+          "type": "integer",
+          "minimum": 10,
+          "description": "Minimum normalized tokens of a duplicated method."
+        },
+        "sarif": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "SARIF 2.1.0 reports merged into code_issues (paths relative to the analyzed project)."
+        },
+        "layerSuppressions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[^:]+:[^:]+$"
+          },
+          "description": "Layer:RULE entries removed for components of that fine layer."
         }
       }
     }

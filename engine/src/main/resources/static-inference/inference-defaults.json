@@ -74,6 +74,7 @@
     },
     "debtWeight" : 0.0,
     "ignoreSupportCoupling" : false,
+    "maintainabilityWeight" : 0.0,
     "rationale" : {
       "cohesionGood" : 0.7,
       "cohesionFair" : 0.5,
@@ -137,5 +138,12 @@
   "inference" : {
     "preset" : "auto",
     "presentationInCohesion" : true
+  },
+  "analysis" : {
+    "extended" : "off",
+    "rules" : [ ],
+    "duplicateMinTokens" : 30,
+    "sarif" : [ ],
+    "layerSuppressions" : [ ]
   }
 }

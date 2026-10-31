@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Acme.Extended</RootNamespace>
+    <AssemblyName>SyntheticExtended</AssemblyName>
+    <StartupObject>Acme.Extended.Program</StartupObject>
+    <MyType>WindowsForms</MyType>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <OptionStrict>On</OptionStrict>
+    <OptionExplicit>On</OptionExplicit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Import Include="System" />
+    <Import Include="Microsoft.VisualBasic" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.vb" />
+    <Compile Include="Rules\Rethrow.vb" />
+    <Compile Include="Rules\WeakHash.vb" />
+    <Compile Include="Rules\CatchAll.vb" />
+    <Compile Include="Rules\Culture.vb" />
+    <Compile Include="Rules\Wasteful.vb" />
+    <Compile Include="Rules\BusyController.vb" />
+    <Compile Include="Dead\Orphans.vb" />
+    <Compile Include="Dead\Helpers.vb" />
+    <Compile Include="Dup\CopyA.vb" />
+    <Compile Include="Dup\CopyB.vb" />
+    <Compile Include="Dup\Unique.vb" />
+    <Compile Include="Forms\MainForm.vb" />
+    <Compile Include="Forms\BusyForm.vb" />
+  </ItemGroup>
+</Project>

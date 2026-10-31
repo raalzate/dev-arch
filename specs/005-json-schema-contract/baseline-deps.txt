@@ -52,6 +52,8 @@ xml-apis:xml-apis:jar:1.4.01:compile
 Microsoft.Build.Locator:1.7.8
 Microsoft.CodeAnalysis.CSharp.Workspaces:4.9.2
 Microsoft.CodeAnalysis.VisualBasic.Workspaces:4.9.2
+# 024-extended-static-analysis (2026-10-30): official analyzers, MIT, analysis-only, pinned; justified in specs/024-extended-static-analysis/spec.md
+Microsoft.CodeAnalysis.NetAnalyzers:8.0.0
 Microsoft.CodeAnalysis.Workspaces.MSBuild:4.9.2
 
 [maven.direct.all]
