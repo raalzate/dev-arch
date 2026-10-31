@@ -24,7 +24,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { StepRail, TopBar } from './app-shell';
 import CodeViewer from './code-viewer';
 import ComparisonView, { type ComparedSide } from './comparison-view';
-import ComponentDetails from './component-details';
 import HistoryPanel from './history-panel';
 import type { InferenceUiState } from './inference-panel';
 import Landing, { UploadControls, type UploadProps } from './landing';
@@ -39,6 +38,7 @@ import SummaryStep from './steps/summary-step';
 import { DEFAULT_EXTRACTION, toExtractionConfig, type ExtractionOptions } from '@/lib/extraction-options';
 import SearchBox from './search-box';
 import { buildSearchIndex, type SearchResult } from '@/lib/modernization/search';
+import DetailsDrawer, { CONTENT_SHIFT_CLASS } from './details-drawer';
 
 interface Docs {
   graph: DependencyGraph;
@@ -361,14 +361,18 @@ export default function SoftwareArchitectureAnalyzer() {
     setStep(r.target.step);
   }, []);
 
-  const details = selectedComponent && profile ? (
-    <ComponentDetails
-      component={selectedComponent}
+  // 028: the component detail lives in the right-hand drawer, shared by every step and the search results.
+  const details: React.ReactNode = null;
+  const drawer = selectedComponent && profile && completed && !comparison ? (
+    <DetailsDrawer
+      selectedId={selectedComponent.id}
+      byId={byId}
       profile={profile}
       canOpenSource={canOpenSource}
       onOpenSource={(file, id) => setSource({ file, id })}
       onSelect={setSelected}
       onClose={() => setSelected(null)}
+      onShowInMap={(id) => { setSelected(id); setStep('map'); }}
     />
   ) : null;
 
@@ -457,7 +461,7 @@ export default function SoftwareArchitectureAnalyzer() {
         )}
 
         {!comparison && completed && view && profile && (
-          <div className="mx-auto flex max-w-[1560px] flex-col gap-4 px-4 py-4 md:flex-row md:gap-6 md:py-6">
+          <div className={`mx-auto flex max-w-[1560px] flex-col gap-4 px-4 py-4 md:flex-row md:gap-6 md:py-6 ${drawer ? CONTENT_SHIFT_CLASS : ''}`}>
             <div className="md:w-[216px] md:shrink-0">
               <div className="md:sticky md:top-[72px]">
                 <StepRail active={step} counts={counts} onSelect={setStep} />
@@ -509,6 +513,8 @@ export default function SoftwareArchitectureAnalyzer() {
           </div>
         )}
       </div>
+
+      {drawer}
 
       {completed && plan && <PrintReport plan={plan} />}
 

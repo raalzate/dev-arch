@@ -4,6 +4,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Unreleased]
 
+### Cambiado (feature 028, detalle en panel lateral)
+- El detalle del componente pasa de la columna de 320 px a un panel lateral derecho no modal (520 px en pantallas grandes, completo en pequeñas), compartido por Mapa, Hallazgos y el buscador, con historial "Atrás" (hasta 20), "Ver en el mapa", cierre con Escape y secciones plegables; el contenido se desplaza para no quedar oculto.
+
 ### Añadido (feature 027, experiencia con proyectos grandes)
 - Buscador léxico en la barra superior sobre todo el análisis (componentes, propuestas, librerías de soporte, problemas, tablas y procedimientos, puntos de entrada, advertencias) con resultados agrupados y navegación al paso y componente.
 - Mapa del sistema: zoom y arrastre sin volver a dibujar (transformación imperativa), capas memoizadas, atenuación por ratón solo hasta 300 componentes, menos iteraciones de layout en grafos grandes.

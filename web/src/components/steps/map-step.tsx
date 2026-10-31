@@ -20,6 +20,7 @@ export default function MapStep({
   profile: TechnologyProfile;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  /** Inline detail panel (null when the details drawer of 028 is used). */
   details: React.ReactNode;
 }) {
   const { graph, architecture } = view;
@@ -115,8 +116,8 @@ export default function MapStep({
         </p>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-2">
+      <div className={`grid gap-4 ${details ? 'xl:grid-cols-[minmax(0,1fr)_320px]' : ''}`}>
+        <div className="min-w-0 space-y-2">
           <ComponentGraph
             components={graph.components}
             edges={drawn}
@@ -141,7 +142,7 @@ export default function MapStep({
             discontinuas son inyecciones o registros en el contenedor.
           </p>
         </div>
-        <div className="min-w-0">{details ?? <p className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">Selecciona un componente en el mapa o en las tablas para ver su detalle.</p>}</div>
+        {details && <div className="min-w-0">{details}</div>}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
