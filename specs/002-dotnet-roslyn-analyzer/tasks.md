@@ -304,5 +304,3 @@ US3 (DI analysis), US4 (quality metrics), and US6 (messaging) add depth incremen
 - [x] T-B010 [BUG-005] Verify fix passes test bugfix_BUG-005.feature for BUG-005
 - [x] T-B011 [BUG-006] Implement fix for BUG-006 referencing test spec bugfix_BUG-006.feature: injectable environment lookup in DotNetToolLocator
 - [x] T-B012 [BUG-006] Verify fix passes test bugfix_BUG-006.feature for BUG-006
-- [x] T-B013 [BUG-008] Implement fix for BUG-008 referencing test spec bugfix_BUG-008.feature: sort `LoadCSharpAdhoc` sources ordinally and every Java `Files.walk` pipeline before use
-- [x] T-B014 [BUG-008] Verify fix passes test bugfix_BUG-008.feature for BUG-008
