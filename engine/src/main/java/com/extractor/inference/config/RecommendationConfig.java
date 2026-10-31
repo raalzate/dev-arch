@@ -11,10 +11,16 @@ import java.util.List;
  *                               {@value #DATA_COHESION}
  * @param legacyDataJaccard      fixed {@code data_jaccard} of a proposal
  *                               with tables in legacy mode
+ * @param supportNamespaces      namespace segments of support libraries (023;
+ *                               a group whose members mostly live under one of
+ *                               them is a support library)
+ * @param minReferencingDomains  distinct calling domains from which a group is a
+ *                               shared support library (023; 0 disables the rule)
  */
 public record RecommendationConfig(double supportRatio,
         List<String> infrastructureKeywords, String dataJaccardMode,
-        double legacyDataJaccard) {
+        double legacyDataJaccard, List<String> supportNamespaces,
+        int minReferencingDomains) {
 
     /** Fixed {@code data_jaccard} (1.2.0 behaviour). */
     public static final String LEGACY = "legacy";
@@ -29,9 +35,12 @@ public record RecommendationConfig(double supportRatio,
      * @param infrastructureKeywords infrastructure words
      * @param dataJaccardMode        data Jaccard mode
      * @param legacyDataJaccard      legacy data Jaccard
+     * @param supportNamespaces      support namespace segments
+     * @param minReferencingDomains  minimum referencing domains
      */
     public RecommendationConfig {
         infrastructureKeywords = List.copyOf(infrastructureKeywords);
+        supportNamespaces = List.copyOf(supportNamespaces);
     }
 
     /**

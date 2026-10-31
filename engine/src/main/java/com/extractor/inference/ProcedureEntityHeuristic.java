@@ -97,4 +97,113 @@ public final class ProcedureEntityHeuristic {
         }
         return best;
     }
+
+    /**
+     * Camel-case tokens of an entity name without verbs ({@code PolicyGetPremiumDetail} → Policy, Premium, Detail).
+     *
+     * @param entity entity name
+     * @return its tokens (empty for null)
+     */
+    public static List<String> tokens(final String entity) {
+        List<String> tokens = new ArrayList<>();
+        if (entity == null) {
+            return tokens;
+        }
+        for (String token : CAMEL.split(entity)) {
+            if (!token.isBlank() && !VERBS.contains(token.toLowerCase(Locale.ROOT))) {
+                tokens.add(token);
+            }
+        }
+        return tokens;
+    }
+
+    /**
+     * Entity stem of every procedure-bearing component (023): the dominant entity of the
+     * component is tokenized without verbs; when one first token leads at least half of the
+     * entities of the corpus ({@code Policy}) it is the corpus prefix and the stem is the next
+     * token ({@code Premium}); otherwise the stem is the first token. Deterministic.
+     *
+     * @param components the components of the graph
+     * @return component id → stem, only for components with an entity
+     */
+    /**
+     * Corpus prefix of the procedure entities (023): the first token leading at least half of the
+     * entities of the components, or null.
+     *
+     * @param components the components of the graph
+     * @return the prefix token or null
+     */
+    public static String corpusPrefix(final Collection<Component> components) {
+        Map<String, Integer> firstCounts = new TreeMap<>();
+        int total = 0;
+        for (Component c : components) {
+            List<String> tokens = tokens(dominantEntity(List.of(c)));
+            if (tokens.isEmpty()) {
+                continue;
+            }
+            total++;
+            firstCounts.merge(tokens.get(0), 1, Integer::sum);
+        }
+        String prefix = null;
+        int prefixCount = 0;
+        for (Map.Entry<String, Integer> e : firstCounts.entrySet()) {
+            if (e.getValue() > prefixCount) {
+                prefix = e.getKey();
+                prefixCount = e.getValue();
+            }
+        }
+        return prefixCount * 2 >= total && total > 0 ? prefix : null;
+    }
+
+    /**
+     * Stem of an entity-like name ({@code PolicyPremiumDetail} with prefix {@code Policy} → {@code Premium}).
+     *
+     * @param name   entity or simple class name
+     * @param prefix corpus prefix or null
+     * @return the stem, or null when the name has no tokens
+     */
+    public static String stemOf(final String name, final String prefix) {
+        List<String> tokens = tokens(name);
+        if (tokens.isEmpty()) {
+            return null;
+        }
+        if (prefix != null && prefix.equals(tokens.get(0)) && tokens.size() > 1) {
+            return tokens.get(1);
+        }
+        return tokens.get(0);
+    }
+
+    public static Map<String, String> stems(final Collection<Component> components) {
+        Map<String, List<String>> tokensById = new java.util.LinkedHashMap<>();
+        Map<String, Integer> firstCounts = new TreeMap<>();
+        for (Component c : components) {
+            List<String> tokens = tokens(dominantEntity(List.of(c)));
+            if (tokens.isEmpty()) {
+                continue;
+            }
+            tokensById.put(c.getId(), tokens);
+            firstCounts.merge(tokens.get(0), 1, Integer::sum);
+        }
+        String prefix = null;
+        int prefixCount = 0;
+        for (Map.Entry<String, Integer> e : firstCounts.entrySet()) {
+            if (e.getValue() > prefixCount) {
+                prefix = e.getKey();
+                prefixCount = e.getValue();
+            }
+        }
+        if (prefixCount * 2 < tokensById.size()) {
+            prefix = null;
+        }
+        Map<String, String> stems = new java.util.LinkedHashMap<>();
+        for (Map.Entry<String, List<String>> e : tokensById.entrySet()) {
+            List<String> tokens = e.getValue();
+            String stem = tokens.get(0);
+            if (prefix != null && prefix.equals(tokens.get(0)) && tokens.size() > 1) {
+                stem = tokens.get(1);
+            }
+            stems.put(e.getKey(), stem);
+        }
+        return stems;
+    }
 }

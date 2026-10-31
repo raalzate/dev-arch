@@ -39,9 +39,35 @@ public class ClusteringAlgorithm {
      * @param clustering clustering parameters
      * @param dataAccess data access parameters
      */
+    /** Support namespace segments (023): their components are never attached to business slices. */
+    private final List<String> supportNamespaces;
+
+    /** Maximum size a cluster may reach by attachment (023). */
+    private final int maxAttachedSize;
+
+    /**
+     * Algorithm with the whole configuration (023: support namespaces and attachment cap).
+     *
+     * @param config the inference configuration
+     */
+    public ClusteringAlgorithm(final InferenceConfig config) {
+        this(config.clustering(), config.dataAccess(), config.recommendation().supportNamespaces(),
+                config.consolidation().domainMergeMaxSize());
+    }
+
+    private ClusteringAlgorithm(final ClusteringConfig clustering, final DataAccessConfig dataAccess,
+            final List<String> supportNamespaces, final int maxAttachedSize) {
+        this.config = clustering;
+        this.dataAccess = dataAccess;
+        this.supportNamespaces = List.copyOf(supportNamespaces);
+        this.maxAttachedSize = maxAttachedSize;
+    }
+
     public ClusteringAlgorithm(final ClusteringConfig clustering, final DataAccessConfig dataAccess) {
         this.dataAccess = dataAccess;
         this.config = clustering;
+        this.supportNamespaces = List.of();
+        this.maxAttachedSize = Integer.MAX_VALUE;
     }
 
     /**
@@ -188,8 +214,16 @@ public class ClusteringAlgorithm {
         // 020 (FR-020): components that share a stored procedure (weight > 0) form one cluster, as components
         // sharing a table do in the domain path; without procedures this block changes nothing.
         Set<String> groupedByProcedure = new HashSet<>();
-        for (List<Component> group : procedureGroups(dependencyGraph.getComponents())) {
+        Map<String, Integer> stemClusters = new HashMap<>();
+        List<String> stemOrder = new ArrayList<>();
+        List<List<Component>> procedureGroups = config.entityGrouping()
+                ? entityStemGroups(dependencyGraph.getComponents(), stemOrder)
+                : procedureGroups(dependencyGraph.getComponents());
+        for (List<Component> group : procedureGroups) {
             Cluster cluster = new Cluster(clusterId++);
+            if (config.entityGrouping()) {
+                stemClusters.put(stemOrder.get(clusters.size()), cluster.getClusterId());
+            }
             for (Component component : group) {
                 cluster.addMember(component.getId());
                 groupedByProcedure.add(component.getId());
@@ -221,6 +255,9 @@ public class ClusteringAlgorithm {
         for (Component component : dependencyGraph.getComponents()) {
             if (assignedComponents.contains(component.getId()))
                 continue;
+            if (config.attachCallersToTargets()) {
+                break; // 023: attachment by calls supersedes the name-based relation to entities
+            }
 
             String componentName = component.getId();
             for (Map.Entry<String, Cluster> entity : entityToClusters.entrySet()) {
@@ -233,6 +270,83 @@ public class ClusteringAlgorithm {
         }
 
         // Handle remaining components
+        if (config.attachCallersToTargets() && !clusters.isEmpty()) {
+            // 023: each leftover joins the cluster it calls most (ties: lowest id; full clusters skipped);
+            // leftovers without outgoing calls join the cluster that calls them most; support-namespace
+            // components form their own clusters per namespace; the rest form one cluster.
+            Map<String, Integer> clusterOf = new HashMap<>();
+            Map<Integer, Cluster> byClusterId = new HashMap<>();
+            for (Cluster c : clusters) {
+                byClusterId.put(c.getClusterId(), c);
+                for (String m : c.getMembers()) {
+                    clusterOf.putIfAbsent(m, c.getClusterId());
+                }
+            }
+            Map<String, List<String>> callers = new HashMap<>();
+            for (Component c : dependencyGraph.getComponents()) {
+                if (c.getCallsOut() == null) continue;
+                for (String called : c.getCallsOut()) {
+                    callers.computeIfAbsent(called, k -> new ArrayList<>()).add(c.getId());
+                }
+            }
+            List<Component> pending = new ArrayList<>();
+            Map<String, List<Component>> support = new TreeMap<>();
+            for (Component component : dependencyGraph.getComponents()) {
+                if (assignedComponents.contains(component.getId())) continue;
+                if (inSupportNamespace(component.getId())) {
+                    support.computeIfAbsent(namespaceOf(component.getId()), k -> new ArrayList<>()).add(component);
+                } else {
+                    pending.add(component);
+                }
+            }
+            boolean progress = true;
+            while (progress && !pending.isEmpty()) {
+                progress = false;
+                List<Component> still = new ArrayList<>();
+                for (Component component : pending) {
+                    Integer best = bestTarget(component.getCallsOut(), clusterOf, byClusterId);
+                    if (best == null) {
+                        best = bestTarget(callers.get(component.getId()), clusterOf, byClusterId);
+                    }
+                    if (best != null) {
+                        byClusterId.get(best).addMember(component.getId());
+                        clusterOf.put(component.getId(), best);
+                        assignedComponents.add(component.getId());
+                        progress = true;
+                    } else {
+                        still.add(component);
+                    }
+                }
+                pending = still;
+            }
+            // Components without any edge (data classes) join the slice whose stem their name carries.
+            if (config.entityGrouping() && !pending.isEmpty()) {
+                String prefix = ProcedureEntityHeuristic.corpusPrefix(dependencyGraph.getComponents());
+                List<Component> still = new ArrayList<>();
+                for (Component component : pending) {
+                    String simple = component.getId().substring(component.getId().lastIndexOf('.') + 1);
+                    Integer target = stemClusters.get(ProcedureEntityHeuristic.stemOf(simple, prefix));
+                    if (target != null && byClusterId.get(target).getMembers().size() < maxAttachedSize) {
+                        byClusterId.get(target).addMember(component.getId());
+                        clusterOf.put(component.getId(), target);
+                        assignedComponents.add(component.getId());
+                    } else {
+                        still.add(component);
+                    }
+                }
+                pending = still;
+            }
+            for (List<Component> group : support.values()) {
+                Cluster cluster = new Cluster(clusterId++);
+                group.forEach(c -> cluster.addMember(c.getId()));
+                clusters.add(cluster);
+            }
+            if (!pending.isEmpty()) {
+                Cluster rest = new Cluster(clusterId++);
+                pending.forEach(c -> rest.addMember(c.getId()));
+                clusters.add(rest);
+            }
+        } else {
         for (Component component : dependencyGraph.getComponents()) {
             if (!assignedComponents.contains(component.getId())) {
                 if (!clusters.isEmpty()) {
@@ -244,9 +358,46 @@ public class ClusteringAlgorithm {
                 }
             }
         }
+        }
 
         return clusters.isEmpty() ? List.of(createSingleCluster(dependencyGraph)) : clusters;
     }
+
+    /**
+     * Cluster receiving most of the given related components (ties: lowest id), skipping clusters already at
+     * the attachment cap; null when none is clustered.
+     */
+    private Integer bestTarget(List<String> related, Map<String, Integer> clusterOf, Map<Integer, Cluster> byId) {
+        if (related == null) return null;
+        Map<Integer, Integer> votes = new TreeMap<>();
+        for (String other : related) {
+            Integer target = clusterOf.get(other);
+            if (target != null) votes.merge(target, 1, Integer::sum);
+        }
+        Integer best = null;
+        int bestVotes = 0;
+        for (Map.Entry<Integer, Integer> e : votes.entrySet()) {
+            if (e.getValue() > bestVotes && byId.get(e.getKey()).getMembers().size() < maxAttachedSize) {
+                best = e.getKey();
+                bestVotes = e.getValue();
+            }
+        }
+        return best;
+    }
+
+    private boolean inSupportNamespace(String id) {
+        for (String segment : namespaceOf(id).split("\\.")) {
+            for (String word : supportNamespaces) {
+                if (segment.equalsIgnoreCase(word)) return true;
+            }
+        }
+        return false;
+    }
+
+    private static String namespaceOf(String id) {
+        return id.contains(".") ? id.substring(0, id.lastIndexOf('.')) : "";
+    }
+
 
     /**
      * Groups of two or more components connected by shared stored procedures (transitively), in order of the
@@ -280,6 +431,24 @@ public class ClusteringAlgorithm {
             }
         }
         return groups.values().stream().filter(g -> g.size() >= 2).collect(Collectors.toList());
+    }
+
+    /**
+     * 023 ({@code clustering.procedureGrouping = entity}): components grouped by the stem of their dominant
+     * procedure entity, in order of first appearance; singletons are kept so a stem with one adapter still
+     * attracts its controller and forms.
+     */
+    private List<List<Component>> entityStemGroups(List<Component> components, List<String> stemOrder) {
+        Map<String, String> stems = ProcedureEntityHeuristic.stems(components);
+        Map<String, List<Component>> groups = new LinkedHashMap<>();
+        for (Component component : components) {
+            String stem = stems.get(component.getId());
+            if (stem != null) {
+                groups.computeIfAbsent(stem, k -> new ArrayList<>()).add(component);
+            }
+        }
+        stemOrder.addAll(groups.keySet());
+        return new ArrayList<>(groups.values());
     }
 
     private static String find(Map<String, String> parent, String id) {

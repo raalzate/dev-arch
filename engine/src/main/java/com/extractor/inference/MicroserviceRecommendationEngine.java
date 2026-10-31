@@ -23,6 +23,9 @@ public class MicroserviceRecommendationEngine {
     /** Proposal assembly parameters (008). */
     private final RecommendationConfig recommendation;
 
+    /** Support-library members ignored as external coupling in the metrics (023). */
+    private Set<String> supportMembers = Set.of();
+
     /** Engine with the 1.2.0 parameters. */
     public MicroserviceRecommendationEngine() {
         this(InferenceConfig.defaults());
@@ -91,6 +94,19 @@ public class MicroserviceRecommendationEngine {
     }
 
     /**
+     * Assembles without a preset (see the overload with {@code preset}).
+     */
+    public ConsolidatedArchitecture assemble(
+            final MicroserviceCandidates candidates,
+            final List<Component> allComponents,
+            final Map<String, String> projectDependencies,
+            final List<SecretLocation> secretsLocations,
+            final List<ApiEndpoint> apiEndpoints) {
+        return assemble(candidates, allComponents, projectDependencies, secretsLocations,
+                apiEndpoints, null);
+    }
+
+    /**
      * Assembles the consolidated architecture without touching the file
      * system: the secret locations come from the extraction (008, FR-003).
      *
@@ -99,6 +115,7 @@ public class MicroserviceRecommendationEngine {
      * @param projectDependencies dependencies declared by the project
      * @param secretsLocations    redacted secret locations
      * @param apiEndpoints        endpoints of the graph
+     * @param preset              inference preset applied (023), or null
      * @return the consolidated architecture
      */
     public ConsolidatedArchitecture assemble(
@@ -106,27 +123,42 @@ public class MicroserviceRecommendationEngine {
             final List<Component> allComponents,
             final Map<String, String> projectDependencies,
             final List<SecretLocation> secretsLocations,
-            final List<ApiEndpoint> apiEndpoints) {
+            final List<ApiEndpoint> apiEndpoints,
+            final String preset) {
         List<Cluster> allClusters = candidates.getCandidates();
         
         ClusterConsolidator consolidator = new ClusterConsolidator(allClusters, allComponents, config);
         List<Set<Integer>> mergedGroups = consolidator.consolidate();
         
-        ViabilityScorer scorer = new ViabilityScorer(allClusters, allComponents, config.viability(), config.dataAccess());
+        ViabilityScorer scorer = new ViabilityScorer(allClusters, allComponents, config);
+        Map<String, Component> byId = componentMapById(allComponents);
+        List<String> allIds = allComponents.stream().map(Component::getId).sorted().toList();
         
         List<MicroserviceProposal> proposals = new ArrayList<>();
         List<ConsolidatedArchitecture.SupportLibrary> supportLibraries = new ArrayList<>();
         Set<String> filteredInfraComponents = new HashSet<>();
         Set<String> assignedComponents = new HashSet<>();
 
+        // 023: support groups are known before scoring so their members can be ignored as coupling.
+        Set<String> supportMembers = new HashSet<>();
+        for (Set<Integer> group : mergedGroups) {
+            if (!group.isEmpty() && isSupportGroup(group, allClusters, byId, allIds)) {
+                for (Cluster c : allClusters) {
+                    if (group.contains(c.getClusterId())) supportMembers.addAll(c.getMembers());
+                }
+            }
+        }
+        scorer.withSupportMembers(supportMembers);
+        this.supportMembers = config.viability().ignoreSupportCoupling() ? supportMembers : Set.of();
+
         int proposalId = 0;
         for (Set<Integer> group : mergedGroups) {
             if (group.isEmpty()) continue;
 
-            if (isSupportGroup(group, allClusters)) {
-                supportLibraries.add(createSupportLibrary(proposalId++, group, allClusters));
+            if (isSupportGroup(group, allClusters, byId, allIds)) {
+                supportLibraries.add(createSupportLibrary(proposalId++, group, allClusters, byId, allIds));
             } else {
-                MicroserviceProposal proposal = createProposal(proposalId++, group, allClusters, allComponents, scorer, componentMapById(allComponents), apiEndpoints != null ? apiEndpoints : List.of());
+                MicroserviceProposal proposal = createProposal(proposalId++, group, allClusters, allComponents, scorer, byId, apiEndpoints != null ? apiEndpoints : List.of(), allIds);
                 // Skip proposals that only contain already-assigned components (dedup safety net)
                 List<String> newComponents = proposal.getComponentNames().stream()
                     .filter(c -> !assignedComponents.contains(c))
@@ -196,6 +228,9 @@ public class MicroserviceRecommendationEngine {
         );
         
         String summary = generateConsolidatedSummary(proposals, supportLibraries);
+        if (preset != null) {
+            summary = summary + "\nPreset de inferencia: " + preset + "\n";
+        }
         
         return new ConsolidatedArchitecture(metadata, proposals, supportLibraries, summary);
     }
@@ -214,10 +249,10 @@ public class MicroserviceRecommendationEngine {
         Set<Integer> ids = new LinkedHashSet<>();
         fragments.forEach(f -> ids.add(f.getClusterId()));
         Map<String, Component> byId = componentMapById(allComponents);
-        String name = applyEntityHeuristic(MicroserviceNameGenerator.generateName(ids, fragments,
-                config.naming()), fragments, byId);
+        List<String> allIds = allComponents.stream().map(Component::getId).sorted().toList();
+        String name = nameOf(ids, fragments, byId, allIds);
         ViabilityScorer.ViabilityResult result = new ViabilityScorer(
-                fragments, allComponents, config.viability(), config.dataAccess())
+                fragments, allComponents, config)
                 .calculateViability(ids);
         List<String> names = fragments.stream()
                 .flatMap(c -> c.getMembers().stream()).distinct()
@@ -249,7 +284,8 @@ public class MicroserviceRecommendationEngine {
             List<String> actions) {
     }
 
-    private boolean isSupportGroup(Set<Integer> group, List<Cluster> allClusters) {
+    private boolean isSupportGroup(Set<Integer> group, List<Cluster> allClusters,
+            Map<String, Component> byId, List<String> allIds) {
         List<Cluster> clusters = group.stream()
             .map(id -> allClusters.stream().filter(c -> c.getClusterId() == id).findFirst().orElse(null))
             .filter(Objects::nonNull)
@@ -257,16 +293,88 @@ public class MicroserviceRecommendationEngine {
         
         if (clusters.isEmpty()) return false;
         
-        long infraCount = clusters.stream()
+        List<String> members = clusters.stream()
             .flatMap(c -> c.getMembers().stream())
+            .distinct()
+            .collect(Collectors.toList());
+        long infraCount = members.stream()
             .filter(this::isInfrastructureComponent)
             .count();
         
-        long totalCount = clusters.stream()
-            .mapToLong(c -> c.getMembers().size())
-            .sum();
+        long totalCount = members.size();
         
-        return totalCount > 0 && ((double) infraCount / totalCount) >= recommendation.supportRatio();
+        if (totalCount > 0 && ((double) infraCount / totalCount) >= recommendation.supportRatio()) {
+            return true;
+        }
+        // 023 (FR-030): support namespaces and shared fan-in from several domains.
+        if (!recommendation.supportNamespaces().isEmpty()) {
+            long inSupport = members.stream().filter(this::inSupportNamespace).count();
+            if (totalCount > 0 && ((double) inSupport / totalCount) >= recommendation.supportRatio()) {
+                return true;
+            }
+        }
+        int minDomains = recommendation.minReferencingDomains();
+        if (minDomains > 0) {
+            Set<String> memberSet = new HashSet<>(members);
+            List<String> prefix = DomainNames.commonPrefix(allIds);
+            Set<String> domains = new TreeSet<>();
+            for (Component c : byId.values()) {
+                if (memberSet.contains(c.getId()) || c.getCallsOut() == null) continue;
+                if (c.getCallsOut().stream().anyMatch(memberSet::contains)) {
+                    domains.add(DomainNames.domainOf(c.getId(), prefix));
+                }
+            }
+            if (domains.size() >= minDomains) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether a component's namespace contains a support segment (023, FR-030).
+     */
+    private boolean inSupportNamespace(String componentId) {
+        String ns = componentId.contains(".") ? componentId.substring(0, componentId.lastIndexOf('.')) : "";
+        for (String segment : ns.split("\\.")) {
+            for (String support : recommendation.supportNamespaces()) {
+                if (segment.equalsIgnoreCase(support)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Name of a group of clusters (023, FR-020): the namespace domain in
+     * {@code naming.strategy = domain}, with the dominant entity as a suffix;
+     * otherwise the 1.2.0 tokens (optionally replaced by the entity, 020).
+     */
+    private String nameOf(Set<Integer> clusterIds, List<Cluster> allClusters,
+            Map<String, Component> byId, List<String> allIds) {
+        List<Cluster> clusters = clusterIds.stream()
+            .map(cid -> allClusters.stream().filter(c -> c.getClusterId() == cid).findFirst().orElse(null))
+            .filter(Objects::nonNull).toList();
+        String tokens = MicroserviceNameGenerator.generateName(clusterIds, allClusters, config.naming());
+        if (!config.naming().domainStrategy()) {
+            return applyEntityHeuristic(tokens, clusters, byId);
+        }
+        List<String> members = clusters.stream()
+            .flatMap(c -> c.getMembers().stream()).distinct().sorted().toList();
+        String domain = DomainNames.domain(members, DomainNames.commonPrefix(allIds));
+        if (domain == null) {
+            return applyEntityHeuristic(tokens, clusters, byId);
+        }
+        String name = "Componente de " + domain;
+        if (config.dataAccess().entityHeuristic()) {
+            String entity = ProcedureEntityHeuristic.dominantEntity(
+                members.stream().map(byId::get).filter(Objects::nonNull).toList());
+            if (entity != null) {
+                name = name + " · " + entity;
+            }
+        }
+        return name;
     }
     
     private MicroserviceProposal createProposal(int id, Set<Integer> clusterIds,
@@ -274,12 +382,9 @@ public class MicroserviceRecommendationEngine {
                                                 List<Component> allComponents,
                                                 ViabilityScorer scorer,
                                                 Map<String, Component> componentsById,
-                                                List<ApiEndpoint> apiEndpoints) {
-        String name = applyEntityHeuristic(
-                MicroserviceNameGenerator.generateName(clusterIds, allClusters, config.naming()),
-                clusterIds.stream().map(cid -> allClusters.stream().filter(c -> c.getClusterId() == cid).findFirst().orElse(null))
-                        .filter(Objects::nonNull).toList(),
-                componentsById);
+                                                List<ApiEndpoint> apiEndpoints,
+                                                List<String> allIds) {
+        String name = nameOf(clusterIds, allClusters, componentsById, allIds);
         ViabilityScorer.ViabilityResult viabilityResult = scorer.calculateViability(clusterIds);
 
         List<Cluster> clusters = clusterIds.stream()
@@ -527,8 +632,18 @@ public class MicroserviceRecommendationEngine {
         };
     }
 
-    private ConsolidatedArchitecture.SupportLibrary createSupportLibrary(int id, Set<Integer> clusterIds, List<Cluster> allClusters) {
+    private ConsolidatedArchitecture.SupportLibrary createSupportLibrary(int id, Set<Integer> clusterIds, List<Cluster> allClusters,
+            Map<String, Component> byId, List<String> allIds) {
         String name = MicroserviceNameGenerator.generateName(clusterIds, allClusters, config.naming());
+        if (config.naming().domainStrategy()) {
+            List<String> members = clusterIds.stream()
+                .flatMap(cId -> allClusters.stream().filter(c -> c.getClusterId() == cId).flatMap(c -> c.getMembers().stream()))
+                .distinct().sorted().toList();
+            String domain = DomainNames.domain(members, DomainNames.commonPrefix(allIds));
+            if (domain != null) {
+                name = "Librería de " + domain;
+            }
+        }
         
         List<String> componentNames = clusterIds.stream()
             .flatMap(cId -> allClusters.stream()
@@ -573,7 +688,7 @@ public class MicroserviceRecommendationEngine {
                 for (String called : comp.getCallsOut()) {
                     if (allMembers.contains(called)) {
                         internalCalls++;
-                    } else {
+                    } else if (!supportMembers.contains(called)) {
                         externalCalls++;
                     }
                 }
@@ -583,8 +698,25 @@ public class MicroserviceRecommendationEngine {
         int totalCalls = internalCalls + externalCalls;
         double externalCoupling = totalCalls > 0 ? (double) externalCalls / totalCalls : 0.0;
         
-        int possibleEdges = size * (size - 1);
-        double internalEdgeDensity = possibleEdges > 0 ? (double) internalCalls / possibleEdges : 0.0;
+        // 023 (FR-010): the internal density ignores presentation members when configured.
+        Set<String> densityMembers = PresentationLayer.cohesionMembers(allMembers, componentMap,
+                config.inference().presentationInCohesion());
+        int densityCalls = internalCalls;
+        if (densityMembers.size() != allMembers.size()) {
+            densityCalls = 0;
+            for (String member : densityMembers) {
+                Component comp = componentMap.get(member);
+                if (comp != null && comp.getCallsOut() != null) {
+                    for (String called : comp.getCallsOut()) {
+                        if (densityMembers.contains(called)) {
+                            densityCalls++;
+                        }
+                    }
+                }
+            }
+        }
+        int possibleEdges = densityMembers.size() * (densityMembers.size() - 1);
+        double internalEdgeDensity = possibleEdges > 0 ? (double) densityCalls / possibleEdges : 0.0;
         
         Set<String> allTables = clusters.stream()
             .flatMap(c -> c.getMetrics().getTablesShared().stream())

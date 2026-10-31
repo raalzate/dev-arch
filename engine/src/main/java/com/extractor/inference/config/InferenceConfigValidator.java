@@ -31,6 +31,11 @@ final class InferenceConfigValidator {
                 c.clustering().singleDomainRatio());
         ratio("clustering.largeClusterRatio",
                 c.clustering().largeClusterRatio());
+        List<String> groupings = List.of(ClusteringConfig.TRANSITIVE, ClusteringConfig.ENTITY);
+        if (!groupings.contains(c.clustering().procedureGrouping())) {
+            throw InvalidConfigException.parameter("clustering.procedureGrouping",
+                    "must be one of " + String.join(", ", groupings));
+        }
         evidence(c.evidence());
         consolidation(c.consolidation());
         viability(c.viability());
@@ -40,6 +45,21 @@ final class InferenceConfigValidator {
         debt(c.debt());
         integrations(c.integrations());
         dependencies(c.dependencies());
+        inference(c.inference());
+    }
+
+    /**
+     * Inference-wide rules (023).
+     *
+     * @param i inference parameters
+     */
+    private static void inference(final InferenceSection i) {
+        List<String> presets = List.of(InferenceSection.AUTO, InferenceSection.NONE,
+                InferenceSection.LEGACY_DESKTOP);
+        if (!presets.contains(i.preset())) {
+            throw InvalidConfigException.parameter("inference.preset",
+                    "must be one of " + String.join(", ", presets));
+        }
     }
 
     private static void integrations(final IntegrationsConfig i) {
@@ -148,6 +168,7 @@ final class InferenceConfigValidator {
         ratio(p + "significantInfrastructureRatio",
                 c.significantInfrastructureRatio());
         ratio(p + "supportRatio", c.supportRatio());
+        ratio(p + "verticalSliceRatio", c.verticalSliceRatio());
         nonNegative(p + "maxMergedSizeWithoutSimilarity",
                 c.maxMergedSizeWithoutSimilarity());
         ratio(p + "highTokenSimilarity", c.highTokenSimilarity());
@@ -203,6 +224,7 @@ final class InferenceConfigValidator {
         ratio(q + "dataGood", r.dataGood());
         ratio(q + "dataFair", r.dataFair());
         atMost(q + "dataFair", r.dataFair(), q + "dataGood", r.dataGood());
+        ratio(p + "debtWeight", v.debtWeight());
     }
 
     /**
@@ -221,6 +243,8 @@ final class InferenceConfigValidator {
                     "must be one of " + String.join(", ", modes));
         }
         ratio(p + "legacyDataJaccard", r.legacyDataJaccard());
+        nonBlank(p + "supportNamespaces", r.supportNamespaces());
+        nonNegative(p + "minReferencingDomains", r.minReferencingDomains());
     }
 
     /**
@@ -244,6 +268,11 @@ final class InferenceConfigValidator {
         keywords(p + "roleKeywords", n.roleKeywords());
         nonBlank(p + "excludeTokens", n.excludeTokens());
         nonNegative(p + "minTokenLength", n.minTokenLength());
+        List<String> strategies = List.of(NamingConfig.TOKENS, NamingConfig.DOMAIN);
+        if (!strategies.contains(n.strategy())) {
+            throw InvalidConfigException.parameter(p + "strategy",
+                    "must be one of " + String.join(", ", strategies));
+        }
     }
 
     /**

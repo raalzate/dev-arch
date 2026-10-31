@@ -5,6 +5,7 @@ import com.extractor.inference.InferenceEngine;
 import com.extractor.inference.MicroserviceCandidates;
 import com.extractor.inference.MicroserviceRecommendationEngine;
 import com.extractor.inference.config.InferenceConfig;
+import com.extractor.inference.config.Presets;
 import com.extractor.model.ApiEndpoint;
 import com.extractor.model.DependencyGraph;
 
@@ -25,14 +26,17 @@ public final class InferenceService {
      * @return the consolidated architecture
      */
     public ConsolidatedArchitecture infer(final InferenceInput input,
-            final InferenceConfig config) {
+            final InferenceConfig requested) {
         DependencyGraph graph = input.graph();
+        // 023 (FR-001): the preset is resolved once per graph, beneath the user's values.
+        Presets.Resolved resolved = Presets.resolve(requested, graph);
+        InferenceConfig config = resolved.config();
         MicroserviceCandidates candidates =
                 new InferenceEngine(config).analyze(graph);
         return new MicroserviceRecommendationEngine(config).assemble(
                 candidates, graph.getComponents(),
                 input.projectDependencies(), input.secretsLocations(),
-                endpoints(graph));
+                endpoints(graph), resolved.preset());
     }
 
     /**

@@ -10,11 +10,16 @@ package com.extractor.inference.config;
  * @param largeSize            large size (monolith) penalty
  * @param thresholds           classification thresholds
  * @param rationale            cuts of the rationale messages
+ * @param debtWeight           weight of the debt index subtracted from the score
+ *                             (023; 0 = the score ignores debt)
+ * @param ignoreSupportCoupling  023: calls to support-library members do not
+ *                             count as external coupling
  */
 public record ViabilityConfig(Weights weights, CohesionBlend cohesionBlend,
         double noTablesDataCohesion, SmallSize smallSize,
         LargeSize largeSize, Thresholds thresholds,
-        RationaleConfig rationale) {
+        RationaleConfig rationale, double debtWeight,
+        boolean ignoreSupportCoupling) {
 
     /**
      * Weights of the score.

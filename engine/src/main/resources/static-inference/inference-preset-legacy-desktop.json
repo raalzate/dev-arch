@@ -1,0 +1,56 @@
+{
+  "evidence": {
+    "weights": {
+      "table": 0.4,
+      "call": 0.3,
+      "token": 0.2,
+      "event": 0.1
+    }
+  },
+  "consolidation": {
+    "domainMergeMaxSize": 120,
+    "maxMergedSizeWithoutSimilarity": 120,
+    "verticalSliceRatio": 0.6,
+    "entityStemMerge": true,
+    "highTokenSimilarity": 1.0
+  },
+  "viability": {
+    "weights": {
+      "cohesion": 0.4,
+      "coupling": 0.3,
+      "data": 0.15
+    },
+    "debtWeight": 0.15,
+    "ignoreSupportCoupling": true,
+    "thresholds": {
+      "high": 0.6,
+      "medium": 0.4
+    }
+  },
+  "recommendation": {
+    "supportNamespaces": [
+      "Commons",
+      "Shared",
+      "Utils",
+      "Utilities",
+      "Helpers",
+      "Generics",
+      "WebServices"
+    ],
+    "minReferencingDomains": 0
+  },
+  "naming": {
+    "strategy": "domain"
+  },
+  "dataAccess": {
+    "entityHeuristic": true
+  },
+  "inference": {
+    "presentationInCohesion": false
+  },
+  "clustering": {
+    "attachCallersToTargets": true,
+    "singleDomainRatio": 0.25,
+    "procedureGrouping": "entity"
+  }
+}

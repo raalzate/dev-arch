@@ -22,6 +22,10 @@ export interface InferenceConfig {
   clustering?: {
     singleDomainRatio?: number;
     largeClusterRatio?: number;
+    /**
+     * 023: in the entity path, a component without procedures joins the cluster it calls most.
+     */
+    attachCallersToTargets?: boolean;
   };
   evidence?: {
     weights?: {
@@ -60,6 +64,14 @@ export interface InferenceConfig {
       minSize?: number;
     };
     infrastructureKeywords?: string[];
+    /**
+     * 023: share of a cluster's outgoing cross-cluster calls (support clusters excluded) that must target one other cluster to merge both as a vertical slice; 0 disables the rule.
+     */
+    verticalSliceRatio?: number;
+    /**
+     * 023: merge clusters whose dominant procedure entities share a stem.
+     */
+    entityStemMerge?: boolean;
   };
   viability?: {
     weights?: {
@@ -97,12 +109,28 @@ export interface InferenceConfig {
       dataGood?: number;
       dataFair?: number;
     };
+    /**
+     * 023: weight of the debt index subtracted from the viability score; 0 keeps the 1.2.0 score.
+     */
+    debtWeight?: number;
+    /**
+     * 023: calls to support-library members do not count as external coupling.
+     */
+    ignoreSupportCoupling?: boolean;
   };
   recommendation?: {
     supportRatio?: number;
     infrastructureKeywords?: string[];
     dataJaccardMode?: "legacy" | "data_cohesion";
     legacyDataJaccard?: number;
+    /**
+     * 023: namespace segments whose components form support libraries.
+     */
+    supportNamespaces?: string[];
+    /**
+     * 023: distinct calling domains from which a group is a shared support library; 0 disables the rule.
+     */
+    minReferencingDomains?: number;
   };
   naming?: {
     infrastructureRatio?: number;
@@ -112,6 +140,10 @@ export interface InferenceConfig {
     roleKeywords?: string[];
     excludeTokens?: string[];
     minTokenLength?: number;
+    /**
+     * 023: tokens = 1.2.0 names; domain = namespace domain shared by the members.
+     */
+    strategy?: "tokens" | "domain";
   };
   /**
    * Data access parameters (020-stored-procedures): stored procedure detection in the .NET analyzer, the optional procedure catalog and the weight of sp: resources in the inference.
@@ -175,6 +207,19 @@ export interface InferenceConfig {
      * Name prefixes added to schema/eol-dependencies.json.
      */
     eol?: string[];
+  };
+  /**
+   * Inference-wide parameters and preset (023-legacy-desktop-inference).
+   */
+  inference?: {
+    /**
+     * auto = legacy-desktop for Visual Basic graphs (meta.source roslyn-fallback or >= 50% .vb components); none = never.
+     */
+    preset?: "auto" | "none" | "legacy-desktop";
+    /**
+     * false = Layer:Presentación/Layer:Reportes members do not count in cohesion or internal density.
+     */
+    presentationInCohesion?: boolean;
   };
 }
 /**

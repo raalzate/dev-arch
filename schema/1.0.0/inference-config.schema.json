@@ -30,6 +30,17 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        },
+        "attachCallersToTargets": {
+          "type": "boolean",
+          "description": "023: in the entity path, a component without procedures joins the cluster it calls most."
+        },
+        "procedureGrouping": {
+          "enum": [
+            "transitive",
+            "entity"
+          ],
+          "description": "023: transitive = components sharing procedures (transitively) form one cluster; entity = components grouped by the stem of their dominant procedure entity."
         }
       }
     },
@@ -212,6 +223,16 @@
             "minLength": 1,
             "pattern": "^[^A-Z]*$"
           }
+        },
+        "verticalSliceRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "023: share of a cluster's outgoing cross-cluster calls (support clusters excluded) that must target one other cluster to merge both as a vertical slice; 0 disables the rule."
+        },
+        "entityStemMerge": {
+          "type": "boolean",
+          "description": "023: merge clusters whose dominant procedure entities share a stem."
         }
       }
     },
@@ -365,6 +386,16 @@
               "maximum": 1
             }
           }
+        },
+        "debtWeight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "023: weight of the debt index subtracted from the viability score; 0 keeps the 1.2.0 score."
+        },
+        "ignoreSupportCoupling": {
+          "type": "boolean",
+          "description": "023: calls to support-library members do not count as external coupling."
         }
       }
     },
@@ -395,6 +426,19 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        },
+        "supportNamespaces": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "023: namespace segments whose components form support libraries."
+        },
+        "minReferencingDomains": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "023: distinct calling domains from which a group is a shared support library; 0 disables the rule."
         }
       }
     },
@@ -435,6 +479,13 @@
         "minTokenLength": {
           "type": "integer",
           "minimum": 0
+        },
+        "strategy": {
+          "enum": [
+            "tokens",
+            "domain"
+          ],
+          "description": "023: tokens = 1.2.0 names; domain = namespace domain shared by the members."
         }
       }
     },
@@ -546,6 +597,25 @@
             "minLength": 1
           },
           "description": "Name prefixes added to schema/eol-dependencies.json."
+        }
+      }
+    },
+    "inference": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Inference-wide parameters and preset (023-legacy-desktop-inference).",
+      "properties": {
+        "preset": {
+          "enum": [
+            "auto",
+            "none",
+            "legacy-desktop"
+          ],
+          "description": "auto = legacy-desktop for Visual Basic graphs (meta.source roslyn-fallback or >= 50% .vb components); none = never."
+        },
+        "presentationInCohesion": {
+          "type": "boolean",
+          "description": "false = Layer:Presentación/Layer:Reportes members do not count in cohesion or internal density."
         }
       }
     }

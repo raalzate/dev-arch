@@ -18,6 +18,10 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
       .object({
         singleDomainRatio: z.number().gte(0).lte(1).optional(),
         largeClusterRatio: z.number().gte(0).lte(1).optional(),
+        attachCallersToTargets: z
+          .boolean()
+          .describe("023: in the entity path, a component without procedures joins the cluster it calls most.")
+          .optional(),
       })
       .strict()
       .optional(),
@@ -71,6 +75,18 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
           .strict()
           .optional(),
         infrastructureKeywords: z.array(z.string().regex(new RegExp("^[^A-Z]*$")).min(1)).optional(),
+        verticalSliceRatio: z
+          .number()
+          .gte(0)
+          .lte(1)
+          .describe(
+            "023: share of a cluster's outgoing cross-cluster calls (support clusters excluded) that must target one other cluster to merge both as a vertical slice; 0 disables the rule.",
+          )
+          .optional(),
+        entityStemMerge: z
+          .boolean()
+          .describe("023: merge clusters whose dominant procedure entities share a stem.")
+          .optional(),
       })
       .strict()
       .optional(),
@@ -120,6 +136,16 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
           })
           .strict()
           .optional(),
+        debtWeight: z
+          .number()
+          .gte(0)
+          .lte(1)
+          .describe("023: weight of the debt index subtracted from the viability score; 0 keeps the 1.2.0 score.")
+          .optional(),
+        ignoreSupportCoupling: z
+          .boolean()
+          .describe("023: calls to support-library members do not count as external coupling.")
+          .optional(),
       })
       .strict()
       .optional(),
@@ -129,6 +155,18 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
         infrastructureKeywords: z.array(z.string().regex(new RegExp("^[^A-Z]*$")).min(1)).optional(),
         dataJaccardMode: z.enum(["legacy", "data_cohesion"]).optional(),
         legacyDataJaccard: z.number().gte(0).lte(1).optional(),
+        supportNamespaces: z
+          .array(z.string().min(1))
+          .describe("023: namespace segments whose components form support libraries.")
+          .optional(),
+        minReferencingDomains: z
+          .number()
+          .int()
+          .gte(0)
+          .describe(
+            "023: distinct calling domains from which a group is a shared support library; 0 disables the rule.",
+          )
+          .optional(),
       })
       .strict()
       .optional(),
@@ -139,6 +177,10 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
         roleKeywords: z.array(z.string().regex(new RegExp("^[^A-Z]*$")).min(1)).optional(),
         excludeTokens: z.array(z.string().min(1)).optional(),
         minTokenLength: z.number().int().gte(0).optional(),
+        strategy: z
+          .enum(["tokens", "domain"])
+          .describe("023: tokens = 1.2.0 names; domain = namespace domain shared by the members.")
+          .optional(),
       })
       .strict()
       .optional(),
@@ -217,6 +259,22 @@ export const inferenceConfigSchema: z.ZodTypeAny = z
       })
       .strict()
       .describe("External dependency and end-of-life detection of the .NET analyzer (022-external-integrations).")
+      .optional(),
+    inference: z
+      .object({
+        preset: z
+          .enum(["auto", "none", "legacy-desktop"])
+          .describe(
+            "auto = legacy-desktop for Visual Basic graphs (meta.source roslyn-fallback or >= 50% .vb components); none = never.",
+          )
+          .optional(),
+        presentationInCohesion: z
+          .boolean()
+          .describe("false = Layer:Presentación/Layer:Reportes members do not count in cohesion or internal density.")
+          .optional(),
+      })
+      .strict()
+      .describe("Inference-wide parameters and preset (023-legacy-desktop-inference).")
       .optional(),
   })
   .strict()
