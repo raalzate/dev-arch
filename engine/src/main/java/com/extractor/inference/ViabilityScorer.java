@@ -2,6 +2,7 @@ package com.extractor.inference;
 
 import com.extractor.inference.config.InferenceConfig;
 import com.extractor.inference.config.RationaleConfig;
+import com.extractor.inference.config.DataAccessConfig;
 import com.extractor.inference.config.ViabilityConfig;
 import com.extractor.model.Component;
 import java.util.*;
@@ -20,6 +21,9 @@ public class ViabilityScorer {
     /** Viability parameters (008). */
     private final ViabilityConfig config;
 
+    /** Data access parameters (020). */
+    private final DataAccessConfig dataAccess;
+
     public ViabilityScorer(List<Cluster> allClusters, List<Component> allComponents) {
         this(allClusters, allComponents, InferenceConfig.defaults().viability());
     }
@@ -34,7 +38,22 @@ public class ViabilityScorer {
     public ViabilityScorer(final List<Cluster> allClusters,
             final List<Component> allComponents,
             final ViabilityConfig viability) {
+        this(allClusters, allComponents, viability, InferenceConfig.defaults().dataAccess());
+    }
+
+    /**
+     * Scorer with viability and data access parameters (020: weighted procedures in the data cohesion).
+     *
+     * @param allClusters   every cluster
+     * @param allComponents every component of the graph
+     * @param viability     viability parameters
+     * @param dataAccess    data access parameters
+     */
+    public ViabilityScorer(final List<Cluster> allClusters,
+            final List<Component> allComponents,
+            final ViabilityConfig viability, final DataAccessConfig dataAccess) {
         this.config = viability;
+        this.dataAccess = dataAccess;
         this.allClusters = allClusters;
         this.componentMap = allComponents.stream()
             .collect(Collectors.toMap(Component::getId, c -> c));
@@ -169,12 +188,19 @@ public class ViabilityScorer {
             }
         }
         
-        long sharedTables = tableCounts.values().stream()
-            .filter(count -> count > 1)
-            .count();
+        // 020: weighted by resource (tables 1.0, procedures dataAccess.procedureWeight); identical to the
+        // unweighted ratio when every weight is 1.
+        double shared = 0.0;
+        double total = 0.0;
+        for (Map.Entry<String, Long> entry : tableCounts.entrySet()) {
+            double weight = DataResources.weight(entry.getKey(), dataAccess);
+            total += weight;
+            if (entry.getValue() > 1) {
+                shared += weight;
+            }
+        }
         
-        return allTables.size() > 0 ? (double) sharedTables / allTables.size()
-                : config.noTablesDataCohesion();
+        return total > 0 ? shared / total : config.noTablesDataCohesion();
     }
     
     private CodeQualityMetrics calculateCodeQualityMetrics(List<Cluster> clusters) {

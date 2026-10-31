@@ -51,10 +51,16 @@
   <PropertyGroup>
     <Reqnroll_EnableWarnForFeatureCodeBehindFilesWithoutCorrespondingFeatureFile>false</Reqnroll_EnableWarnForFeatureCodeBehindFilesWithoutCorrespondingFeatureFile>
     <VbLegacyFeaturesDir>../../../../../specs/009-vb-legacy-completion/tests/features/</VbLegacyFeaturesDir>
+    <!-- 020-stored-procedures (plan Design 10): same mechanism; the @engine feature runs on Cucumber-JVM
+         (RunStoredProceduresFeaturesTest). -->
+    <StoredProceduresFeaturesDir>../../../../../specs/020-stored-procedures/tests/features/</StoredProceduresFeaturesDir>
   </PropertyGroup>
   <ItemGroup>
     <ReqnrollFeatureFiles Include="$(VbLegacyFeaturesDir)*.feature"
                           Exclude="$(VbLegacyFeaturesDir)reduced-fidelity-engine.feature"
+                          CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
+    <ReqnrollFeatureFiles Include="$(StoredProceduresFeaturesDir)*.feature"
+                          Exclude="$(StoredProceduresFeaturesDir)procedure-inference-engine.feature"
                           CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
   </ItemGroup>
   <Target Name="MoveVbLegacyCodeBehind" AfterTargets="UpdateFeatureFilesInProject">

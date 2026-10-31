@@ -2,10 +2,17 @@
   "tdd_determination": "mandatory",
   "planview": {
     "nodeClassifications": {
-      "Claude Code": "client",
-      "dev-arch-mcp.mjs": "client",
-      "dev-arch web (Next.js :9002)": "server",
-      "Engine (JAR)": "server"
+      "CLI --config": "client",
+      "MCP analyze_project / reinfer_architecture": "client",
+      "InferenceConfig": "server",
+      "ExtractionService": "server",
+      "DotNetBridgeAnalyzer": "server",
+      "dotnet-analyzer": "server",
+      "ProjectAnalyzer": "server",
+      "ProcedureCallExtractor": "server",
+      "ProcedureCatalog": "storage",
+      "InferenceService": "server",
+      "DataResources": "server"
     }
   },
   "checklist_reviewed_at": "2026-10-09T14:14:22Z"

@@ -112,7 +112,7 @@ public class MicroserviceRecommendationEngine {
         ClusterConsolidator consolidator = new ClusterConsolidator(allClusters, allComponents, config);
         List<Set<Integer>> mergedGroups = consolidator.consolidate();
         
-        ViabilityScorer scorer = new ViabilityScorer(allClusters, allComponents, config.viability());
+        ViabilityScorer scorer = new ViabilityScorer(allClusters, allComponents, config.viability(), config.dataAccess());
         
         List<MicroserviceProposal> proposals = new ArrayList<>();
         List<ConsolidatedArchitecture.SupportLibrary> supportLibraries = new ArrayList<>();
@@ -213,12 +213,12 @@ public class MicroserviceRecommendationEngine {
             final List<Component> allComponents) {
         Set<Integer> ids = new LinkedHashSet<>();
         fragments.forEach(f -> ids.add(f.getClusterId()));
-        String name = MicroserviceNameGenerator.generateName(ids, fragments,
-                config.naming());
-        ViabilityScorer.ViabilityResult result = new ViabilityScorer(
-                fragments, allComponents, config.viability())
-                .calculateViability(ids);
         Map<String, Component> byId = componentMapById(allComponents);
+        String name = applyEntityHeuristic(MicroserviceNameGenerator.generateName(ids, fragments,
+                config.naming()), fragments, byId);
+        ViabilityScorer.ViabilityResult result = new ViabilityScorer(
+                fragments, allComponents, config.viability(), config.dataAccess())
+                .calculateViability(ids);
         List<String> names = fragments.stream()
                 .flatMap(c -> c.getMembers().stream()).distinct()
                 .filter(comp -> !isInfrastructureComponent(comp)).sorted()
@@ -275,7 +275,11 @@ public class MicroserviceRecommendationEngine {
                                                 ViabilityScorer scorer,
                                                 Map<String, Component> componentsById,
                                                 List<ApiEndpoint> apiEndpoints) {
-        String name = MicroserviceNameGenerator.generateName(clusterIds, allClusters, config.naming());
+        String name = applyEntityHeuristic(
+                MicroserviceNameGenerator.generateName(clusterIds, allClusters, config.naming()),
+                clusterIds.stream().map(cid -> allClusters.stream().filter(c -> c.getClusterId() == cid).findFirst().orElse(null))
+                        .filter(Objects::nonNull).toList(),
+                componentsById);
         ViabilityScorer.ViabilityResult viabilityResult = scorer.calculateViability(clusterIds);
 
         List<Cluster> clusters = clusterIds.stream()
@@ -329,6 +333,21 @@ public class MicroserviceRecommendationEngine {
         List<JpaTable> out = new ArrayList<>(byName.values());
         out.sort(Comparator.comparing(JpaTable::getName));
         return out;
+    }
+
+    /**
+     * 020 (FR-040, FR-041): with {@code dataAccess.entityHeuristic} the dominant entity of the members' stored
+     * procedures names the proposal; otherwise the name is unchanged.
+     */
+    private String applyEntityHeuristic(String name, List<Cluster> clusters, Map<String, Component> byId) {
+        if (!config.dataAccess().entityHeuristic()) {
+            return name;
+        }
+        List<Component> members = clusters.stream()
+                .flatMap(c -> c.getMembers().stream()).distinct().sorted()
+                .map(byId::get).filter(Objects::nonNull).toList();
+        String entity = ProcedureEntityHeuristic.dominantEntity(members);
+        return entity == null ? name : "Componente de " + entity;
     }
 
     private Map<String, Component> componentMapById(List<Component> allComponents) {
@@ -563,7 +582,7 @@ public class MicroserviceRecommendationEngine {
         
         return new MicroserviceProposal.ConsolidatedMetrics(
             size, cohesionAvg, externalCoupling, internalEdgeDensity,
-            dataJaccard, new ArrayList<>(allTables), sensitive, tablesSource
+            dataJaccard, DataResources.ordered(allTables), sensitive, tablesSource
         );
     }
     

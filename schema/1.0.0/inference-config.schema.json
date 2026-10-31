@@ -437,6 +437,46 @@
           "minimum": 0
         }
       }
+    },
+    "dataAccess": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Data access parameters (020-stored-procedures): stored procedure detection in the .NET analyzer, the optional procedure catalog and the weight of sp: resources in the inference.",
+      "properties": {
+        "procedures": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ],
+          "description": "Stored procedure detection: auto = Visual Basic compilations only."
+        },
+        "procedureCatalog": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Directory of .sql scripts (CREATE PROCEDURE) or .csv file (procedimiento,tabla,operación) translating procedures to tables."
+        },
+        "catalogMode": {
+          "type": "string",
+          "enum": [
+            "complement",
+            "replace"
+          ],
+          "description": "complement keeps sp:<name> next to the tables; replace emits tables only."
+        },
+        "procedureWeight": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Weight of an sp: resource relative to a table in shared-data grouping, tables_shared and data cohesion; 0 ignores procedures."
+        },
+        "entityHeuristic": {
+          "type": "boolean",
+          "description": "Derive a business entity from procedure names for proposal naming."
+        }
+      }
     }
   }
 }

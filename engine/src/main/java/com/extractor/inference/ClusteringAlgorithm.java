@@ -1,6 +1,7 @@
 package com.extractor.inference;
 
 import com.extractor.inference.config.ClusteringConfig;
+import com.extractor.inference.config.DataAccessConfig;
 import com.extractor.inference.config.InferenceConfig;
 import com.extractor.model.Component;
 import com.extractor.model.DependencyGraph;
@@ -15,6 +16,8 @@ public class ClusteringAlgorithm {
 
     /** Clustering parameters (008). */
     private final ClusteringConfig config;
+    /** Data access parameters (020). */
+    private final DataAccessConfig dataAccess;
 
     /** Algorithm with the 1.2.0 parameters. */
     public ClusteringAlgorithm() {
@@ -27,6 +30,17 @@ public class ClusteringAlgorithm {
      * @param clustering clustering parameters
      */
     public ClusteringAlgorithm(final ClusteringConfig clustering) {
+        this(clustering, InferenceConfig.defaults().dataAccess());
+    }
+
+    /**
+     * Algorithm with clustering and data access parameters (020: procedures as shared data resources).
+     *
+     * @param clustering clustering parameters
+     * @param dataAccess data access parameters
+     */
+    public ClusteringAlgorithm(final ClusteringConfig clustering, final DataAccessConfig dataAccess) {
+        this.dataAccess = dataAccess;
         this.config = clustering;
     }
 
@@ -171,8 +185,23 @@ public class ClusteringAlgorithm {
         Map<String, Cluster> entityToClusters = new HashMap<>();
         int clusterId = 0;
 
+        // 020 (FR-020): components that share a stored procedure (weight > 0) form one cluster, as components
+        // sharing a table do in the domain path; without procedures this block changes nothing.
+        Set<String> groupedByProcedure = new HashSet<>();
+        for (List<Component> group : procedureGroups(dependencyGraph.getComponents())) {
+            Cluster cluster = new Cluster(clusterId++);
+            for (Component component : group) {
+                cluster.addMember(component.getId());
+                groupedByProcedure.add(component.getId());
+            }
+            clusters.add(cluster);
+        }
+
         // Find JPA entities and create clusters around them
         for (Component component : dependencyGraph.getComponents()) {
+            if (groupedByProcedure.contains(component.getId())) {
+                continue;
+            }
             if (isJpaEntity(component)) {
                 String entityName = extractEntityName(component.getId());
                 Cluster cluster = new Cluster(clusterId++);
@@ -183,7 +212,7 @@ public class ClusteringAlgorithm {
         }
 
         // Group related components (repositories, services) with their entities
-        Set<String> assignedComponents = new HashSet<>();
+        Set<String> assignedComponents = new HashSet<>(groupedByProcedure);
         // Mark entities themselves as already assigned so the second loop doesn't re-add them
         for (Cluster entityCluster : entityToClusters.values()) {
             assignedComponents.addAll(entityCluster.getMembers());
@@ -217,6 +246,48 @@ public class ClusteringAlgorithm {
         }
 
         return clusters.isEmpty() ? List.of(createSingleCluster(dependencyGraph)) : clusters;
+    }
+
+    /**
+     * Groups of two or more components connected by shared stored procedures (transitively), in order of the
+     * first member; empty when the graph has no counted {@code sp:} resource (020).
+     */
+    private List<List<Component>> procedureGroups(List<Component> components) {
+        Map<String, List<Component>> byProcedure = new LinkedHashMap<>();
+        for (Component component : components) {
+            for (String resource : DataResources.of(component, dataAccess)) {
+                if (DataResources.isProcedure(resource)) {
+                    byProcedure.computeIfAbsent(resource, k -> new ArrayList<>()).add(component);
+                }
+            }
+        }
+        Map<String, Component> byId = new LinkedHashMap<>();
+        components.forEach(c -> byId.put(c.getId(), c));
+        Map<String, String> parent = new HashMap<>();
+        for (List<Component> sharing : byProcedure.values()) {
+            if (sharing.size() < 2) {
+                continue;
+            }
+            String root = find(parent, sharing.get(0).getId());
+            for (Component other : sharing) {
+                parent.put(find(parent, other.getId()), root);
+            }
+        }
+        Map<String, List<Component>> groups = new LinkedHashMap<>();
+        for (Component component : components) {
+            if (parent.containsKey(component.getId())) {
+                groups.computeIfAbsent(find(parent, component.getId()), k -> new ArrayList<>()).add(component);
+            }
+        }
+        return groups.values().stream().filter(g -> g.size() >= 2).collect(Collectors.toList());
+    }
+
+    private static String find(Map<String, String> parent, String id) {
+        String current = id;
+        while (parent.containsKey(current) && !parent.get(current).equals(current)) {
+            current = parent.get(current);
+        }
+        return current;
     }
 
     /**
@@ -785,10 +856,8 @@ public class ClusteringAlgorithm {
         Map<String, List<Component>> tableGroups = new HashMap<>();
 
         for (Component component : components) {
-            if (component.getTablesUsed() != null && !component.getTablesUsed().isEmpty()) {
-                for (String table : component.getTablesUsed()) {
-                    tableGroups.computeIfAbsent(table, k -> new ArrayList<>()).add(component);
-                }
+            for (String table : DataResources.of(component, dataAccess)) {
+                tableGroups.computeIfAbsent(table, k -> new ArrayList<>()).add(component);
             }
         }
 

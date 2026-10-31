@@ -110,6 +110,11 @@ Los pesos de evidencia y de viabilidad no tienen por qué sumar 1, pero conviene
 | `naming.roleKeywords` | string[] | `service, controller, repository, repo, usecase, operations, listener, publisher, adapter, factory, handler, db` | minúsculas | nombres | Palabras de rol de los nombres de negocio; gana la primera (orden declarado). |
 | `naming.excludeTokens` | string[] | `entity, model, data, dto, event, command, query, impl, repository, service, controller, api, rest, http, adapter, port, localevents, rabbit, jpa, repo, dao, operations, listener, publisher, handler, factory, db, activityupdaterimpl, usecase, primaryports, secondaryports, userprofilejpa, tweetcrud, suggestion, suggestions` | no vacías | nombres | Tokens que nunca forman parte de un nombre (comparación exacta). |
 | `naming.minTokenLength` | int | `3` | >= 0 | nombres | Longitud mínima de un token de nombre. |
+| `dataAccess.procedures` | string | `auto` | auto, on, off | extracción | Detección de procedimientos almacenados en el analizador .NET (020): `auto` = solo compilaciones Visual Basic; `on` = todas; `off` = ninguna. |
+| `dataAccess.procedureCatalog` | string | `null` | ruta o null | extracción | Carpeta de scripts `.sql` (`CREATE PROCEDURE`) o archivo `.csv` (`procedimiento,tabla,operación`) que traduce procedimientos a tablas; sin catálogo se emite `sp:<nombre>`. |
+| `dataAccess.catalogMode` | string | `complement` | complement, replace | extracción | `complement` conserva `sp:<nombre>` junto a las tablas; `replace` emite solo tablas (y `sp:` para los no resueltos). |
+| `dataAccess.procedureWeight` | double | `1.0` | >= 0 | agrupación | Peso de un recurso `sp:` respecto de una tabla en los datos compartidos, `tables_shared` y la cohesión de datos; 0 los ignora. |
+| `dataAccess.entityHeuristic` | boolean | `false` | true, false | nombres | Deduce la entidad de negocio del nombre del procedimiento (`usp_Policy_Read` → `Policy`) solo para nombrar propuestas. |
 
 Las reglas internas de puntuación de clústeres (`HighCohesionRule`, `LowCouplingRule`, `SharedDataRule`) no forman parte de la configuración: su resultado no llega a ningún documento de salida.
 

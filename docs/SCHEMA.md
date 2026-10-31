@@ -124,3 +124,17 @@ together with a re-lock of TS-028.
 
 _None yet — 1.0.0 is the first formal version. It describes the v1.1.0 output plus the additive
 `meta.schema_version` (and the new `meta` objects of the architecture and entrypoints documents)._
+
+## `inference-config` — section `dataAccess` (feature 020, additive)
+
+| Key | Type | Default | Meaning |
+|---|---|---|---|
+| `procedures` | `auto` \| `on` \| `off` | `auto` | stored procedure detection in the .NET analyzer; `auto` = Visual Basic compilations only |
+| `procedureCatalog` | string or null | `null` | directory of `.sql` scripts or `.csv` file (`procedimiento,tabla,operación`) translating procedures to tables |
+| `catalogMode` | `complement` \| `replace` | `complement` | keep `sp:` next to the tables, or tables only |
+| `procedureWeight` | number ≥ 0 | `1.0` | weight of an `sp:` resource relative to a table in the inference; `0` ignores procedures |
+| `entityHeuristic` | boolean | `false` | derive a business entity from procedure names for proposal naming |
+
+Output conventions without schema change: `components[].tables_used` may contain `sp:<Name>`;
+`proposals[].metrics.tables_shared` lists tables first and `sp:` entries after, each group in ordinal order. The
+generated TypeScript types (`schema/generated`, `schema/extensions`) include the section.

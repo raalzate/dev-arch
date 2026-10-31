@@ -85,4 +85,40 @@ public class VbCorpusSmokeTests
         pct.Should().BeGreaterThanOrEqualTo(80.0,
             $"FR-021 requires *Adapter components to land in Datos; got {adaptersInDatos}/{adapterComponents.Count} = {pct:F1}%");
     }
+
+    /// <summary>
+    /// 020 SC-002 / SC-008 (opt-in): on the reference corpus the stored procedure pass makes the data access
+    /// visible (≥ 80 % of the *Adapter components with tables_used, ≥ 850 distinct procedures) without exceeding
+    /// 110 % of the analysis time with the pass disabled.
+    /// </summary>
+    [Fact(DisplayName = "020 SC-002/SC-008: stored procedures of the reference corpus")]
+    public async Task StoredProcedures_CoverTheAdapters_WithinTheTimeBudget()
+    {
+        var root = Path.Combine(FindRepoRoot(), "test-for-demo", "vb-demo-legacy");
+        Directory.Exists(root).Should().BeTrue($"Reference corpus not found: {root}");
+
+        var off = new DotNetAnalyzer.Analysis.AnalysisOptions(
+            new DotNetAnalyzer.Analysis.DataAccessOptions(DotNetAnalyzer.Analysis.ProceduresMode.Off, null,
+                DotNetAnalyzer.Analysis.CatalogMode.Complement));
+        var baseline = System.Diagnostics.Stopwatch.StartNew();
+        await new ProjectAnalyzer().AnalyzeProjectAsync(root, off);
+        baseline.Stop();
+
+        var timed = System.Diagnostics.Stopwatch.StartNew();
+        var graph = await new ProjectAnalyzer().AnalyzeProjectAsync(root);
+        timed.Stop();
+
+        var adapters = graph.Components.Where(c => c.Id.EndsWith("Adapter", StringComparison.Ordinal)).ToList();
+        adapters.Should().NotBeEmpty();
+        var covered = adapters.Count(c => c.TablesUsed.Count > 0);
+        ((double)covered / adapters.Count).Should().BeGreaterOrEqualTo(0.8,
+            $"{covered} of {adapters.Count} *Adapter components have tables_used");
+
+        var procedures = graph.Components.SelectMany(c => c.TablesUsed)
+            .Where(t => t.StartsWith("sp:", StringComparison.Ordinal)).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+        procedures.Should().BeGreaterOrEqualTo(850);
+
+        timed.Elapsed.Should().BeLessThanOrEqualTo(baseline.Elapsed * 1.10 + TimeSpan.FromSeconds(2),
+            "the pass is linear in syntax nodes (SC-008)");
+    }
 }

@@ -162,6 +162,23 @@ en el monorepo de origen, y la primera ejecución real lo destapó.
 
 Detalle de cada uno (síntoma, causa, corrección y prueba): [`specs/014-standalone-repo/bugs.md`](../specs/014-standalone-repo/bugs.md), [`specs/009-vb-legacy-completion/bugs.md`](../specs/009-vb-legacy-completion/bugs.md) y [`specs/002-dotnet-roslyn-analyzer/bugs.md`](../specs/002-dotnet-roslyn-analyzer/bugs.md) (BUG-007 y BUG-008).
 
+## 8. Feature 020 (procedimientos almacenados) sobre el corpus de referencia VB
+
+Corrida local 2026-10-30 (macOS, SDK 8, fidelidad reducida), `engine/target/dotnet-analyzer <referencia>` dos veces
+seguidas (opt-in, corpus externo no redistribuible):
+
+| Métrica | Antes (009) | Después (020) |
+|---|---|---|
+| Componentes | 1 110 | 1 110 |
+| Componentes `*Adapter` con `tables_used` | 1 de 159 | 139 de 156 (89 %) |
+| Procedimientos distintos (`sp:`) | 0 | 899 |
+| Advertencias "Procedure name is not a literal" | — | 4 |
+| Doble corrida (JSON y advertencias) | — | byte a byte idéntica |
+
+Criterios de salida del plan (`PLAN-VB-PLATAFORMA-LEGACY.md` §4, feature 015): ≥ 80 % de adaptadores con datos y
+≥ 850 procedimientos distintos: cumplidos. Las salidas de `test-for-demo/*` (líneas base v1.1.0 y v1.2.0) no cambian.
+La prueba opt-in `VbCorpusSmokeTests` ("020 SC-002/SC-008") repite esta medición con el límite de tiempo.
+
 ## Cómo reproducir
 
 ```bash

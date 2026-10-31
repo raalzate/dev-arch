@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.MSBuild;
 using DotNetAnalyzer.Analysis.Common;
+using DotNetAnalyzer.Analysis.Data;
 using DotNetAnalyzer.Analysis.Vb;
 using DotNetAnalyzer.Model;
 
@@ -24,6 +25,9 @@ public class ProjectAnalyzer
     private readonly RoslynCodeAnalyzer _codeAnalyzer = new();
 
     private readonly List<string> _userWarnings = new();
+    private AnalysisOptions _options = AnalysisOptions.Default;
+    private ProcedureCatalog? _procedureCatalog;
+    private bool _procedureCatalogLoaded;
 
     // Subjects ("VB project 'X.vbproj'", "VB sources in 'dir'") of the VB code loaded through the Adhoc
     // fallback during the current analysis (009, FR-060/FR-065).
@@ -40,8 +44,13 @@ public class ProjectAnalyzer
     /// </summary>
     public IReadOnlyList<string> UserWarnings => _userWarnings;
 
-    public async Task<DependencyGraph> AnalyzeProjectAsync(string projectPath)
+    public Task<DependencyGraph> AnalyzeProjectAsync(string projectPath) =>
+        AnalyzeProjectAsync(projectPath, AnalysisOptions.Default);
+
+    /// <summary>Analysis with options (020: <c>--config</c>); the default options give the historical behaviour.</summary>
+    public async Task<DependencyGraph> AnalyzeProjectAsync(string projectPath, AnalysisOptions options)
     {
+        _options = options;
         var compilations = new List<Compilation>();
         bool usedFallback = false;
         _userWarnings.Clear();
@@ -80,6 +89,9 @@ public class ProjectAnalyzer
             usedFallback = true;
             _userWarnings.AddRange(_reducedFidelityVb.Select(subject => subject + ReducedFidelitySuffix));
         }
+
+        _procedureCatalog = null;
+        _procedureCatalogLoaded = false;
 
         // BUG-009 (014): C# projects loaded by MSBuild whose types do not resolve (missing targeting pack or restore)
         // are a reduced-resolution analysis; say so in the analysis log instead of degrading silently. Not a user
@@ -134,6 +146,20 @@ public class ProjectAnalyzer
                 // Pass 5b: literal SQL and typed DataSets (VB)
                 if (vbIndex != null)
                     RunVbPass("VbTableExtractor", () => VbTableExtractor.Extract(vbIndex, components, vbDirectory));
+
+                // Pass 5c (020): stored procedures invoked by name; auto = Visual Basic only (FR-030).
+                Console.Error.WriteLine($"[info] {ProcedureCallExtractor.StateDiagnostic(_options.DataAccess, compilation.Language)}");
+                if (ProcedureCallExtractor.Enabled(_options.DataAccess, compilation.Language))
+                {
+                    RunVbPass("ProcedureCallExtractor", () =>
+                    {
+                        var types = vbIndex != null
+                            ? VisualBasicProcedureCallSyntax.ForIndex(vbIndex)
+                            : CSharpProcedureCallSyntax.ForCompilation(compilation);
+                        _userWarnings.AddRange(ProcedureCallExtractor.Extract(
+                            types, components, _options.DataAccess.CatalogMode, ProcedureCatalogFor(_options.DataAccess)));
+                    });
+                }
 
                 // Pass 6: Build calls_in / calls_out from edges
                 BuildCallLists(components, edges);
@@ -210,6 +236,11 @@ public class ProjectAnalyzer
             .OrderBy(e => e.Method, StringComparer.Ordinal)
             .ThenBy(e => e.Path, StringComparer.Ordinal)
             .ToList();
+
+        // 020: user warnings of every pass, ordinal and without duplicates (contracts/dotnet-warnings-channel.md).
+        var orderedWarnings = _userWarnings.Distinct(StringComparer.Ordinal).OrderBy(w => w, StringComparer.Ordinal).ToList();
+        _userWarnings.Clear();
+        _userWarnings.AddRange(orderedWarnings);
 
         // Assemble the dependency graph
         var graph = new DependencyGraph
@@ -379,6 +410,18 @@ public class ProjectAnalyzer
         }
 
         return compilations;
+    }
+
+    /// <summary>Loads the procedure catalog once per analysis (null without a configured catalog).</summary>
+    private ProcedureCatalog? ProcedureCatalogFor(DataAccessOptions options)
+    {
+        if (!_procedureCatalogLoaded)
+        {
+            _procedureCatalogLoaded = true;
+            _procedureCatalog = options.CatalogPath == null ? null : ProcedureCatalog.Load(options.CatalogPath);
+        }
+
+        return _procedureCatalog;
     }
 
     private static void RunVbPass(string name, Action pass)

@@ -57,6 +57,46 @@ VB project 'Shop.vbproj' analyzed with reduced fidelity (Adhoc fallback: MSBuild
 | `HIGH_CYCLOMATIC_COMPLEXITY` (> 10 WARNING, > 15 ERROR) | CODE_STYLE | WARNING / ERROR |
 | `PLAINTEXT_SECRET_IN_CONFIG` | SECURITY | CRITICAL |
 
+## Stored procedures (feature 020)
+
+Legacy .NET Framework applications rarely write SQL: they invoke stored procedures. The analyzer recognizes,
+syntactically and without resolving the data access libraries (so it works under reduced fidelity):
+
+| Form | Recognized shape |
+|---|---|
+| Enterprise Library | `GetStoredProcCommand("usp_X")`; `ExecuteDataSet` / `ExecuteNonQuery` / `ExecuteScalar` / `ExecuteReader(db, "usp_X", …)` |
+| ADO.NET | `cmd.CommandType = CommandType.StoredProcedure` in the type plus `cmd.CommandText = "usp_X"` (or `New SqlCommand("usp_X", …)`) whose text has the shape of an identifier; texts with spaces stay literal SQL |
+| Dapper | `Query*` / `Execute*(…, commandType:=CommandType.StoredProcedure)` with a literal text |
+
+The name may be split across concatenated literals; schema and delimiters are dropped (`[dbo].[usp_X]` → `usp_X`).
+Each procedure is emitted in `tables_used` as **`sp:<name>`**, one entry per component, in the same ordinal order as
+the tables (contract 1.0.0 unchanged). A non-literal name (variable, `String.Format`) produces the user warning
+`Procedure name is not a literal in <component> (<file>:<line>)` and no entry.
+
+**Catalog** (`dataAccess.procedureCatalog`): a directory of `.sql` scripts with `CREATE [OR ALTER] PROCEDURE` /
+`ALTER PROCEDURE` definitions, or a `.csv` file with the header `procedimiento,tabla,operación` (or
+`procedure,table,operation`, as exported from `sys.sql_dependencies`). Tables come from the procedure bodies with the
+same SQL grammar as literal SQL; `EXEC`/`EXECUTE` calls are followed transitively (cycles terminate). With
+`catalogMode` = `complement` (default) the component lists the tables **and** `sp:<name>`; with `replace` it lists the
+tables only, keeping `sp:` for procedures absent from the catalog. Files are read in ordinal path order; a procedure
+defined twice keeps the lowest path and warns; a missing path or a CSV without the header degrades to `sp:` only
+with a warning that names the cause. Warnings never carry absolute paths or procedure bodies.
+
+**Activation**: `dataAccess.procedures` = `auto` (default: Visual Basic compilations only, so C# and Java outputs do
+not change), `on` (every compilation, for C# legacy projects with Enterprise Library or ADO.NET) or `off`. The
+effective state is written to the analysis log as `[info] Stored procedure detection: on|off for <language>
+(auto|config)`. The engine passes the section to the analyzer as `dotnet-analyzer <path> --config=<file>` only when
+it differs from the defaults.
+
+**Inference**: `sp:` entries are shared data resources like tables, with `dataAccess.procedureWeight` relative to a
+table (`1.0` by default, `0` ignores them) in the shared-data grouping, in `tables_shared` (tables first, then `sp:`)
+and in the data cohesion. `dataAccess.entityHeuristic` (off by default) derives a business entity from procedure
+names (`usp_Policy_Read` → `Policy`) only to name proposals; it never emits tables.
+
+Limitations: names are read from literals only (no data flow); `CommandType.StoredProcedure` and `CommandText` must
+be in the same type; views referenced by a procedure are emitted as tables; `EXEC` with a non-literal name is not
+followed.
+
 ## Limitations
 
 - SQL is recognized only in string literals and their concatenations; SQL built through variables, `StringBuilder`,

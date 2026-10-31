@@ -103,5 +103,12 @@
     "roleKeywords" : [ "service", "controller", "repository", "repo", "usecase", "operations", "listener", "publisher", "adapter", "factory", "handler", "db" ],
     "excludeTokens" : [ "entity", "model", "data", "dto", "event", "command", "query", "impl", "repository", "service", "controller", "api", "rest", "http", "adapter", "port", "localevents", "rabbit", "jpa", "repo", "dao", "operations", "listener", "publisher", "handler", "factory", "db", "activityupdaterimpl", "usecase", "primaryports", "secondaryports", "userprofilejpa", "tweetcrud", "suggestion", "suggestions" ],
     "minTokenLength" : 3
+  },
+  "dataAccess" : {
+    "procedures" : "auto",
+    "procedureCatalog" : null,
+    "catalogMode" : "complement",
+    "procedureWeight" : 1.0,
+    "entityHeuristic" : false
   }
 }
