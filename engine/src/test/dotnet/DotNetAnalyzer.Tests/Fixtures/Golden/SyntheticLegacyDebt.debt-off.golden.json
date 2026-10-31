@@ -1,0 +1,203 @@
+{
+  "components": [
+    {
+      "id": "Acme.Legacy.Data.PolicyRepository",
+      "files": [
+        "<ROOT>/Data/PolicyRepository.vb"
+      ],
+      "loc": 21,
+      "tables_used": [
+        "Policies"
+      ],
+      "sensitive_data": false,
+      "layer": "Datos",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "CATCH_GENERIC_EXCEPTION",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Catching generic Exception is generally discouraged. Use a more specific exception type.",
+          "line": 13
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 2,
+      "complexity_avg": 1.5
+    },
+    {
+      "id": "Acme.Legacy.Facades.PolicyFacade",
+      "files": [
+        "<ROOT>/Facades/PolicyFacade.vb"
+      ],
+      "loc": 1050,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [
+        "Acme.Legacy.Jobs.NightlyProcess"
+      ],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [
+        {
+          "pattern": "HIGH_CYCLOMATIC_COMPLEXITY",
+          "type": "CODE_STYLE",
+          "severity": "ERROR",
+          "message": "Method \u0027ArchiveExpired\u0027 cyclomatic complexity 19 exceeds 15",
+          "line": 8
+        },
+        {
+          "pattern": "MISSING_SWITCH_DEFAULT",
+          "type": "BUG_PATTERN",
+          "severity": "INFO",
+          "message": "Select Case statement is missing a \u0027Case Else\u0027 clause.",
+          "line": 26
+        }
+      ],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 19,
+      "complexity_avg": 1.0527859237536656
+    },
+    {
+      "id": "Acme.Legacy.Forms.PolicyScreen",
+      "files": [
+        "<ROOT>/Forms/PolicyScreen.vb"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Web",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Layer:Presentaci\u00F3n"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "extends": "DevExpress.XtraEditors.XtraForm",
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Legacy.Jobs.NightlyProcess",
+      "files": [
+        "<ROOT>/Jobs/NightlyProcess.vb"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [
+        "Acme.Legacy.Facades.PolicyFacade"
+      ],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "EntryPoint:Main",
+        "Layer:Batch"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 1,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Legacy.Reports.PolicyListing",
+      "files": [
+        "<ROOT>/Reports/PolicyListing.vb"
+      ],
+      "loc": 6,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Web",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [
+        "Layer:Reportes"
+      ],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "extends": "DataDynamics.ActiveReports.ActiveReport3",
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    },
+    {
+      "id": "Acme.Legacy.Rules.PolicyValidator",
+      "files": [
+        "<ROOT>/Rules/PolicyValidator.vb"
+      ],
+      "loc": 5,
+      "tables_used": [],
+      "sensitive_data": false,
+      "layer": "Negocio",
+      "calls_out": [],
+      "calls_in": [],
+      "uses_jndi": false,
+      "annotations": [],
+      "is_interface": false,
+      "secrets_references": [],
+      "external_dependencies": [],
+      "package_dependencies": [],
+      "code_issues": [],
+      "implements": [],
+      "cbo": 0,
+      "lcom": 0,
+      "complexity_max": 1,
+      "complexity_avg": 1
+    }
+  ],
+  "edges": [
+    {
+      "from": "Acme.Legacy.Jobs.NightlyProcess",
+      "to": "Acme.Legacy.Facades.PolicyFacade",
+      "weight": 1,
+      "type": "call"
+    }
+  ],
+  "api_contracts": {
+    "endpoints": [],
+    "schemas": {}
+  },
+  "meta": {
+    "source": "roslyn-fallback",
+    "schema_version": "1.0.0",
+    "microservice_candidates": {}
+  }
+}

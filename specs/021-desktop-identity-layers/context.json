@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "8cc22bd438c3d19dc478e60603be3a528c1a83fe93c991931d7b996ea24ee52b",
+    "generated_at": "2026-10-30T17:47:46Z",
+    "features_dir": "specs/021-desktop-identity-layers/tests/features",
+    "file_count": 6
+  }
+}

@@ -477,6 +477,38 @@
           "description": "Derive a business entity from procedure names for proposal naming."
         }
       }
+    },
+    "debt": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Legacy debt rules of the .NET analyzer (021-desktop-identity-layers).",
+      "properties": {
+        "enabled": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ],
+          "description": "auto = Visual Basic compilations only."
+        },
+        "godClass": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minLoc": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Lines of code above which a type may be a god class."
+            },
+            "minComplexity": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum method complexity above which a type may be a god class."
+            }
+          }
+        }
+      }
     }
   }
 }

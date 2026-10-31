@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import com.extractor.inference.config.DataAccessConfig;
+import com.extractor.inference.config.DebtConfig;
 import com.extractor.inference.config.InferenceConfig;
 import java.nio.file.Files;
 import java.util.LinkedHashMap;
@@ -50,23 +51,37 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
     /** Non-fatal warnings of the last parse (FR-022). */
     private final List<String> warnings = new ArrayList<>();
     private final DataAccessConfig dataAccess;
+    private final DebtConfig debt;
 
     /**
      * Writes the analyzer section of the configuration to a temporary file (020, research D3), or returns null
      * when the defaults apply.
      */
     private Path writeConfigIfNeeded() throws IOException {
-        if (dataAccess == null || !dataAccess.affectsAnalyzer()) {
+        boolean sendDataAccess = dataAccess != null && dataAccess.affectsAnalyzer();
+        boolean sendDebt = debt != null && debt.affectsAnalyzer();
+        if (!sendDataAccess && !sendDebt) {
             return null;
         }
-        Map<String, Object> section = new LinkedHashMap<>();
-        section.put("procedures", dataAccess.procedures());
-        section.put("procedureCatalog", dataAccess.procedureCatalog() == null ? null
-                : Path.of(dataAccess.procedureCatalog()).toAbsolutePath().normalize().toString());
-        section.put("catalogMode", dataAccess.catalogMode());
-        Path file = Files.createTempFile("dev-arch-dataaccess-", ".json");
         Map<String, Object> root = new LinkedHashMap<>();
-        root.put("dataAccess", section);
+        if (sendDataAccess) {
+            Map<String, Object> section = new LinkedHashMap<>();
+            section.put("procedures", dataAccess.procedures());
+            section.put("procedureCatalog", dataAccess.procedureCatalog() == null ? null
+                    : Path.of(dataAccess.procedureCatalog()).toAbsolutePath().normalize().toString());
+            section.put("catalogMode", dataAccess.catalogMode());
+            root.put("dataAccess", section);
+        }
+        if (sendDebt) {
+            Map<String, Object> godClass = new LinkedHashMap<>();
+            godClass.put("minLoc", debt.godClass().minLoc());
+            godClass.put("minComplexity", debt.godClass().minComplexity());
+            Map<String, Object> section = new LinkedHashMap<>();
+            section.put("enabled", debt.enabled());
+            section.put("godClass", godClass);
+            root.put("debt", section);
+        }
+        Path file = Files.createTempFile("dev-arch-analyzer-config-", ".json");
         objectMapper.writeValue(file.toFile(), root);
         return file;
     }
@@ -109,9 +124,23 @@ public class DotNetBridgeAnalyzer implements LanguageAnalyzer {
      * @param dataAccess data access parameters
      */
     public DotNetBridgeAnalyzer(DotNetToolLocator locator, Duration timeout, DataAccessConfig dataAccess) {
+        this(locator, timeout, dataAccess, InferenceConfig.defaults().debt());
+    }
+
+    /**
+     * Bridge with the data access and debt sections (021).
+     *
+     * @param locator    locates the dotnet-analyzer executable
+     * @param timeout    maximum wall-clock time the subprocess may run
+     * @param dataAccess data access parameters
+     * @param debt       legacy debt rule parameters
+     */
+    public DotNetBridgeAnalyzer(DotNetToolLocator locator, Duration timeout, DataAccessConfig dataAccess,
+            DebtConfig debt) {
         this.locator = locator;
         this.timeout = timeout;
         this.dataAccess = dataAccess;
+        this.debt = debt;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }

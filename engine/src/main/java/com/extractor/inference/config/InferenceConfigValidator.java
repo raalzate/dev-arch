@@ -37,6 +37,28 @@ final class InferenceConfigValidator {
         recommendation(c.recommendation());
         naming(c.naming());
         dataAccess(c.dataAccess());
+        debt(c.debt());
+    }
+
+    /**
+     * Legacy debt rules (021).
+     *
+     * @param d debt parameters
+     */
+    private static void debt(final DebtConfig d) {
+        String p = "debt.";
+        List<String> modes = List.of(DebtConfig.AUTO, DebtConfig.ON, DebtConfig.OFF);
+        if (!modes.contains(d.enabled())) {
+            throw InvalidConfigException.parameter(p + "enabled",
+                    "must be one of " + String.join(", ", modes));
+        }
+        if (d.godClass().minLoc() < 1) {
+            throw InvalidConfigException.parameter(p + "godClass.minLoc", "must be >= 1");
+        }
+        if (d.godClass().minComplexity() < 1) {
+            throw InvalidConfigException.parameter(p + "godClass.minComplexity",
+                    "must be >= 1");
+        }
     }
 
     /**

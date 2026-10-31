@@ -138,6 +138,25 @@ export interface InferenceConfig {
      */
     entityHeuristic?: boolean;
   };
+  /**
+   * Legacy debt rules of the .NET analyzer (021-desktop-identity-layers).
+   */
+  debt?: {
+    /**
+     * auto = Visual Basic compilations only.
+     */
+    enabled?: "auto" | "on" | "off";
+    godClass?: {
+      /**
+       * Lines of code above which a type may be a god class.
+       */
+      minLoc?: number;
+      /**
+       * Maximum method complexity above which a type may be a god class.
+       */
+      minComplexity?: number;
+    };
+  };
 }
 /**
  * Successful score_proposal response (008-configurable-inference): evaluation of a user-defined proposal with the formulas of the engine's proposals.

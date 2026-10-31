@@ -1,4 +1,6 @@
 using DotNetAnalyzer.Model;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 
 namespace DotNetAnalyzer.Analysis.Vb;
@@ -24,8 +26,22 @@ public static class VbLayerClassifier
 
     private static readonly string[] DataBases = { "DataSet", "DataTable" };
 
-    /// <summary>Overrides the layer of the VB components of <paramref name="index"/> according to FR-040.</summary>
-    public static void Classify(VbTypeIndex index, List<Component> components)
+    /// <summary>Annotation of the desktop presentation layer (021, FR-014).</summary>
+    public const string PresentationAnnotation = "Layer:Presentación";
+    public const string ReportsAnnotation = "Layer:Reportes";
+    public const string BatchAnnotation = "Layer:Batch";
+    public const string EntryPointAnnotation = "EntryPoint:Main";
+
+    private static readonly string[] PresentationBases = { "Form", "UserControl", "XtraForm", "XtraUserControl", "WaitForm" };
+
+    /// <summary>Overrides the layer of the VB components of <paramref name="index"/> according to FR-040 (009).</summary>
+    public static void Classify(VbTypeIndex index, List<Component> components) => Classify(index, components, null);
+
+    /// <summary>
+    /// 009 rules plus the desktop fine layers of 021 (FR-010..FR-016): the fine layer is emitted as an annotation
+    /// and projected onto the closed layer catalogue (Presentación/Reportes → Web, Batch/Validator → Negocio).
+    /// </summary>
+    public static void Classify(VbTypeIndex index, List<Component> components, VbProjectFile? project)
     {
         var byId = components.GroupBy(c => c.Id, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
         var contracts = index.Types
@@ -41,7 +57,9 @@ public static class VbLayerClassifier
                 continue;
             try
             {
-                component.Layer = Classify(group.ToList(), component, contracts, bySimpleName) ?? component.Layer;
+                var entries = group.ToList();
+                component.Layer = Classify(entries, component, contracts, bySimpleName) ?? component.Layer;
+                ApplyFineLayer(entries, component, bySimpleName, project);
             }
             catch (Exception ex)
             {
@@ -83,6 +101,63 @@ public static class VbLayerClassifier
 
         return null;
     }
+
+    /// <summary>021: fine desktop layer by inheritance, associated files, Sub Main and validator naming.</summary>
+    private static void ApplyFineLayer(
+        List<VbTypeEntry> entries, Component component, ILookup<string, VbTypeEntry> bySimpleName, VbProjectFile? project)
+    {
+        if (component.IsInterface)
+            return;
+        var name = entries[0].Block.BlockStatement.Identifier.ValueText;
+        var bases = BaseNames(entries, bySimpleName);
+        var files = entries.Select(e => e.Block.SyntaxTree.FilePath).Where(p => !string.IsNullOrEmpty(p)).ToList();
+
+        string? fine = null;
+        if (bases.Any(b => PresentationBases.Any(s => b.EndsWith(s, StringComparison.Ordinal)))
+            || files.Any(f => File.Exists(Path.Combine(Path.GetDirectoryName(f)!, name + ".Designer.vb"))))
+        {
+            fine = PresentationAnnotation;
+        }
+        else if (bases.Any(b => b.Contains("Report", StringComparison.Ordinal))
+                 || (project?.ReportDefinitions.Contains(name) ?? false)
+                 || entries.Any(e => e.Block.DescendantNodes().OfType<IdentifierNameSyntax>().Any(i => i.Identifier.ValueText == "LocalReport")))
+        {
+            fine = ReportsAnnotation;
+        }
+        else if (entries.Any(e => e.Block is ModuleBlockSyntax && HasSubMain(e.Block))
+                 || (project?.StartupObject != null && string.Equals(project.StartupObject, component.Id, StringComparison.OrdinalIgnoreCase)
+                     && entries.Any(e => e.Block is ModuleBlockSyntax)))
+        {
+            fine = BatchAnnotation;
+        }
+
+        if (fine != null && !component.Annotations.Contains(fine, StringComparer.Ordinal))
+            component.Annotations.Add(fine);
+
+        switch (fine)
+        {
+            case PresentationAnnotation or ReportsAnnotation:
+                if (component.Layer != "Controlador")
+                    component.Layer = "Web";
+                break;
+            case BatchAnnotation:
+                if (!component.Annotations.Contains(EntryPointAnnotation, StringComparer.Ordinal))
+                    component.Annotations.Add(EntryPointAnnotation);
+                component.Layer = "Negocio";
+                break;
+        }
+
+        if (fine == null && (name.EndsWith("Validator", StringComparison.Ordinal)
+                             || (project != null && Path.GetFileNameWithoutExtension(project.FileName).EndsWith(".Validators", StringComparison.Ordinal))))
+        {
+            component.Layer = "Negocio";
+        }
+    }
+
+    private static bool HasSubMain(TypeBlockSyntax block) =>
+        block.Members.OfType<MethodBlockSyntax>().Any(m =>
+            m.SubOrFunctionStatement.Identifier.ValueText.Equals("Main", StringComparison.OrdinalIgnoreCase)
+            && m.SubOrFunctionStatement.DeclarationKeyword.IsKind(SyntaxKind.SubKeyword));
 
     /// <summary>
     /// Simple names of the base types of the component: the symbol chain and, for unresolved bases, the

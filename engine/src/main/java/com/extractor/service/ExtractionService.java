@@ -8,6 +8,7 @@ import com.extractor.analyzer.LanguageAnalyzer;
 import com.extractor.analyzer.ProjectTypeDetector;
 import com.extractor.inference.config.DataAccessConfig;
 import com.extractor.inference.config.InferenceConfig;
+import com.extractor.inference.config.DebtConfig;
 import com.extractor.inference.config.DetectionConfig;
 import com.extractor.model.DependencyGraph;
 import com.extractor.model.SecretLocation;
@@ -65,10 +66,30 @@ public final class ExtractionService {
             final AnalysisOptions options, final DetectionConfig detection,
             final DataAccessConfig dataAccess,
             final AnalysisProgressListener listener) throws Exception {
+        return extract(projectRoot, options, detection, dataAccess,
+                InferenceConfig.defaults().debt(), listener);
+    }
+
+    /**
+     * Extraction with the data access and debt sections (021).
+     *
+     * @param projectRoot project directory (already validated)
+     * @param options     analysis options (language)
+     * @param detection   detection parameters
+     * @param dataAccess  data access parameters
+     * @param debt        legacy debt rule parameters
+     * @param listener    receives DETECTION and EXTRACTION
+     * @return the extraction result
+     * @throws Exception when the analysis fails
+     */
+    public ExtractionResult extract(final Path projectRoot,
+            final AnalysisOptions options, final DetectionConfig detection,
+            final DataAccessConfig dataAccess, final DebtConfig debt,
+            final AnalysisProgressListener listener) throws Exception {
         listener.onPhase(AnalysisPhase.DETECTION);
         List<String> warnings = new ArrayList<>();
         LanguageAnalyzer analyzer = createAnalyzer(projectRoot,
-                options.language(), detection, dataAccess, warnings);
+                options.language(), detection, dataAccess, debt, warnings);
         listener.onPhase(AnalysisPhase.EXTRACTION);
         DependencyGraph graph = analyzer.analyzeProject(projectRoot);
         warnings.addAll(analyzer.getWarnings());
@@ -144,11 +165,30 @@ public final class ExtractionService {
     LanguageAnalyzer createAnalyzer(final Path projectRoot,
             final AnalysisLanguage language, final DetectionConfig detection,
             final DataAccessConfig dataAccess, final List<String> warnings) {
+        return createAnalyzer(projectRoot, language, detection, dataAccess,
+                InferenceConfig.defaults().debt(), warnings);
+    }
+
+    /**
+     * Creates the analyzer with the data access and debt sections (021).
+     *
+     * @param projectRoot project directory
+     * @param language    analyzer choice
+     * @param detection   detection parameters
+     * @param dataAccess  data access parameters
+     * @param debt        legacy debt rule parameters
+     * @param warnings    receives detection warnings
+     * @return the analyzer
+     */
+    LanguageAnalyzer createAnalyzer(final Path projectRoot,
+            final AnalysisLanguage language, final DetectionConfig detection,
+            final DataAccessConfig dataAccess, final DebtConfig debt,
+            final List<String> warnings) {
         if (language == AnalysisLanguage.JAVA) {
             return new JavaSpoonAnalyzer();
         }
         if (language == AnalysisLanguage.DOTNET) {
-            return createDotNetAnalyzer(dataAccess);
+            return createDotNetAnalyzer(dataAccess, debt);
         }
         Detection detected = new ProjectTypeDetector().detect(projectRoot,
                 detection.maxDepth());
@@ -157,7 +197,7 @@ public final class ExtractionService {
         }
         return switch (detected.type()) {
             case JAVA -> new JavaSpoonAnalyzer();
-            case DOTNET -> createDotNetAnalyzer(dataAccess);
+            case DOTNET -> createDotNetAnalyzer(dataAccess, debt);
             case AMBIGUOUS -> throw new IllegalArgumentException(
                     detected.ambiguityMessage(projectRoot));
             case UNKNOWN -> {
@@ -176,9 +216,14 @@ public final class ExtractionService {
      * @return the analyzer
      */
     private LanguageAnalyzer createDotNetAnalyzer(final DataAccessConfig dataAccess) {
+        return createDotNetAnalyzer(dataAccess, InferenceConfig.defaults().debt());
+    }
+
+    private LanguageAnalyzer createDotNetAnalyzer(final DataAccessConfig dataAccess,
+            final DebtConfig debt) {
         return new DotNetBridgeAnalyzer(
                 new DotNetToolLocator(getJarDirectory()),
-                DotNetBridgeAnalyzer.DEFAULT_TIMEOUT, dataAccess);
+                DotNetBridgeAnalyzer.DEFAULT_TIMEOUT, dataAccess, debt);
     }
 
     /**

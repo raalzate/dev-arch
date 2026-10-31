@@ -54,6 +54,7 @@
     <!-- 020-stored-procedures (plan Design 10): same mechanism; the @engine feature runs on Cucumber-JVM
          (RunStoredProceduresFeaturesTest). -->
     <StoredProceduresFeaturesDir>../../../../../specs/020-stored-procedures/tests/features/</StoredProceduresFeaturesDir>
+    <DesktopFeaturesDir>../../../../../specs/021-desktop-identity-layers/tests/features/</DesktopFeaturesDir>
   </PropertyGroup>
   <ItemGroup>
     <ReqnrollFeatureFiles Include="$(VbLegacyFeaturesDir)*.feature"
@@ -61,6 +62,9 @@
                           CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
     <ReqnrollFeatureFiles Include="$(StoredProceduresFeaturesDir)*.feature"
                           Exclude="$(StoredProceduresFeaturesDir)procedure-inference-engine.feature"
+                          CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
+    <ReqnrollFeatureFiles Include="$(DesktopFeaturesDir)*.feature"
+                          Exclude="$(DesktopFeaturesDir)desktop-entrypoint-engine.feature"
                           CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
   </ItemGroup>
   <Target Name="MoveVbLegacyCodeBehind" AfterTargets="UpdateFeatureFilesInProject">

@@ -115,6 +115,16 @@ public class ProjectAnalyzer
         var allEdges = new List<Edge>();
         var allEndpoints = new List<ApiEndpoint>();
 
+        // 021 (research D2b): several VB compilations of one analysis (nested projects, or a solution loaded
+        // project by project) resolve their invocations against the components of every compilation, so the
+        // edges between projects are kept. C# analyses keep their per-compilation scope (unchanged outputs).
+        List<Component>? crossScope = null;
+        var vbCompilations = compilations.Where(c => c.Language == LanguageNames.VisualBasic).ToList();
+        if (vbCompilations.Count > 1)
+        {
+            crossScope = vbCompilations.SelectMany(c => _typeAnalyzer.AnalyzeTypes(c)).ToList();
+        }
+
         foreach (var compilation in compilations)
         {
             try
@@ -125,12 +135,17 @@ public class ProjectAnalyzer
                 // 009: VB passes run only for Visual Basic compilations (research D1); C# is untouched.
                 var vbIndex = compilation.Language == LanguageNames.VisualBasic ? VbTypeIndex.Build(compilation) : null;
                 var vbDirectory = vbIndex != null ? VbProjectContext.ResolveProjectDirectory(compilation) : null;
+                // 021: the project file of the compilation (Option Strict, startup object, report definitions).
+                var vbProject = vbIndex != null && VbProjectContext.FindProjectFile(vbDirectory) is { } projectFile
+                    ? VbProjectFile.Load(projectFile)
+                    : null;
 
-                // Pass 2: Invocation analysis
-                var edges = _invocationAnalyzer.AnalyzeInvocations(compilation, components);
+                // Pass 2: Invocation analysis (021: VB compilations of one analysis share their scope)
+                var edgeScope = crossScope != null && compilation.Language == LanguageNames.VisualBasic ? crossScope : components;
+                var edges = _invocationAnalyzer.AnalyzeInvocations(compilation, edgeScope);
 
                 // Pass 3: Dependency injection analysis
-                var diEdges = _diAnalyzer.Analyze(compilation, components);
+                var diEdges = _diAnalyzer.Analyze(compilation, edgeScope);
                 edges.AddRange(diEdges);
 
                 // Pass 4: Endpoint extraction
@@ -174,9 +189,9 @@ public class ProjectAnalyzer
                 // Pass 8: Layer classification
                 _layerClassifier.Classify(components);
 
-                // Pass 8b: desktop layers (VB)
+                // Pass 8b: desktop layers (VB), fine layers and entry points (021)
                 if (vbIndex != null)
-                    RunVbPass("VbLayerClassifier", () => VbLayerClassifier.Classify(vbIndex, components));
+                    RunVbPass("VbLayerClassifier", () => VbLayerClassifier.Classify(vbIndex, components, vbProject));
 
                 // Pass 9: Messaging detection (MassTransit, Azure Service Bus)
                 _messagingDetector.Detect(compilation, components);
@@ -198,6 +213,11 @@ public class ProjectAnalyzer
                 if (vbIndex != null)
                     RunVbPass("VbCodeAnalyzer", () => VbCodeAnalyzer.Analyze(vbIndex, components));
 
+                // Pass 11c (021): legacy debt rules; auto = Visual Basic only (FR-030).
+                Console.Error.WriteLine($"[info] {VbDebtAnalyzer.StateDiagnostic(_options.Debt, compilation.Language)}");
+                if (vbIndex != null && VbDebtAnalyzer.Enabled(_options.Debt, compilation.Language))
+                    RunVbPass("VbDebtAnalyzer", () => VbDebtAnalyzer.Analyze(vbIndex, components, vbProject, _options.Debt));
+
                 allComponents.AddRange(components);
                 allEdges.AddRange(edges);
                 allEndpoints.AddRange(endpoints);
@@ -207,6 +227,10 @@ public class ProjectAnalyzer
                 Console.Error.WriteLine($"[WARN] Error analyzing compilation: {ex.Message}");
             }
         }
+
+        // 021: calls_in / calls_out across compilations (the per-compilation lists only saw their own components).
+        if (crossScope != null)
+            BuildCallLists(allComponents, allEdges);
 
         // Determinism (Constitución IV, SC-008): final ordering pass over every
         // list serialized into the JSON output. Done once, here, after all passes.
@@ -470,11 +494,15 @@ public class ProjectAnalyzer
 
         if (!isCsProj)
         {
-            // Directory or .sln-flavored fallback: glob both languages.
-            var vbCompilation = VbProjectLoader.LoadAdhoc(directory);
-            if (vbCompilation != null)
+            // Directory or .sln-flavored fallback: glob both languages. 021 (research D2b): a directory of nested
+            // .vbproj files is compiled one project at a time (root namespaces, project references).
+            var nested = VbProjectContext.NestedProjectFiles(directory);
+            var vbCompilations = nested.Count > 0
+                ? VbProjectLoader.LoadAdhocProjects(nested, directory)
+                : VbProjectLoader.LoadAdhoc(directory) is { } single ? new List<Compilation> { single } : new List<Compilation>();
+            if (vbCompilations.Count > 0)
             {
-                compilations.Add(vbCompilation);
+                compilations.AddRange(vbCompilations);
                 var name = Path.GetFileName(Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar));
                 reducedFidelityVb.Add($"VB sources in '{name}'");
             }

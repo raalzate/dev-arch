@@ -97,6 +97,43 @@ Limitations: names are read from literals only (no data flow); `CommandType.Stor
 be in the same type; views referenced by a procedure are emitted as tables; `EXEC` with a non-literal name is not
 followed.
 
+## Identity, desktop layers and debt rules (feature 021)
+
+**Identity.** Under reduced fidelity the loader reads the `.vbproj`: `<RootNamespace>` becomes the root namespace of
+the compilation (types without a `Namespace` block are qualified by it, explicit blocks nest under it) and the global
+`<Import Include>` entries become compilation imports, so framework names such as `Int64` resolve without a file
+`Imports`. A directory of nested `.vbproj` files without a solution is compiled one project at a time, in
+`ProjectReference` order, each project referencing the previous compilations; `.vb` files outside every project form
+a residual compilation. An invalid `RootNamespace` is ignored with a `[WARN]` diagnostic.
+
+**Desktop fine layers** (annotations, the `layer` catalogue of contract 1.0.0 does not change):
+
+| Evidence | Annotation | `layer` |
+|---|---|---|
+| base type (symbol or `Inherits` chain) ending in `Form`, `UserControl`, `XtraForm`, `XtraUserControl`, `WaitForm`, or a sibling `<Name>.Designer.vb` | `Layer:Presentación` | `Web` |
+| base type containing `Report`, use of `LocalReport`, or a `<Name>.rdlc` in the project | `Layer:Reportes` | `Web` |
+| `Module` with `Sub Main` (or the project `StartupObject`) | `Layer:Batch` and `EntryPoint:Main` | `Negocio` |
+| name ending in `Validator`, or project `*.Validators` | — | `Negocio` |
+
+A proposal that contains an `EntryPoint:Main` component declares `legacy_entrypoint` of type `internal` with that
+component as primary entry class, `Main` as exposed operation and a batch-process description (the `type` catalogue is
+closed).
+
+**Legacy debt rules** (`debt.enabled`: `auto` = Visual Basic only, `on`, `off`; thresholds `debt.godClass.minLoc` =
+1000 and `debt.godClass.minComplexity` = 15):
+
+| Rule | Type / severity | Condition |
+|---|---|---|
+| `PROJECT_OPTION_STRICT_OFF` | CODE_STYLE / WARNING | `<OptionStrict>Off</OptionStrict>` in the project; one issue per component, located at the project file |
+| `UI_CALL_IN_BUSINESS_LAYER` | BUG_PATTERN / WARNING | `MsgBox`, `MessageBox.Show` or `InputBox` in a component whose fine layer is not Presentación |
+| `SQL_CONCAT_INJECTION` | SECURITY / CRITICAL | `CommandText`, `GetSqlStringCommand(...)` or `New *Command(...)` whose text concatenates a SQL literal with a non-literal value |
+| `STATIC_FACADE` | CODE_STYLE / INFO | class whose methods and properties are all `Shared`, with a mutable `Shared` field and no instance members |
+| `MIXED_TRANSACTION_MODELS` | BUG_PATTERN / WARNING | `BeginTransaction`/`*Transaction` and `TransactionScope` in the same component |
+| `GOD_CLASS` | CODE_STYLE / WARNING | lines of code above `minLoc` **and** maximum method complexity above `minComplexity` |
+
+The rules are syntactic (they work under reduced fidelity) and deterministic. `detection.maxDepth` keeps its default
+(0): the nested search stays opt-in.
+
 ## Limitations
 
 - SQL is recognized only in string literals and their concatenations; SQL built through variables, `StringBuilder`,

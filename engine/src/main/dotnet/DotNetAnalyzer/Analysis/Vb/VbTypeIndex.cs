@@ -26,6 +26,8 @@ public sealed class VbTypeIndex
     {
         var index = new VbTypeIndex();
         var entries = new List<VbTypeEntry>();
+        // 021: the project root namespace qualifies the syntactic fallback name as the compiler does.
+        var rootNamespace = (compilation as Microsoft.CodeAnalysis.VisualBasic.VisualBasicCompilation)?.Options.RootNamespace;
         foreach (var tree in compilation.SyntaxTrees)
         {
             SemanticModel model;
@@ -42,7 +44,7 @@ public sealed class VbTypeIndex
             foreach (var block in tree.GetRoot().DescendantNodes().OfType<TypeBlockSyntax>())
             {
                 var symbol = model.GetDeclaredSymbol(block) as INamedTypeSymbol;
-                var id = symbol != null ? FullyQualifiedName(symbol) : FallbackName(block);
+                var id = symbol != null ? FullyQualifiedName(symbol) : FallbackName(block, rootNamespace);
                 var entry = new VbTypeEntry(id, block, symbol, model);
                 index._byBlock[block] = entry;
                 entries.Add(entry);
@@ -79,9 +81,11 @@ public sealed class VbTypeIndex
         return string.Join(".", parts);
     }
 
-    private static string FallbackName(TypeBlockSyntax block)
+    private static string FallbackName(TypeBlockSyntax block, string? rootNamespace)
     {
         var parts = new List<string>();
+        if (!string.IsNullOrEmpty(rootNamespace))
+            parts.Add(rootNamespace);
         foreach (var ns in block.Ancestors().OfType<NamespaceBlockSyntax>())
         {
             parts.Insert(0, ns.NamespaceStatement.Name.ToString());
