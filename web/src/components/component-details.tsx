@@ -9,7 +9,10 @@ import { layerLabel } from '@/lib/modernization/layers';
 import type { TechnologyProfile } from '@/lib/modernization/technology';
 import { SeverityBadge } from './badges';
 
-type Attr = { key: string; label: string; value: React.ReactNode };
+type Attr = { key: string; label: string; value: React.ReactNode; list?: string[] };
+
+/** 027 (FR-020): lists longer than this scroll inside the panel instead of stretching it. */
+const LIST_SCROLL_FROM = 6;
 
 function has(v: unknown): boolean {
   if (v === null || v === undefined) return false;
@@ -32,16 +35,33 @@ export function componentAttributes(c: Component, profile: TechnologyProfile): A
     ['extends', 'Extiende', c.extends],
     ['implements', 'Implementa', c.implements, (v: string[]) => v.join(', ')],
     ['annotations', 'Anotaciones', c.annotations, (v: string[]) => v.map((a) => `@${a}`).join(' ')],
-    ['tables_used', 'Tablas', c.tables_used, (v: string[]) => v.join(', ')],
+    ['tables_used', 'Tablas y procedimientos', c.tables_used, (v: string[]) => v.join(', ')],
     ['external_dependencies', 'Dependencias externas', c.external_dependencies, (v: string[]) => v.join(', ')],
     ['secrets_references', 'Referencias a secretos', c.secrets_references, (v: string[]) => String(v.length)],
     ['sensitive_data', 'Datos sensibles', c.sensitive_data ? 'Sí' : null],
     ['uses_jndi', 'Usa JNDI', c.uses_jndi ? 'Sí' : null],
     ['is_interface', 'Interfaz', c.is_interface ? 'Sí' : null],
   ];
+  const LISTS = new Set(['annotations', 'tables_used', 'external_dependencies', 'implements']);
   return list
     .filter(([, , v]) => has(v))
-    .map(([key, label, v, f]) => ({ key, label, value: f ? f(v as never) : String(v) }));
+    .map(([key, label, v, f]) => ({
+      key, label, value: f ? f(v as never) : String(v),
+      list: LISTS.has(key) && Array.isArray(v) ? (v as string[]).map((x) => (key === 'annotations' ? `@${x}` : x)) : undefined,
+    }));
+}
+
+/** Value cell of the details grid: long tokens break anywhere; long lists scroll (027 FR-020). */
+function AttrValue({ a }: { a: Attr }) {
+  if (a.list && a.list.length > LIST_SCROLL_FROM) {
+    return (
+      <ul data-testid="detail-list" className="max-h-40 space-y-0.5 overflow-auto rounded border border-border/60 p-1.5 font-mono text-xs">
+        {a.list.map((x) => <li key={x} className="break-all">{x}</li>)}
+      </ul>
+    );
+  }
+  if (a.list) return <span className="break-all font-mono text-xs">{a.list.join(', ')}</span>;
+  return <>{a.value}</>;
 }
 
 export default function ComponentDetails({
@@ -72,18 +92,18 @@ export default function ComponentDetails({
       </div>
     );
   return (
-    <aside data-testid="component-details" aria-label={`Detalle de ${c.id}`} className="space-y-4 rounded-md border border-border bg-card p-4">
+    <aside data-testid="component-details" aria-label={`Detalle de ${c.id}`} className="min-w-0 space-y-4 overflow-hidden rounded-md border border-border bg-card p-4">
       <div className="flex items-start gap-2">
         <h3 className="min-w-0 flex-1 break-all font-mono text-sm font-medium">{c.id}</h3>
         <button type="button" onClick={onClose} aria-label="Cerrar detalle" className="rounded p-1 text-muted-foreground hover:bg-accent">
           <X className="h-4 w-4" />
         </button>
       </div>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+      <dl className="grid grid-cols-[minmax(6rem,auto)_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
         {attrs.map((a) => (
           <div key={a.key} data-testid="detail-attr" data-attr={a.key} className="contents">
             <dt className="text-muted-foreground">{a.label}</dt>
-            <dd data-testid="detail-value" className="break-words">{a.value}</dd>
+            <dd data-testid="detail-value" className="min-w-0 break-all"><AttrValue a={a} /></dd>
           </div>
         ))}
       </dl>
@@ -94,7 +114,7 @@ export default function ComponentDetails({
             {c.code_issues.map((i, k) => (
               <li key={k} className="flex gap-2">
                 <SeverityBadge severity={i.severity} />
-                <span className="min-w-0">{i.message} <span className="text-muted-foreground">(línea {i.line})</span></span>
+                <span className="min-w-0 break-words">{i.message} <span className="text-muted-foreground">(línea {i.line})</span></span>
               </li>
             ))}
           </ul>

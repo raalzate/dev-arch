@@ -37,6 +37,8 @@ import PlanStep from './steps/plan-step';
 import ProposalsStep from './steps/proposals-step';
 import SummaryStep from './steps/summary-step';
 import { DEFAULT_EXTRACTION, toExtractionConfig, type ExtractionOptions } from '@/lib/extraction-options';
+import SearchBox from './search-box';
+import { buildSearchIndex, type SearchResult } from '@/lib/modernization/search';
 
 interface Docs {
   graph: DependencyGraph;
@@ -352,6 +354,13 @@ export default function SoftwareArchitectureAnalyzer() {
   const canOpenSource = !!analysis?.hasSources;
   const byId = useMemo(() => new Map((docs?.graph.components ?? []).map((c) => [c.id, c])), [docs]);
   const selectedComponent = selected ? byId.get(selected) ?? null : null;
+  // 027: lexical index over the loaded analysis (once per view) and navigation from a result.
+  const searchIndex = useMemo(() => (view ? buildSearchIndex(view) : []), [view]);
+  const onSearchPick = useCallback((r: SearchResult) => {
+    if (r.target.componentId) setSelected(r.target.componentId);
+    setStep(r.target.step);
+  }, []);
+
   const details = selectedComponent && profile ? (
     <ComponentDetails
       component={selectedComponent}
@@ -382,6 +391,7 @@ export default function SoftwareArchitectureAnalyzer() {
           status={analysis}
           onHistory={openHistory}
           upload={showLanding ? null : <UploadControls {...uploadProps} compact />}
+          search={completed && view && !comparison ? <SearchBox index={searchIndex} onPick={onSearchPick} /> : null}
         />
 
         {(needsToken || expired || analysis?.status === 'failed') && (
@@ -484,7 +494,7 @@ export default function SoftwareArchitectureAnalyzer() {
                     onMove={onMove}
                   />
                 )}
-                {step === 'findings' && <FindingsStep view={view} profile={profile} onSelect={setSelected} details={details} />}
+                {step === 'findings' && <FindingsStep view={view} profile={profile} onSelect={setSelected} details={details} selectedId={selected} />}
                 {step === 'plan' && plan && (
                   <PlanStep
                     plan={plan}

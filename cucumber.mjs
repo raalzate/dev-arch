@@ -21,6 +21,7 @@ const PATHS = [
   'specs/013-agent-mcp-bridge/tests/features/**/*.feature',
   'specs/014-standalone-repo/tests/features/**/*.feature',
   'specs/026-web-extraction-options/tests/features/**/*.feature',
+  'specs/027-large-project-ux/tests/features/**/*.feature',
 ];
 const only = (process.env.ACCEPTANCE_FEATURES ?? '').split(',').map((n) => n.trim()).filter(Boolean);
 const paths = only.length ? PATHS.filter((p) => only.some((n) => p.startsWith(`specs/${n}-`))) : PATHS;
