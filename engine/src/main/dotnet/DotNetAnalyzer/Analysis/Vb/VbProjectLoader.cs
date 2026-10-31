@@ -20,6 +20,47 @@ namespace DotNetAnalyzer.Analysis.Vb;
 public static class VbProjectLoader
 {
     /// <summary>
+    /// 025: directory of .NET Framework reference assemblies (<c>*.dll</c> and <c>Facades/*.dll</c>) used instead
+    /// of the host runtime assemblies; null = runtime assemblies (default behaviour). Set per analysis.
+    /// </summary>
+    public static string? ReferenceAssembliesDirectory { get; set; }
+
+    private static string? _loggedDirectory;
+
+    /// <summary>Whether a directory holds at least one <c>*.dll</c> usable as reference assembly.</summary>
+    public static bool IsReferenceAssembliesDirectory(string? directory) =>
+        directory != null && Directory.Exists(directory) && Directory.EnumerateFiles(directory, "*.dll").Any();
+
+    private static IEnumerable<MetadataReference> FrameworkReferences()
+    {
+        var directory = ReferenceAssembliesDirectory;
+        if (IsReferenceAssembliesDirectory(directory))
+        {
+            var dlls = Directory.GetFiles(directory!, "*.dll");
+            Array.Sort(dlls, StringComparer.Ordinal); // BUG-008: enumeration order independent of the file system
+            var files = dlls.ToList();
+            var facades = Path.Combine(directory!, "Facades");
+            if (Directory.Exists(facades))
+            {
+                var facadeDlls = Directory.GetFiles(facades, "*.dll");
+                Array.Sort(facadeDlls, StringComparer.Ordinal);
+                files.AddRange(facadeDlls);
+            }
+            if (_loggedDirectory != directory)
+            {
+                Console.Error.WriteLine($"[info] VbProjectLoader: {files.Count} reference assemblies from '{directory}'");
+                _loggedDirectory = directory;
+            }
+            return files.Select(f => (MetadataReference)MetadataReference.CreateFromFile(f));
+        }
+
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .Select(a => a.Location)
+            .Where(loc => !string.IsNullOrEmpty(loc) && File.Exists(loc))
+            .Select(loc => (MetadataReference)MetadataReference.CreateFromFile(loc));
+    }
+
+    /// <summary>
     /// True if the current OS is Windows, where MSBuildWorkspace can resolve .vbproj
     /// legacy projects with full fidelity (requires VS Build Tools + VB workload).
     /// </summary>
@@ -159,10 +200,7 @@ public static class VbProjectLoader
             }
         }
 
-        var references = AppDomain.CurrentDomain.GetAssemblies()
-            .Select(a => a.Location)
-            .Where(loc => !string.IsNullOrEmpty(loc) && File.Exists(loc))
-            .Select(loc => (MetadataReference)MetadataReference.CreateFromFile(loc))
+        var references = FrameworkReferences()
             .Concat(projectReferences)
             .ToArray();
 

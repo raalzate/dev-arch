@@ -1,0 +1,8 @@
+{
+  "testify": {
+    "assertion_hash": "f993e6572629f93f610fd11be5b00cc212600335b9e83f606b8cab8ef6526cfd",
+    "generated_at": "2026-10-30T23:48:52Z",
+    "features_dir": "specs/025-reference-assemblies/tests/features",
+    "file_count": 2
+  }
+}

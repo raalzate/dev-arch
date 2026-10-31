@@ -260,6 +260,25 @@ Decisiones y hallazgos:
 - La cobertura de seguridad en la referencia depende de la fidelidad: añadir `Microsoft.NETFramework.ReferenceAssemblies.net48` al fallback Adhoc (transversal 1 del plan, pendiente) haría resolubles `SqlCommand`, `System.Web` y `System.ServiceModel` y activaría `CA2100`/`CA3xxx`.
 - BUG-010: corregido emitiendo `type: SECURITY` para `EOL_DEPENDENCY` (enumerado cerrado); prueba `CodeIssueTypeTest` compara los enumerados Java con `schema/1.0.0/common.schema.json`.
 
+## 13. Feature 025 (ensamblados de referencia de .NET Framework, opt-in) sobre el corpus de referencia VB
+
+Corrida local 2026-10-30 (macOS, SDK 8, `analysis.extended = on`, `analysis.referenceAssemblies` = `build/.NETFramework/v4.8` del paquete `Microsoft.NETFramework.ReferenceAssemblies.net48` 1.0.3):
+
+| Métrica | Sin ensamblados de referencia (§12) | Con ensamblados de referencia | Criterio SC-001 |
+|---|---|---|---|
+| Issues con `[CWE-` | 0 | 15 (`CA5350` 9 — SHA1/DES, CWE-327; `CA5364` 6 — protocolos TLS obsoletos, CWE-326) | ≥ 1 — cumplido |
+| Categorías de reglas oficiales | 6 | 7 (+ security) | — |
+| `CA1305` (cultura) | 476 | 2 013 (los tipos `String.Format`/`Parse` del framework ahora resuelven) | — |
+| Aristas | 1 251 | 1 253 | — |
+| Doble corrida | idéntica | byte a byte idéntica; ≈ 33 s (sin coste adicional apreciable) | cumplido |
+| Capas finas, integraciones, tablas | 160 Presentación / 19 integraciones / 900 recursos | sin cambios | — |
+
+Hallazgos: `CA2100` (SQL concatenado en `SqlCommand`) no aparece en la referencia aunque sí en el fixture: los adaptadores
+construyen los comandos a través de Enterprise Library (`Database.GetSqlStringCommand`), no de `SqlCommand` directo; la
+regla propia `SQL_CONCAT_INJECTION` (021) cubre esos casos (4). La ruta es opt-in: sin ella la salida es la de §12
+(los guardas de 009-024 fijan la salida por defecto) y el motor no añade dependencias (el paquete solo lo restaura el
+proyecto de pruebas). Runner Windows manual: `.github/workflows/windows-fidelity.yml` (decisión §7.3 para hacerlo automático).
+
 ## Cómo reproducir
 
 ```bash
@@ -267,5 +286,5 @@ export DOTNET_ROOT="$HOME/.dotnet8" PATH="$HOME/.dotnet8:$PATH"     # SDK 8 can�
 make build && make test                                              # pruebas y puertas
 DEVARCH_E2E=true make test-acceptance && make test-e2e-browser       # escenarios lentos y navegador
 java -jar engine/target/java-dependency-extractor.jar engine/test-for-demo/java-standar out.json   # un análisis
-java -jar engine/target/java-dependency-extractor.jar "$(realpath engine/test-for-demo/vb-demo-legacy)" out.json --language=dotnet --config=cfg.json  # referencia VB (cfg: {"detection":{"maxDepth":3}}; añadir "analysis":{"extended":"on"} para 024)
+java -jar engine/target/java-dependency-extractor.jar "$(realpath engine/test-for-demo/vb-demo-legacy)" out.json --language=dotnet --config=cfg.json  # referencia VB (cfg: {"detection":{"maxDepth":3}}; añadir "analysis":{"extended":"on"} para 024 y "referenceAssemblies":"<carpeta v4.8>" para 025)
 ```

@@ -1,0 +1,18 @@
+# Decisiones pendientes del PLAN-VB-PLATAFORMA-LEGACY (§7)
+
+Estado 2026-10-30. Las features 014b y 020–025 están implementadas en ramas apiladas (`014b-engine-debt` → … → `025-reference-assemblies`), con suites verdes y salidas por defecto intactas. Cada punto siguiente cambia salidas por defecto protegidas por guardas bloqueados, añade licencia/coste o modifica el contrato, por lo que requiere aprobación explícita. Todos están disponibles hoy como opción de configuración; la decisión es solo "¿por defecto?".
+
+| # | Decisión | Opciones | Impacto si se activa por defecto | Recomendación | Cómo activarlo hoy |
+|---|---|---|---|---|---|
+| 7.1 | Catálogo sp → tablas de policy-manager | scripts `.sql` del cliente / export `sys.sql_dependencies` / ninguno | Ninguno en el motor (020 soporta ambos); depende de lo que entregue el cliente | Pedir los scripts `.sql` al cliente (mayor fidelidad: tablas + operación) | `dataAccess.procedureCatalog` |
+| 7.2 | `detection.maxDepth` 2 por defecto | 2 / mantener 0 | Cambia la línea base v1.2.0 de `dotnet-unstructured` (008) → re-testify de guardas; documentar `--config` es gratis | Mantener 0; documentar `{"detection":{"maxDepth":3}}` en la propuesta comercial | `detection.maxDepth` |
+| 7.3 | Runner Windows en CI | automático / manual | Coste de minutos Windows por push; mide fidelidad completa | Mantener manual (`windows-fidelity.yml`, 025) y ejecutarlo antes de cada release | `workflow_dispatch` |
+| 7.4 | Walkers C#/VB duplicados | tests espejo / abstraer sobre `IOperation` | Refactor grande (principio II) sin cambio funcional | Posponer; los tests espejo ya existen (009/021) | — |
+| 7.5 | Lista EOL | `schema/eol-dependencies.json` (hecho) / `--config` cliente | Ya versionada en el repo; el cliente añade prefijos | Mantener en `schema/` + `dependencies.eol` para extras | `dependencies.eol` |
+| 7.6 | SecurityCodeScan (LGPL) | adoptar / reglas propias | Licencia LGPL en el analizador (principio VI); con 025 ya hay 15 hallazgos CWE vía NetAnalyzers (MIT) | No adoptar; ampliar reglas propias si hace falta cobertura (inyección LDAP/XPath) | — |
+| 7.7 | Análisis extendido por defecto en VB | `auto` / `off` (hecho) | Rompe guardas bloqueados 009/020/021 (conjuntos exactos de issues, goldens) y +15 s por análisis | Mantener `off`; el perfil legacy lo activa con `analysis.extended: on` | `analysis.extended` |
+| nuevo | Ensamblados de referencia por defecto | ruta configurada (hecho) / detectar el paquete NuGet en caché | Dependencia implícita del host; cambia salidas VB por defecto (guardas) | Mantener opt-in; documentado en `docs/VB-LEGACY.md` | `analysis.referenceAssemblies` |
+| nuevo | Contrato 1.1.0 | campos ricos (`debt_score`, `rule_id`, `category`, `cwe`, `source`, `maintainability_index`, `meta.inference_preset`) / seguir en texto | Nuevo schema aditivo + tipos TS + goldens; hoy todo viaja en `annotations`, `rationale`, `summary`, `message` | Hacer 1.1.0 cuando el front (dev-arch web) lo consuma; hasta entonces texto | — |
+| nuevo | Escala del preset `legacy-desktop` | aceptar 44 propuestas Baja / recalibrar cohesión | La referencia es un monolito en capas de un solo dominio; métricas honestas dan Baja | Aceptar y presentar cortes por entidad con deuda visible (§11 de EVALUATIONS) | `inference.preset` |
+
+Cómo cerrar: responder por número (p. ej. "7.2 mantener, 7.7 auto"); cada cambio de default se implementa como feature propia con su re-testify de los guardas afectados.

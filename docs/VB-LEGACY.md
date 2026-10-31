@@ -209,6 +209,20 @@ or external binaries:
   deduplicated and sorted; missing or invalid files are user warnings.
 - **Layer suppressions** (`analysis.layerSuppressions`): `Capa:REGLA` entries removed for that fine layer.
 
+## Reference assemblies for the Adhoc fallback (feature 025)
+
+On macOS/Linux the Adhoc fallback compiles against the analyzer's own .NET 8 runtime assemblies, so .NET Framework
+types (`System.Windows.Forms`, `System.Data.SqlClient`, `System.ServiceModel`, `System.Web.Services`,
+`System.Configuration`) are unresolved. `analysis.referenceAssemblies` names a folder of reference assemblies, for
+example `build/.NETFramework/v4.8` of the NuGet package `Microsoft.NETFramework.ReferenceAssemblies.net48` (MIT,
+metadata only, not a dependency of the engine): its `*.dll` and `Facades/*.dll` replace the runtime assemblies in every
+VB Adhoc compilation (`[info] VbProjectLoader: N reference assemblies from '<folder>'`). A missing folder is a user
+warning. Third-party assemblies (DevExpress, Enterprise Library) still need the project's `packages/` or `bin/`.
+The reduced-fidelity notice of feature 009 stays: MSBuild properties, generators and resources are still not evaluated.
+
+Full fidelity can be measured on demand with the manual GitHub workflow `.github/workflows/windows-fidelity.yml`
+(`workflow_dispatch`, `windows-latest`, runs the .NET test project with MSBuild and the VB workload available).
+
 ## Limitations
 
 - SQL is recognized only in string literals and their concatenations; SQL built through variables, `StringBuilder`,

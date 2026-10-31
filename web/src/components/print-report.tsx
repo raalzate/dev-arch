@@ -40,7 +40,7 @@ export default function PrintReport({ plan }: { plan: ModernizationPlan }) {
       {plan.supportLibraries.length > 0 && (
         <section className="mt-5">
           <h2 className="text-[13pt] font-semibold">Librerías de soporte</h2>
-          <ul className="list-disc pl-5">{plan.supportLibraries.map((l) => <li key={l.name}>{l.name} ({l.components} componentes)</li>)}</ul>
+          <ul className="list-disc pl-5">{plan.supportLibraries.map((l) => <li key={l.id}>{l.name} ({l.components} componentes)</li>)}</ul>
         </section>
       )}
       {plan.warnings.length > 0 && (

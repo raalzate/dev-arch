@@ -354,6 +354,15 @@ public class StoredProceduresSteps {
         assertEquals(value, MAPPER.readTree(Files.readString(copy)).path(section).path(key).asText());
     }
 
+    @Then("that configuration file contained the section {string} with {string} equal to an absolute path ending with {string}")
+    public void configFileContainedAbsolute(String section, String key, String suffix) throws IOException {
+        Path copy = Path.of(argvLog + ".config");
+        assertTrue(Files.exists(copy), "the wrapper saw no --config file");
+        String value = MAPPER.readTree(Files.readString(copy)).path(section).path(key).asText();
+        assertTrue(Path.of(value).isAbsolute(), value + " must be absolute");
+        assertTrue(value.replace('\\', '/').endsWith(suffix), value + " must end with " + suffix);
+    }
+
     @Then("that configuration file no longer exists after the analysis")
     public void configFileDeleted() throws IOException {
         String arg = argv().get(1);

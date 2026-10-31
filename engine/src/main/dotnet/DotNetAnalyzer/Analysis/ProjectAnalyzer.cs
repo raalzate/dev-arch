@@ -66,6 +66,18 @@ public class ProjectAnalyzer
         bool usedFallback = false;
         _userWarnings.Clear();
         _reducedFidelityVb.Clear();
+        // 025: .NET Framework reference assemblies for the VB Adhoc fallback (opt-in).
+        VbProjectLoader.ReferenceAssembliesDirectory = null;
+        if (_options.Analysis.ReferenceAssemblies != null)
+        {
+            var refs = Path.IsPathRooted(_options.Analysis.ReferenceAssemblies)
+                ? _options.Analysis.ReferenceAssemblies
+                : Path.Combine(_analyzedRoot, _options.Analysis.ReferenceAssemblies);
+            if (VbProjectLoader.IsReferenceAssembliesDirectory(refs))
+                VbProjectLoader.ReferenceAssembliesDirectory = refs;
+            else
+                _userWarnings.Add($"Reference assemblies directory not found: {_options.Analysis.ReferenceAssemblies}; host runtime assemblies used.");
+        }
 
         try
         {

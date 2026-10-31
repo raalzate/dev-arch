@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Unreleased]
 
+### Añadido (feature 025, ensamblados de referencia y runner Windows manual)
+- `analysis.referenceAssemblies`: carpeta de ensamblados de referencia de .NET Framework usada por el fallback Adhoc VB en lugar de los del runtime (opt-in; resuelve `System.Data`, `System.Windows.Forms`, `System.ServiceModel`…). Sin la ruta, salida idéntica.
+- Workflow manual `.github/workflows/windows-fidelity.yml` para medir la fidelidad completa en Windows bajo demanda.
+
 ### Añadido (feature 024, análisis estático extendido)
 - Pasada `analysis.extended` (opt-in; `auto` = Visual Basic): reglas oficiales de `Microsoft.CodeAnalysis.NetAnalyzers` 8.0.0 con lista versionada `schema/extended-rules.json`, `UNUSED_PUBLIC_MEMBER`, `DUPLICATED_CODE`, anotación `Maintainability:<n>` (término `viability.maintainabilityWeight` del índice de deuda), importación SARIF 2.1.0 (`analysis.sarif`) y supresiones por capa (`analysis.layerSuppressions`). Contrato 1.0.0 sin cambios.
 - Corregido BUG-010 (022): `EOL_DEPENDENCY` emitía `type: DEPENDENCY`, fuera del enumerado cerrado del contrato; ahora `SECURITY`.

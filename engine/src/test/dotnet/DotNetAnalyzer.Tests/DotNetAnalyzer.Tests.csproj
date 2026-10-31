@@ -24,6 +24,9 @@
     <!-- 009-vb-legacy-completion: BDD runner for the .feature files of the feature (test project only,
          Constitution VI; 2.0.3 keeps xUnit 2.7.0, research D9) -->
     <PackageReference Include="Reqnroll.xUnit" Version="2.0.3" />
+    <!-- 025-reference-assemblies: only to have the .NET Framework 4.8 reference assemblies restored on the test host
+         (metadata-only, MIT); nothing is referenced or copied. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" ExcludeAssets="all" PrivateAssets="all" GeneratePathProperty="true" />
     <!-- 011-quality-delivery (FR-012): coverage collector (dotnet test with the "XPlat Code Coverage" collector), test project only -->
     <PackageReference Include="coverlet.collector" Version="6.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -57,6 +60,7 @@
     <DesktopFeaturesDir>../../../../../specs/021-desktop-identity-layers/tests/features/</DesktopFeaturesDir>
     <IntegrationsFeaturesDir>../../../../../specs/022-external-integrations/tests/features/</IntegrationsFeaturesDir>
     <ExtendedFeaturesDir>../../../../../specs/024-extended-static-analysis/tests/features/</ExtendedFeaturesDir>
+    <RefAssembliesFeaturesDir>../../../../../specs/025-reference-assemblies/tests/features/</RefAssembliesFeaturesDir>
   </PropertyGroup>
   <ItemGroup>
     <ReqnrollFeatureFiles Include="$(VbLegacyFeaturesDir)*.feature"
@@ -73,6 +77,9 @@
                           CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
     <ReqnrollFeatureFiles Include="$(ExtendedFeaturesDir)*.feature"
                           Exclude="$(ExtendedFeaturesDir)extended-analysis-engine.feature"
+                          CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
+    <ReqnrollFeatureFiles Include="$(RefAssembliesFeaturesDir)*.feature"
+                          Exclude="$(RefAssembliesFeaturesDir)reference-assemblies-engine.feature"
                           CodeBehindFile="obj/ReqnrollFeatures/%(Filename).feature.cs" />
   </ItemGroup>
   <Target Name="MoveVbLegacyCodeBehind" AfterTargets="UpdateFeatureFilesInProject">

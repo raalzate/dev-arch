@@ -666,6 +666,13 @@
             "pattern": "^[^:]+:[^:]+$"
           },
           "description": "Layer:RULE entries removed for components of that fine layer."
+        },
+        "referenceAssemblies": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "025: directory of .NET Framework reference assemblies (*.dll and Facades/*.dll) used by the VB Adhoc fallback instead of the host runtime assemblies; null = default."
         }
       }
     }

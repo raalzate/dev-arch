@@ -135,6 +135,7 @@ _None yet — 1.0.0 is the first formal version. It describes the v1.1.0 output 
 | `analysis.sarif` | string[] | `[]` | SARIF 2.1.0 reports merged into `code_issues` |
 | `analysis.layerSuppressions` | string[] | `[]` | `Layer:RULE` entries removed per fine layer |
 | `viability.maintainabilityWeight` | [0,1] | `0` | weight of `1 − MI/100` in the debt index |
+| `analysis.referenceAssemblies` | string \| null | `null` | 025: .NET Framework reference-assembly folder for the VB Adhoc fallback |
 
 Output conventions without schema change: `code_issues[].pattern` = rule id (`CA2200`, `UNUSED_PUBLIC_MEMBER`, `DUPLICATED_CODE`,
 SARIF rule), `type` within the closed enum, `message` prefixes `[category]`, `[CWE-nnn]`, `[source:<tool>]`; annotation
